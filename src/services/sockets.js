@@ -104,6 +104,9 @@ var Sockets = {
 							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
 
 							Sockets.games[this.name].started = false;
+							Sockets.games[this.name].currentGuesses = [];
+							Sockets.games[this.name].currentVotes = {};
+							Sockets.games[this.name].voteCount = 0;
 						}
 					};
 
@@ -115,21 +118,19 @@ var Sockets = {
 				}
 
 				else if(data.command === 'game_guess'){
-					Log()('socket', 'game_guess', data.guess, Sockets.games[Player.room].players.length - Sockets.games[Player.room].currentGuesses.length +' guesses left');
+					Log()('socket', 'game_guess', data.guess, Sockets.games[Player.room].players.length - Sockets.games[Player.room].currentGuesses.length +' guesses left', Sockets.games[Player.room].started ? 'started' : 'NOT started');
 
 					Player.currentGuess = data.guess;
 
 					Sockets.games[Player.room].currentGuesses.push({ player: Player.name, guess: data.guess });
 
-					if(!Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
+					if(Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
 						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
 					}
 				}
 
 				else if(data.command === 'game_vote'){
 					Log()('socket', 'game_vote', data.vote);
-
-					var x;
 
 					if(!Sockets.games[Player.room].currentVotes[data.vote]){
 						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
@@ -187,7 +188,7 @@ var Sockets = {
 				}
 
 				delete data.command;
-				if(Object.keys(data).length) Log()('socket', 'Command data: ', data);
+				if(Object.keys(data).length) Log()('socket', 'Command data: ', data, '\n');
 			};
 
 			socket.onclose = function(data){
