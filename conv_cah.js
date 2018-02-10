@@ -8,7 +8,6 @@ fs.readFile(process.env.IF, function(err, data){
 	for(x = 0; x < blacksInCount; ++x){
 		if(blacks[x].pick === 1){
 			blackText = blacks[x].text;
-			blackText = blackText.replace('<br>', '\n');
 			blackText = blackText.replace(/[^_]?(__?)[^_]/gm, '_____');
 			blackText = blackText.replace(/\.$/gm, '');
 			blacks_out.push(blackText);

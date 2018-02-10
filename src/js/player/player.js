@@ -36,7 +36,7 @@ function Load(){
 		guess: function(){
 			var joinGameForm = Dom.createElem('div', { id: 'GameGuessForm' });
 
-			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', textContent: Game.currentBlack });
+			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
 			var guessInput = Dom.createElem('input', { id: 'GameGuess', validation: /.{1,}/ });
 			Dom.validate(guessInput);
@@ -56,7 +56,7 @@ function Load(){
 			Dom.Content.appendChild(waitingHeading);
 		},
 		vote: function(submissions){
-			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', textContent: Game.currentBlack });
+			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
 			var submissionCount = submissions.length;
@@ -80,7 +80,7 @@ function Load(){
 			Dom.Content.appendChild(submissionList);
 		},
 		vote_results: function(submissions){
-			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', textContent: Game.currentBlack });
+			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
 			var submissionNames = Object.keys(submissions), submissionCount = submissionNames.length;
