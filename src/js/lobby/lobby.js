@@ -126,7 +126,7 @@ function Load(){
 			Dom.draw('existing_game', evt.target.children[0].textContent);
 		}
 
-		else if(evt.target.className === 'pack'){
+		else if(evt.target.className.includes('pack')){
 			evt.preventDefault();
 
 			Log()(evt.target.textContent);
