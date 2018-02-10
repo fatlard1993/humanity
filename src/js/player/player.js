@@ -129,6 +129,10 @@ function Load(){
 		else if(data.command === 'vote_results'){
 			Dom.draw('vote_results', data.votes);
 		}
+
+		else if(data.command === 'start_timer'){
+			Game.started = true;
+		}
 	}
 
 	function joinGame(){
@@ -214,6 +218,12 @@ function Load(){
 
 				makeGuess();
 			}
+		}
+
+		else if(!Game.started && evt.target.id === 'GameGuess' && evt.target.value.length){
+			Game.started = true;
+
+			Socket.active.send('{ "command": "game_start" }');
 		}
 	};
 

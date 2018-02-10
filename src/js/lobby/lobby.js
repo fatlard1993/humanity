@@ -31,6 +31,9 @@ function Load(){
 			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /.{4,}/ });
 			Dom.validate(nameInput);
 
+			var timerInput = Dom.createElem('input', { id: 'NewGameTimer', placeholder: 'Turn Timer (1-10 minutes, def: 2)', validation: /(^([1-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(timerInput);
+
 			var packsList = Dom.createElem('ul', { id: 'PacksList' });
 			var packCount = packs.length;
 
@@ -43,6 +46,7 @@ function Load(){
 			var createButton = Dom.createElem('button', { id: 'NewGameCreateButton', textContent: 'Create' });
 
 			newGameForm.appendChild(nameInput);
+			newGameForm.appendChild(timerInput);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			Dom.Content.appendChild(newGameForm);
@@ -80,10 +84,13 @@ function Load(){
 	function createNewGame(){
 		if(!document.querySelectorAll('.invalid').length){
 			var newGameRoomName = document.getElementById('NewGameRoomName').value;
+			var newGameTimer = document.getElementById('NewGameTimer').value;
 			var newGamePacksList = [];
 
 			var packsList = document.getElementById('PacksList');
 			var packNames = Object.keys(packsList.children), packCount = packNames.length;
+
+			newGameTimer = typeof newGameTimer === 'number' ? newGameTimer : 2;
 
 			for(var x = 0; x < packCount; ++x){
 				if(packsList.children[x].className.includes('selected')) newGamePacksList.push(packsList.children[x].textContent);
@@ -91,7 +98,7 @@ function Load(){
 
 			Log()(newGameRoomName, newGamePacksList);
 
-			Socket.active.send(JSON.stringify({ command: 'new_game', name: newGameRoomName, packs: newGamePacksList }));
+			Socket.active.send(JSON.stringify({ command: 'new_game', name: newGameRoomName, timer: newGameTimer, packs: newGamePacksList }));
 
 			window.location.reload();
 		}

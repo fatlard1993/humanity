@@ -10,7 +10,7 @@ var Sockets = {
 		Sockets.wss = new WebSocket.Server({ server });
 
 		Sockets.wss.on('connection', function(socket){
-			Log()('socket', '"Someone" connected...');
+			Log()('\nsocket', '"Someone" connected...');
 
 			socket.send(`{ "command": "challenge" }`);
 
@@ -29,11 +29,6 @@ var Sockets = {
 
 				else if(data.command === 'challenge_response'){
 					validConnection = true;
-
-					delete data.command;
-
-					Log()('requesting connect to: ', data.room);
-					Log()(data);
 
 					if(data.room === 'lobby'){
 						socket.send(JSON.stringify({ command: 'challenge_accept', games: Sockets.games, packs: Object.keys(Cards.packs) }));
@@ -58,10 +53,11 @@ var Sockets = {
 				if(!validConnection) return;
 
 				if(data.command === 'new_game'){
-					Log()('socket', 'new_game', data.name, data.packs);
+					Log()('socket', 'new_game', data.name, data.timer, data.packs);
 
 					Sockets.games[data.name] = {
 						name: data.name,
+						timer: data.timer * (1000 * 60),
 						players: [],
 						currentGuesses: [],
 						currentVotes: {},
@@ -74,6 +70,8 @@ var Sockets = {
 							Sockets.games[this.name].currentBlack = Sockets.games[this.name].cards.blacks[randBlack];
 
 							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
+
+							Sockets.games[this.name].started = false;
 						}
 					};
 
@@ -91,7 +89,7 @@ var Sockets = {
 
 					Sockets.games[Player.room].currentGuesses.push({ player: Player.name, guess: data.guess });
 
-					if(Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
+					if(!Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
 						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
 					}
 				}
@@ -136,6 +134,24 @@ var Sockets = {
 
 					socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack }));
 				}
+
+				else if(data.command === 'game_start' && Sockets.games[Player.room] && !Sockets.games[Player.room].started){
+					Log()('socket', 'game_start');
+
+					Sockets.games[Player.room].started = true;
+
+					setTimeout(function(){
+						Log()('socket', 'GAMETIMER');
+						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
+					}, Sockets.games[Player.room].timer);
+
+					Log()('socket', 'timer ms: ', Sockets.games[Player.room].timer);
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'start_timer' }));
+				}
+
+				delete data.command;
+				if(Object.keys(data).length) Log()('socket', 'Command data: ', data);
 			};
 
 			socket.onclose = function(data){
