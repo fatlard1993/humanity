@@ -1,4 +1,5 @@
 const fs = require('fs');
+const exec = require('child_process').exec;
 
 const inFile = process.argv[2];
 const outFile = process.argv[3];
@@ -15,7 +16,7 @@ fs.readFile(`./${inFile}.json`, function(err, data){
 			blackText = blacks[x].text;
 			blackText = blackText.replace(/[^_]?(__?)[^_]/gm, '_____');
 			blackText = blackText.replace(/\.$/gm, '');
-			
+
 			blacks_out.push(blackText);
 		}
 	}
@@ -31,3 +32,5 @@ fs.readFile(`./${inFile}.json`, function(err, data){
 
 	fs.writeFile(`./src/cards/${outFile}.json`, JSON.stringify({ blacks: blacks_out, whites: whites_out }, '	'));
 });
+
+exec('gulp dev');
