@@ -20,7 +20,18 @@ div#JoinGameForm {
 	}
 }
 
-div#CurrentBlackHeading, div#WaitingHeading {
+div#CurrentBlackHeading {
+	font-size: 40px;
+	text-align: center;
+	margin: 10px auto;
+	width: 50%;
+	background: $black;
+	color: $white;
+	padding: 10px;
+	border-radius: 10px;
+}
+
+div#WaitingHeading {
 	font-size: 40px;
 	text-align: center;
 	margin: 10px auto;
