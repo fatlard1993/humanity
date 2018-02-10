@@ -104,7 +104,7 @@ function Load(){
 
 			for(var x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
-				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +' - '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
+				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
 
 				submissionList.appendChild(li);
 			}
@@ -125,7 +125,7 @@ function Load(){
 
 		else if(data.command === 'challenge_accept'){
 			Game.currentBlack = data.black;
-			Game.currentWhites = data.whites;
+			if(data.whites) Game.currentWhites = data.whites;
 
 			Dom.draw('guess', data.black);
 		}
