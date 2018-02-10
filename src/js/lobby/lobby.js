@@ -8,6 +8,7 @@ function Load(){
 
 	var games;
 	var packs;
+	var createdGame = false;
 
 	var views = {
 		main: function(){
@@ -31,7 +32,7 @@ function Load(){
 			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /.{4,}/ });
 			Dom.validate(nameInput);
 
-			var timerInput = Dom.createElem('input', { id: 'NewGameTimer', placeholder: 'Turn Timer (1-10 minutes, def: 2)', validation: /(^([1-9]|10)$)|(^(?![\s\S]))/ });
+			var timerInput = Dom.createElem('input', { id: 'NewGameTimer', placeholder: 'Timer (1-10 min, def: 2)', validation: /(^([1-9]|10)$)|(^(?![\s\S]))/ });
 			Dom.validate(timerInput);
 
 			var packsList = Dom.createElem('ul', { id: 'PacksList' });
@@ -77,13 +78,15 @@ function Load(){
 
 			packs = data.packs;
 
+			if(data.command === 'reload_lobby' && createdGame) return Dom.draw('existing_game', createdGame);
+
 			Dom.draw();
 		}
 	}
 
 	function createNewGame(){
 		if(!document.querySelectorAll('.invalid').length){
-			var newGameRoomName = document.getElementById('NewGameRoomName').value;
+			createdGame = document.getElementById('NewGameRoomName').value;
 			var newGameTimer = document.getElementById('NewGameTimer').value;
 			var newGamePacksList = [];
 
@@ -96,11 +99,9 @@ function Load(){
 				if(packsList.children[x].className.includes('selected')) newGamePacksList.push(packsList.children[x].textContent);
 			}
 
-			Log()(newGameRoomName, newGamePacksList);
+			Log()(createdGame, newGamePacksList);
 
-			Socket.active.send(JSON.stringify({ command: 'new_game', name: newGameRoomName, timer: newGameTimer, packs: newGamePacksList }));
-
-			window.location.reload();
+			Socket.active.send(JSON.stringify({ command: 'new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList }));
 		}
 	}
 
