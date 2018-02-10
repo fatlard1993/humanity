@@ -16,9 +16,16 @@ ul#GamesList {
 		text-align: right;
 
 		span {
+			pointer-events: none;
 			float: left;
 			text-align: left;
+			width: 75%;
+			white-space: pre-wrap;
+			word-wrap: break-word;
 		}
+	}
+	li:after{
+		@extend .clear;
 	}
 	li:hover {
 		background: $grey-darker;
@@ -84,8 +91,9 @@ div.gameTitle {
 	font-size: 40px;
 	text-align: center;
 	margin: 10px auto;
-	width: 50%;
+	width: 80%;
 	border-bottom: 4px solid $black;
+	word-wrap: break-word;
 }
 
 button#PlayButton, button#ViewButton {

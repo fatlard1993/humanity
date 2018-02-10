@@ -68,10 +68,12 @@ ul#SubmissionList {
 		text-align: right;
 
 		span {
+			pointer-events: none;
 			float: left;
 			text-align: left;
 			width: 75%;
 			white-space: pre-wrap;
+			word-wrap: break-word;
 		}
 	}
 	li:after{
@@ -107,6 +109,7 @@ ul#WhitesList {
 		text-align: right;
 
 		span {
+			pointer-events: none;
 			float: left;
 			text-align: left;
 		}
