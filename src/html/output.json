@@ -1,0 +1,10 @@
+{
+	"pages": [
+		"lobby",
+		"player",
+		"viewer"
+	],
+	"page_includes": [
+		"_main.js"
+	]
+}

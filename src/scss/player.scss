@@ -1,0 +1,77 @@
+@import 'boilerplate';
+
+div#JoinGameForm {
+	border: 2px solid $grey;
+	width: 90%;
+	margin: 1% auto 0;
+
+	input {
+		display: block;
+		font-size: 20px;
+		width: 75%;
+		margin: 10px auto 0;
+	}
+
+	button {
+		display: block;
+		font-size: 30px;
+		width: 40%;
+		margin: 10px auto;
+	}
+}
+
+div#CurrentBlackHeading, div#WaitingHeading {
+	font-size: 40px;
+	text-align: center;
+	margin: 10px auto;
+	width: 50%;
+}
+
+input#GameGuess {
+	display: block;
+	font-size: 20px;
+	width: 75%;
+	margin: 10px auto 0;
+}
+
+button#GameGuessDoneButton, button#LobbyButton, button#PlayAgainButton {
+	display: block;
+	font-size: 30px;
+	width: 40%;
+	margin: 10px auto;
+	padding-bottom: 5px;
+}
+
+ul#SubmissionList {
+	border: 2px solid $grey;
+	width: 90%;
+	margin: 1% auto 0;
+
+	li {
+		font-size: 20px;
+		padding: 7px;
+		background: $black;
+		color: $white;
+		margin: 3px;
+		border: 2px solid $grey-light;
+		text-align: right;
+
+		span {
+			float: left;
+			text-align: left;
+		}
+	}
+	li.submission {
+		cursor: pointer;
+		text-align: center;
+	}
+	li.submission:hover {
+		background: $grey-darker;
+		color: $grey-lighter;
+	}
+	li.submission:active {
+		background: $white;
+		color: $black;
+		border-color: $black;
+	}
+}
