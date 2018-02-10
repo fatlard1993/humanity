@@ -81,10 +81,12 @@ body {
 }
 
 input.validated, input.valid {
-	background: $green-dark !important;
+	background: $green-darker !important;
+	color: $white !important;
 }
 input.invalid {
-	background: $red-dark !important;
+	background: $red-darker !important;
+	color: $white !important;
 }
 
 .selectable {
