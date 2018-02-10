@@ -3,7 +3,7 @@
 ul#GamesList {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	li {
 		cursor: pointer;
@@ -37,7 +37,7 @@ ul#GamesList {
 ul#PacksList {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	li {
 		cursor: pointer;
@@ -63,7 +63,7 @@ ul#PacksList {
 div#NewGameForm {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	input {
 		display: block;

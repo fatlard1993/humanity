@@ -3,7 +3,7 @@
 div#JoinGameForm {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	input {
 		display: block;
@@ -24,7 +24,7 @@ div#CurrentBlackHeading {
 	font-size: 40px;
 	text-align: center;
 	margin: 10px auto;
-	width: 50%;
+	width: 90%;
 	background: $black;
 	color: $white;
 	padding: 10px;
@@ -56,7 +56,7 @@ button#GameGuessDoneButton, button#LobbyButton, button#PlayAgainButton {
 ul#SubmissionList {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	li {
 		font-size: 20px;
@@ -95,7 +95,7 @@ ul#SubmissionList {
 ul#WhitesList {
 	border: 2px solid $grey;
 	width: 90%;
-	margin: 1% auto 0;
+	margin: 1% auto;
 
 	li {
 		font-size: 20px;
