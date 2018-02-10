@@ -16,7 +16,36 @@ var Sockets = {
 
 			var validConnection = false;
 
-			var Player = {};
+			var Player = {
+				allWhites: [],
+				currentWhites: [],
+				newWhite: function(){
+					if(Player.currentWhites.length > 7) return;
+
+					var totalWhites = Player.allWhites.length;
+					var randWhite = Cjs.randInt(0, totalWhites + 1);
+					var newWhite = Player.allWhites[randWhite];
+
+					Player.currentWhites.push(newWhite);
+
+					Player.allWhites.splice(randWhite, 1);
+
+					Log()('New white', newWhite);
+
+					socket.send(JSON.stringify({ command: 'new_whites', whites: Player.currentWhites }));
+				},
+				removeWhite: function(text){
+					var newWhitesList = [];
+
+					for(var x = 0; x < Player.currentWhites.length; ++x){
+						if(Player.currentWhites[x] !== text) newWhitesList.push(Player.currentWhites[x]);
+					}
+
+					Player.currentWhites = newWhitesList;
+
+					Player.newWhite();
+				}
+			};
 
 			socket.onmessage = function(message){
 				Log(3)(message);
@@ -39,12 +68,15 @@ var Sockets = {
 
 						Player.name = data.playerName;
 						Player.room = data.game_room;
+						Player.allWhites = Cjs.clone(Sockets.games[Player.room].cards.whites);
 
 						Sockets.games[Player.room].players.push(Player.name);
 
+						for(var x = 0; x < 9; ++x) Player.newWhite();
+
 						Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[data.game_room].currentBlack }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[data.game_room].currentBlack, whites: Player.currentWhites }));
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 					}
@@ -83,7 +115,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'game_guess'){
-					Log()('socket', 'game_guess', data.guess);
+					Log()('socket', 'game_guess', data.guess, Sockets.games[Player.room].players.length - Sockets.games[Player.room].currentGuesses.length +' guesses left');
 
 					Player.currentGuess = data.guess;
 
@@ -148,6 +180,10 @@ var Sockets = {
 					Log()('socket', 'timer ms: ', Sockets.games[Player.room].timer);
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'start_timer' }));
+				}
+
+				else if(data.command === 'remove_white'){
+					Player.removeWhite(data.text);
 				}
 
 				delete data.command;

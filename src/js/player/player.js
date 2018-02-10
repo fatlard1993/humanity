@@ -6,13 +6,16 @@ function Load(){
 	if(Loaded) return;
 	Loaded = true;
 
+	var x;
+
 	var Player = {
 		room: Dom.location.query.get('room')
 	};
 
 	var Game = {
 		currentBlack: '',
-		currentView: ''
+		currentView: '',
+		currentWhites: []
 	};
 
 	var views = {
@@ -43,9 +46,19 @@ function Load(){
 
 			var doneButton = Dom.createElem('button', { id: 'GameGuessDoneButton', textContent: 'Done' });
 
+			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
+			var whiteCount = Game.currentWhites.length;
+
+			for(var x = 0; x < whiteCount; ++x){
+				var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
+
+				whitesList.appendChild(li);
+			}
+
 			joinGameForm.appendChild(currentBlackHeading);
 			joinGameForm.appendChild(guessInput);
 			joinGameForm.appendChild(doneButton);
+			joinGameForm.appendChild(whitesList);
 			Dom.Content.appendChild(joinGameForm);
 
 			guessInput.focus();
@@ -91,7 +104,7 @@ function Load(){
 
 			for(var x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
-				li.appendChild(Dom.createElem('span', { textContent: submissionNames[x] +' - '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
+				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +' - '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
 
 				submissionList.appendChild(li);
 			}
@@ -112,6 +125,7 @@ function Load(){
 
 		else if(data.command === 'challenge_accept'){
 			Game.currentBlack = data.black;
+			Game.currentWhites = data.whites;
 
 			Dom.draw('guess', data.black);
 		}
@@ -132,6 +146,23 @@ function Load(){
 
 		else if(data.command === 'start_timer'){
 			Game.started = true;
+		}
+
+		else if(data.command === 'new_whites'){
+			Game.currentWhites = data.whites;
+
+			var whitesList = document.getElementById('WhitesList');
+			var whiteCount = Game.currentWhites.length;
+
+			if(!whitesList) return;
+
+			Dom.empty(whitesList);
+
+			for(x = 0; x < whiteCount; ++x){
+				var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
+
+				whitesList.appendChild(li);
+			}
 		}
 	}
 
@@ -196,6 +227,17 @@ function Load(){
 			evt.preventDefault();
 
 			makeGuess();
+		}
+
+		else if(evt.target.className === 'white'){
+			evt.preventDefault();
+
+			var guessInput = document.getElementById('GameGuess');
+
+			guessInput.value = evt.target.textContent;
+			Dom.validate(guessInput);
+
+			Socket.active.send('{ "command": "remove_white", "text": "'+ evt.target.textContent +'" }');
 		}
 
 		else if(evt.target.className === 'submission'){
