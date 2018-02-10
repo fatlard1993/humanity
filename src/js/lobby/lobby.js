@@ -7,6 +7,7 @@ function Load(){
 	Loaded = true;
 
 	var games;
+	var packs;
 
 	var views = {
 		main: function(){
@@ -30,9 +31,19 @@ function Load(){
 			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /.{4,}/ });
 			Dom.validate(nameInput);
 
+			var packsList = Dom.createElem('ul', { id: 'PacksList' });
+			var packCount = packs.length;
+
+			for(var x = 0; x < packCount; ++x){
+				var li = Dom.createElem('li', { className: 'pack', textContent: packs[x] });
+
+				packsList.appendChild(li);
+			}
+
 			var createButton = Dom.createElem('button', { id: 'NewGameCreateButton', textContent: 'Create' });
 
 			newGameForm.appendChild(nameInput);
+			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			Dom.Content.appendChild(newGameForm);
 
@@ -60,6 +71,8 @@ function Load(){
 		else if(data.command === 'challenge_accept' || data.command === 'reload_lobby'){
 			games = data.games;
 
+			packs = data.packs;
+
 			Dom.draw();
 		}
 	}
@@ -67,10 +80,18 @@ function Load(){
 	function createNewGame(){
 		if(!document.querySelectorAll('.invalid').length){
 			var newGameRoomName = document.getElementById('NewGameRoomName').value;
+			var newGamePacksList = [];
 
-			Log()(newGameRoomName);
+			var packsList = document.getElementById('PacksList');
+			var packNames = Object.keys(packsList.children), packCount = packNames.length;
 
-			Socket.active.send('{ "command": "new_game", "name": "'+ newGameRoomName +'" }');
+			for(var x = 0; x < packCount; ++x){
+				if(packsList.children[x].className.includes('selected')) newGamePacksList.push(packsList.children[x].textContent);
+			}
+
+			Log()(newGameRoomName, newGamePacksList);
+
+			Socket.active.send(JSON.stringify({ command: 'new_game', name: newGameRoomName, packs: newGamePacksList }));
 
 			window.location.reload();
 		}
@@ -103,6 +124,14 @@ function Load(){
 			Log()(evt.target.textContent);
 
 			Dom.draw('existing_game', evt.target.children[0].textContent);
+		}
+
+		else if(evt.target.className === 'pack'){
+			evt.preventDefault();
+
+			Log()(evt.target.textContent);
+
+			evt.target.className = evt.target.className.includes('selected') ? 'pack' : 'pack selected';
 		}
 
 		else if(evt.target.id === 'NewGameCreateButton'){

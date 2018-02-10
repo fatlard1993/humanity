@@ -36,7 +36,7 @@ var Sockets = {
 					Log()(data);
 
 					if(data.room === 'lobby'){
-						socket.send(JSON.stringify({ command: 'challenge_accept', games: Sockets.games }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 					}
 
 					else if(data.room === 'player'){
@@ -51,14 +51,14 @@ var Sockets = {
 
 						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[data.game_room].currentBlack }));
 
-						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games }));
+						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 					}
 				}
 
 				if(!validConnection) return;
 
 				if(data.command === 'new_game'){
-					Log()('socket', 'new_game', data.name);
+					Log()('socket', 'new_game', data.name, data.packs);
 
 					Sockets.games[data.name] = {
 						name: data.name,
@@ -66,7 +66,7 @@ var Sockets = {
 						currentGuesses: [],
 						currentVotes: {},
 						voteCount: 0,
-						cards: Cards.get(['base']),
+						cards: Cards.get(data.packs.length ? data.packs : ['base']),
 						newBlack: function(){
 							var totalBlacks = Sockets.games[this.name].cards.blacks.length;
 							var randBlack = Cjs.randInt(0, totalBlacks + 1);
@@ -79,7 +79,9 @@ var Sockets = {
 
 					Sockets.games[data.name].newBlack();
 
-					Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games }));
+					Log(2)('socket', 'Created New Game: ', Sockets.games[data.name]);
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 				}
 
 				else if(data.command === 'game_guess'){
