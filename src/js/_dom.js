@@ -24,6 +24,8 @@ var Dom = {
 		return el;
 	},
 	empty: function emptyElem(elem){
+		if(!elem || !elem.lastChild) return;
+
 		while(elem.lastChild) elem.removeChild(elem.lastChild);
 
 		return elem;
