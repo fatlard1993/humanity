@@ -78,11 +78,13 @@ function createHTML(name, includes){
 	});
 }
 
-gulp.task('compile', ['generate-html', 'uglify-js', 'uglify-css', 'update-server-files', 'notify-done']);
+gulp.task('compile', ['generate-html', 'uglify-js', 'uglify-css', 'update-server-files']);
 
-gulp.task('compile-dev', ['generate-html', 'compile-js', 'compile-css', 'update-server-files', 'notify-done']);
+gulp.task('compile-dev', ['generate-html', 'compile-js', 'compile-css', 'update-server-files']);
 
-gulp.task('setup', ['generate-html', 'compile-js', 'compile-css', 'update-server-files', 'npm-install', 'notify-done']);
+gulp.task('dev', ['compile-dev', 'notify-done']);
+
+gulp.task('setup', ['compile-dev', 'npm-install', 'notify-done']);
 
 gulp.task('notify-done', function(){
 	exec('notify-send done!');
@@ -91,7 +93,7 @@ gulp.task('notify-done', function(){
 });
 
 gulp.task('npm-install', function(){
-	exec('cd ./out && npm i', function(err){
+	exec('sleep 2s && cd ./out && npm i', function(err){
 		if(err) return console.error(err);
 
 		console.log('Installed npm packages!');
@@ -100,6 +102,8 @@ gulp.task('npm-install', function(){
 
 gulp.task('update-server-files', function(){
 	gulp.src('src/app.js').pipe(gulp.dest('out'));
+
+	gulp.src('src/scripts/start').pipe(gulp.dest('out'));
 
 	gulp.src('src/middleware/*').pipe(gulp.dest('out/middleware'));
 

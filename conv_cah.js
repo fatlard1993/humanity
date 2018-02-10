@@ -1,6 +1,11 @@
 const fs = require('fs');
 
-fs.readFile(process.env.IF, function(err, data){
+const inFile = process.argv[2];
+const outFile = process.argv[3];
+
+console.log(`Reading: ./${inFile}.json | Writing: ./src/cards/${outFile}.json`);
+
+fs.readFile(`./${inFile}.json`, function(err, data){
 	var inJSON = JSON.parse(data), x, blackText;
 	var blacks = inJSON.blackCards, blacksInCount = blacks.length, blacks_out = [];
 	var whites = inJSON.whiteCards, whitesInCount = whites.length, whites_out = [];
@@ -20,5 +25,5 @@ fs.readFile(process.env.IF, function(err, data){
 
 	console.log(`read ${blacksInCount} blacks & ${whitesInCount} whites : wrote ${blacks_out.length} blacks & ${whites_out.length} whites`);
 
-	fs.writeFile('./src/cards/'+ (process.env.O || 'out') +'.json', JSON.stringify({ blacks: blacks_out, whites: whites_out }, '	'));
+	fs.writeFile(`./src/cards/${outFile}.json`, JSON.stringify({ blacks: blacks_out, whites: whites_out }, '	'));
 });
