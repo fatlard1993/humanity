@@ -148,6 +148,8 @@ var Sockets = {
 				Sockets.games[Player.room].players.splice(playerNameIndex, 1);
 
 				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
+
+				Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 			};
 		});
 
