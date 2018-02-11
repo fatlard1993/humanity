@@ -106,32 +106,26 @@ ul#WhitesList {
 	margin: 1% auto;
 
 	li {
-		font-size: 20px;
-		padding: 7px;
-		background: $black;
-		color: $white;
-		margin: 3px;
-		border: 2px solid $grey-light;
-		text-align: right;
-
-		span {
-			pointer-events: none;
-			float: left;
-			text-align: left;
-		}
-	}
-	li.white {
 		cursor: pointer;
 		text-align: center;
-	}
-	li.white:hover {
-		background: $grey-darker;
-		color: $grey-lighter;
-	}
-	li.white:active {
+		font-size: 20px;
+		padding: 7px;
 		background: $white;
 		color: $black;
-		border-color: $black;
+		margin-bottom: -4px;
+		padding-bottom: 14px;
+		border-radius: 8px;
+		box-shadow: 1px -1px 4px $black;
+	}
+	li.white:hover {
+		background: $grey-lighter;
+		color: $grey-darker;
+		padding-bottom: 25px;
+		margin-top: -10px;
+	}
+	li.white:active {
+		background: $black;
+		color: $white;
 	}
 }
 
