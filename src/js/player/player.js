@@ -49,7 +49,7 @@ function Load(){
 			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
 			var whiteCount = Game.currentWhites.length;
 
-			for(var x = 0; x < whiteCount; ++x){
+			for(x = 0; x < whiteCount; ++x){
 				var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
 
 				whitesList.appendChild(li);
@@ -85,7 +85,7 @@ function Load(){
 				return;
 			}
 
-			for(var x = 0; x < submissionCount; ++x){
+			for(x = 0; x < submissionCount; ++x){
 				submissionList.appendChild(Dom.createElem('li', { className: 'submission', textContent: submissions[x].guess }));
 			}
 
@@ -102,7 +102,7 @@ function Load(){
 
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Lobby' });
 
-			for(var x = 0; x < submissionCount; ++x){
+			for(x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
 				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
 
@@ -117,7 +117,7 @@ function Load(){
 	};
 
 	function onSocketMessage(data){
-		console.log(data);
+		Log()(data);
 
 		if(data.command === 'challenge'){
 			Dom.draw();
@@ -152,7 +152,7 @@ function Load(){
 		if(data.command === 'vote'){
 			var submissions = Cjs.clone(data.submissions), submissionCount = data.submissions.length;
 
-			for(var x = 0; x < submissionCount; ++x){
+			for(x = 0; x < submissionCount; ++x){
 				if(data.submissions[x].guess === Player.currentGuess) submissions.splice(x, 1);
 			}
 
@@ -205,7 +205,7 @@ function Load(){
 	};
 
 	Interact.onPointerUp = function(evt){
-		console.log(evt);
+		Log()(evt);
 
 		if(evt.target.id === 'JoinGameButton'){
 			evt.preventDefault();
