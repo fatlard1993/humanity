@@ -16,6 +16,7 @@ function Load(){
 		currentBlack: '',
 		currentView: '',
 		currentWhites: [],
+		players: [],
 		playersReady: []
 	};
 
@@ -143,10 +144,16 @@ function Load(){
 		Log()(data);
 
 		if(data.command === 'challenge'){
-			Dom.draw();
+			Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'" }');
 		}
 
 		else if(data.command === 'challenge_accept'){
+			Game.players = data.players;
+
+			Dom.draw();
+		}
+
+		else if(data.command === 'accept_join'){
 			Game.currentBlack = data.black;
 			Game.players = data.players;
 			if(data.whites) Game.currentWhites = data.whites;
@@ -154,8 +161,37 @@ function Load(){
 			if(data.votingStarted) return Dom.draw('vote', data.submissions);
 			else if(data.guessingStarted) return Dom.draw('guess');
 
-			// Dom.draw('guess');
 			Dom.draw('start_screen');
+		}
+
+		else if(data.command === 'player_join'){
+			if(data.name === Player.name) return;
+
+			Game.players.push(data.name);
+
+			drawPlayersList();
+		}
+
+		else if(data.command === 'player_leave'){
+			Game.players.splice(Game.players.indexOf(data.name), 1);
+
+			if(Game.playersReady.includes(data.name)) Game.playersReady.splice(Game.playersReady.indexOf(data.name), 1);
+
+			drawPlayersList();
+		}
+
+		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
+
+		if(data.command === 'vote'){
+			Dom.draw('vote', data.submissions);
+		}
+
+		else if(data.command === 'vote_results'){
+			Dom.draw('vote_results', data.votes);
+		}
+
+		else if(data.command === 'start_timer'){
+			Game.started = true;
 		}
 
 		else if(data.command === 'new_whites'){
@@ -173,36 +209,6 @@ function Load(){
 
 				whitesList.appendChild(li);
 			}
-		}
-
-		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
-
-		if(data.command === 'vote'){
-			Dom.draw('vote', data.submissions);
-		}
-
-		else if(data.command === 'vote_results'){
-			Dom.draw('vote_results', data.votes);
-		}
-
-		else if(data.command === 'start_timer'){
-			Game.started = true;
-		}
-
-		else if(data.command === 'player_join'){
-			if(data.name === Player.name) return;
-
-			Game.players.push(data.name);
-
-			drawPlayersList();
-		}
-
-		else if(data.command === 'player_leave'){
-			Game.players.splice(Game.players.indexOf(data.name), 1);
-
-			if(Game.playersReady.includes(data.name)) Game.playersReady.splice(Game.playersReady.indexOf(data.name), 1);
-
-			drawPlayersList();
 		}
 
 		else if(data.command === 'player_ready'){
@@ -242,13 +248,19 @@ function Load(){
 
 	function joinGame(){
 		if(!document.querySelectorAll('.invalid').length){
-			var name = document.getElementById('JoinGameName').value;
+			var nameInput = document.getElementById('JoinGameName');
 
-			Player.name = name;
+			if(Game.players.includes(nameInput.value)){
+				nameInput.className = nameInput.className.replace(/\svalidated|\sinvalid/g, '') + ' invalid';
+
+				return;
+			}
+
+			Player.name = nameInput.value;
 
 			Dom.cookie.set('player_name', Player.name);
 
-			Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'", "playerName": "'+ name +'" }');
+			Socket.active.send('{ "command": "player_join", "game_room": "'+ Player.room +'", "playerName": "'+ Player.name +'" }');
 
 			Dom.draw('waiting_room');
 		}

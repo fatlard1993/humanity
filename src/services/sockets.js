@@ -71,21 +71,7 @@ var Sockets = {
 					else if(data.room === 'player'){
 						if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
 
-						Player.name = data.playerName;
-						Player.room = data.game_room;
-						Player.allWhites = Cjs.clone(Sockets.games[Player.room].cards.whites);
-
-						Sockets.games[Player.room].players.push(Player.name);
-
-						for(var x = 0; x < 9; ++x) Player.newWhite();
-
-						Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
-
-						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players, guessingStarted: Sockets.games[Player.room].guessingStarted, votingStarted: Sockets.games[Player.room].votingStarted, submissions: Sockets.games[Player.room].currentGuesses }));
-
-						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
-
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[data.game_room].players, gameState: Sockets.games[data.game_room].state }));
 					}
 				}
 
@@ -98,6 +84,7 @@ var Sockets = {
 						name: data.name,
 						timer: data.timer * (1000 * 60),
 						packs: data.packs,
+						state: 'new',
 						players: [],
 						playersReady: 0,
 						currentGuesses: [],
@@ -134,6 +121,26 @@ var Sockets = {
 					Log(2)('socket', 'Created New Game: ', Sockets.games[data.name]);
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+				}
+
+				else if(data.command === 'player_join'){
+					if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
+
+					Player.name = data.playerName;
+					Player.room = data.game_room;
+					Player.allWhites = Cjs.clone(Sockets.games[Player.room].cards.whites);
+
+					Sockets.games[Player.room].players.push(Player.name);
+
+					for(var x = 0; x < 9; ++x) Player.newWhite();
+
+					Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
+
+					socket.send(JSON.stringify({ command: 'accept_join', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players, guessingStarted: Sockets.games[Player.room].guessingStarted, votingStarted: Sockets.games[Player.room].votingStarted, submissions: Sockets.games[Player.room].currentGuesses }));
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
 				}
 
 				else if(data.command === 'game_guess'){
