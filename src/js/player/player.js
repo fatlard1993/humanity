@@ -151,6 +151,8 @@ function Load(){
 			Game.players = data.players;
 			if(data.whites) Game.currentWhites = data.whites;
 
+			if(data.votingStarted) return Dom.draw('vote', data.submissions);
+
 			// Dom.draw('guess');
 			Dom.draw('start_screen');
 		}

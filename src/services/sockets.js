@@ -81,7 +81,7 @@ var Sockets = {
 
 						Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players, votingStarted: Sockets.games[Player.room].votingStarted, submissions: Sockets.games[Player.room].currentGuesses }));
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 
@@ -119,6 +119,7 @@ var Sockets = {
 							}
 
 							Sockets.games[this.name].started = false;
+							Sockets.games[this.name].votingStarted = false;
 							Sockets.games[this.name].votesIn = false;
 							Sockets.games[this.name].currentGuesses = [];
 							Sockets.games[this.name].currentVotes = {};
@@ -142,6 +143,7 @@ var Sockets = {
 					Sockets.games[Player.room].currentGuesses.push({ player: Player.name, guess: data.guess });
 
 					if(Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
+						Sockets.games[Player.room].votingStarted = true;
 						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
 
 						// setTimeout(function(){
