@@ -45,11 +45,13 @@ function Load(){
 			}
 
 			var createButton = Dom.createElem('button', { id: 'NewGameCreateButton', textContent: 'Create' });
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			newGameForm.appendChild(nameInput);
 			// newGameForm.appendChild(timerInput);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
+			newGameForm.appendChild(lobbyButton);
 			Dom.Content.appendChild(newGameForm);
 
 			nameInput.focus();
@@ -59,10 +61,12 @@ function Load(){
 
 			var viewButton = Dom.createElem('button', { id: 'ViewButton', textContent: 'View' });
 			var playButton = Dom.createElem('button', { id: 'PlayButton', textContent: 'Play' });
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			Dom.Content.appendChild(title);
 			Dom.Content.appendChild(viewButton);
 			Dom.Content.appendChild(playButton);
+			Dom.Content.appendChild(lobbyButton);
 		}
 	};
 
@@ -170,6 +174,16 @@ function Load(){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			Dom.empty(Dom.Content);
+		}
+
+		else if(evt.target.id === 'LobbyButton'){
+			evt.preventDefault();
+
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
+			Dom.empty(Dom.Content);
+
+			window.location.reload();
 		}
 	};
 
