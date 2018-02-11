@@ -218,11 +218,19 @@ function Load(){
 		else if(evt.target.id === 'PlayAgainButton'){
 			evt.preventDefault();
 
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
+			Dom.empty(Dom.Content);
+
 			Socket.active.send('{ "command": "play_again" }');
 		}
 
 		else if(evt.target.id === 'LobbyButton'){
 			evt.preventDefault();
+
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
+			Dom.empty(Dom.Content);
 
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/lobby';
 		}

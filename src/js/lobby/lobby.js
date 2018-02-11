@@ -155,7 +155,9 @@ function Load(){
 		else if(evt.target.id === 'ViewButton'){
 			evt.preventDefault();
 
-			Log()(evt.target.textContent);
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
+			Dom.empty(Dom.Content);
 
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/viewer';
 		}
@@ -163,9 +165,11 @@ function Load(){
 		else if(evt.target.id === 'PlayButton'){
 			evt.preventDefault();
 
-			Log()(evt.target.textContent);
-
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/player?room='+ document.getElementsByClassName('gameTitle')[0].textContent;
+
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
+			Dom.empty(Dom.Content);
 		}
 	};
 
