@@ -88,7 +88,10 @@ function Load(){
 		waiting_room: function(){
 			var waitingHeading = Dom.createElem('div', { id: 'WaitingHeading', textContent: 'Waiting...' });
 
+			var playersList = Dom.createElem('ul', { id: 'WaitingOnPlayersList' });
+
 			Dom.Content.appendChild(waitingHeading);
+			Dom.Content.appendChild(playersList);
 		},
 		vote: function(submissions){
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack +'<br><br>Vote for your favorite!' });
@@ -153,7 +156,7 @@ function Load(){
 			Dom.draw();
 		}
 
-		else if(data.command === 'accept_join'){
+		else if(data.command === 'player_join_accept'){
 			Game.currentBlack = data.black;
 			Game.players = data.players;
 			if(data.whites) Game.currentWhites = data.whites;
@@ -182,19 +185,15 @@ function Load(){
 
 		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
 
-		if(data.command === 'vote'){
+		if(data.command === 'player_start_voting'){
 			Dom.draw('vote', data.submissions);
 		}
 
-		else if(data.command === 'vote_results'){
+		else if(data.command === 'player_vote_results'){
 			Dom.draw('vote_results', data.votes);
 		}
 
-		else if(data.command === 'start_timer'){
-			Game.started = true;
-		}
-
-		else if(data.command === 'new_whites'){
+		else if(data.command === 'player_new_whites'){
 			Game.currentWhites = data.whites;
 
 			var whitesList = document.getElementById('WhitesList');
@@ -224,7 +223,7 @@ function Load(){
 			}
 		}
 
-		else if(data.command === 'game_begin'){
+		else if(data.command === 'player_start_guessing'){
 			Dom.draw('guess');
 		}
 	}
@@ -272,14 +271,14 @@ function Load(){
 
 			Player.currentGuess = guess;
 
-			Socket.active.send('{ "command": "game_guess", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
+			Socket.active.send('{ "command": "player_enter_submission", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
 
 			Dom.draw('waiting_room');
 		}
 	}
 
 	function voteOnSubmission(submission){
-		Socket.active.send('{ "command": "game_vote", "vote": "'+ submission.replace(/"/gm, '\\"') +'" }');
+		Socket.active.send('{ "command": "player_place_vote", "vote": "'+ submission.replace(/"/gm, '\\"') +'" }');
 
 		Dom.draw('waiting_room');
 	}
@@ -310,7 +309,7 @@ function Load(){
 
 			Dom.remove(evt.target);
 
-			Socket.active.send('{ "command": "ready_to_play" }');
+			Socket.active.send('{ "command": "player_ready_to_play" }');
 		}
 
 		else if(evt.target.id === 'PlayAgainButton'){
@@ -322,7 +321,7 @@ function Load(){
 
 			window.location.reload();
 
-			// Socket.active.send('{ "command": "play_again" }');
+			// Socket.active.send('{ "command": "player_play_again" }');
 		}
 
 		else if(evt.target.id === 'LobbyButton'){
@@ -349,13 +348,7 @@ function Load(){
 			guessInput.value = evt.target.textContent;
 			Dom.validate(guessInput);
 
-			if(!Game.started){
-				Game.started = true;
-
-				Socket.active.send('{ "command": "game_start" }');
-			}
-
-			Socket.active.send('{ "command": "remove_white", "text": "'+ evt.target.textContent.replace(/"/gm, '\\"') +'" }');
+			Socket.active.send('{ "command": "player_remove_white", "text": "'+ evt.target.textContent.replace(/"/gm, '\\"') +'" }');
 		}
 
 		else if(evt.target.className === 'submission'){
@@ -385,12 +378,6 @@ function Load(){
 
 				makeGuess();
 			}
-		}
-
-		else if(!Game.started && evt.target.id === 'GameGuess' && evt.target.value.length){
-			Game.started = true;
-
-			Socket.active.send('{ "command": "game_start" }');
 		}
 	};
 

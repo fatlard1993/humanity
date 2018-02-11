@@ -77,12 +77,12 @@ function Load(){
 			Socket.active.send('{ "command": "challenge_response", "room": "lobby" }');
 		}
 
-		else if(data.command === 'challenge_accept' || data.command === 'reload_lobby'){
+		else if(data.command === 'challenge_accept' || data.command === 'lobby_reload'){
 			games = data.games;
 
 			packs = data.packs;
 
-			if(data.command === 'reload_lobby' && createdGame) return Dom.draw('existing_game', createdGame);
+			if(data.command === 'lobby_reload' && createdGame) return Dom.draw('existing_game', createdGame);
 
 			Dom.draw();
 		}
@@ -107,7 +107,7 @@ function Load(){
 
 			Log()(createdGame, newGamePacksList);
 
-			Socket.active.send(JSON.stringify({ command: 'new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList }));
+			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList }));
 
 			Dom.empty(Dom.Content);
 		}
