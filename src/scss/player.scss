@@ -92,6 +92,12 @@ ul#SubmissionList {
 		color: $black;
 		border-color: $black;
 	}
+	li.submission.disabled {
+		cursor: not-allowed;
+		background: $grey-dark !important;
+		color: $grey-light !important;
+		border-color: $white !important;
+	}
 }
 
 ul#WhitesList {

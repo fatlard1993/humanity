@@ -107,7 +107,7 @@ function Load(){
 			}
 
 			for(x = 0; x < submissionCount; ++x){
-				submissionList.appendChild(Dom.createElem('li', { className: 'submission', textContent: submissions[x].guess }));
+				submissionList.appendChild(Dom.createElem('li', { className: 'submission' + (submissions[x].guess === Player.currentGuess ? ' disabled' : ''), textContent: submissions[x].guess }));
 			}
 
 			Dom.Content.appendChild(currentBlackHeading);
@@ -178,13 +178,7 @@ function Load(){
 		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
 
 		if(data.command === 'vote'){
-			var submissions = Cjs.clone(data.submissions), submissionCount = data.submissions.length;
-
-			for(x = 0; x < submissionCount; ++x){
-				if(data.submissions[x].guess === Player.currentGuess) submissions.splice(x, 1);
-			}
-
-			Dom.draw('vote', submissions);
+			Dom.draw('vote', data.submissions);
 		}
 
 		else if(data.command === 'vote_results'){
