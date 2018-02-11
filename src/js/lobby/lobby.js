@@ -29,7 +29,7 @@ function Load(){
 		new_game: function(){
 			var newGameForm = Dom.createElem('div', { id: 'NewGameForm' });
 
-			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /.{4,}/ });
+			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /^.{4,32}$/ });
 			Dom.validate(nameInput);
 
 			var timerInput = Dom.createElem('input', { id: 'NewGameTimer', placeholder: 'Timer (1-10 min, def: 2)', validation: /(^([1-9]|10)$)|(^(?![\s\S]))/ });

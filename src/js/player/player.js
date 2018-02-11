@@ -24,7 +24,7 @@ function Load(){
 
 			var cachedName = Dom.cookie.get('player_name');
 
-			var nameInput = Dom.createElem('input', { id: 'JoinGameName', placeholder: 'Your Name', validation: /.{4,}/, value: cachedName ? cachedName : '' });
+			var nameInput = Dom.createElem('input', { id: 'JoinGameName', placeholder: 'Your Name', validation: /^.{4,32}$/, value: cachedName ? cachedName : '' });
 			Dom.validate(nameInput);
 
 			var joinButton = Dom.createElem('button', { id: 'JoinGameButton', textContent: 'Join' });
@@ -45,7 +45,7 @@ function Load(){
 
 			var guessWrapper = Dom.createElem('div', { id: 'GameGuessWrapper' });
 
-			var guessInput = Dom.createElem('input', { id: 'GameGuess', validation: /.{1,}/ });
+			var guessInput = Dom.createElem('input', { id: 'GameGuess', validation: /^.{1,256}$/ });
 			Dom.validate(guessInput);
 
 			var emptyGuessButton = Dom.createElem('button', { id: 'EmptyGameGuessButton', textContent: 'Clear' });
@@ -179,25 +179,29 @@ function Load(){
 	}
 
 	function joinGame(){
-		var name = document.getElementById('JoinGameName').value;
+		if(!document.querySelectorAll('.invalid').length){
+			var name = document.getElementById('JoinGameName').value;
 
-		Player.name = name;
+			Player.name = name;
 
-		Dom.cookie.set('player_name', Player.name);
+			Dom.cookie.set('player_name', Player.name);
 
-		Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'", "playerName": "'+ name +'" }');
+			Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'", "playerName": "'+ name +'" }');
 
-		Dom.draw('waiting_room');
+			Dom.draw('waiting_room');
+		}
 	}
 
 	function makeGuess(){
-		var guess = document.getElementById('GameGuess').value;
+		if(!document.querySelectorAll('.invalid').length){
+			var guess = document.getElementById('GameGuess').value;
 
-		Player.currentGuess = guess;
+			Player.currentGuess = guess;
 
-		Socket.active.send('{ "command": "game_guess", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
+			Socket.active.send('{ "command": "game_guess", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
 
-		Dom.draw('waiting_room');
+			Dom.draw('waiting_room');
+		}
 	}
 
 	function voteOnSubmission(submission){
