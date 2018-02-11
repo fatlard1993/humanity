@@ -47,7 +47,7 @@ function Load(){
 			var createButton = Dom.createElem('button', { id: 'NewGameCreateButton', textContent: 'Create' });
 
 			newGameForm.appendChild(nameInput);
-			newGameForm.appendChild(timerInput);
+			// newGameForm.appendChild(timerInput);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			Dom.Content.appendChild(newGameForm);
@@ -89,13 +89,13 @@ function Load(){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			createdGame = document.getElementById('NewGameRoomName').value;
-			var newGameTimer = document.getElementById('NewGameTimer').value;
+			// var newGameTimer = document.getElementById('NewGameTimer').value;
 			var newGamePacksList = [];
 
 			var packsList = document.getElementById('PacksList');
 			var packNames = Object.keys(packsList.children), packCount = packNames.length;
 
-			newGameTimer = typeof newGameTimer === 'number' ? newGameTimer : 2;
+			var newGameTimer = typeof newGameTimer === 'number' ? newGameTimer : 2;
 
 			for(var x = 0; x < packCount; ++x){
 				if(packsList.children[x].className.includes('selected')) newGamePacksList.push(packsList.children[x].textContent);

@@ -103,6 +103,8 @@ var Sockets = {
 
 							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
 
+							if(Sockets.games[this.name].currentBlack === 'undefined' || Sockets.games[this.name].currentBlack === undefined) return Sockets.games[this.name].newBlack();
+
 							Sockets.games[this.name].started = false;
 							Sockets.games[this.name].votesIn = false;
 							Sockets.games[this.name].currentGuesses = [];
@@ -128,28 +130,28 @@ var Sockets = {
 					if(Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
 						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
 
-						setTimeout(function(){
-							if(Sockets.games[Player.room].votesIn) return;
+						// setTimeout(function(){
+						// 	if(Sockets.games[Player.room].votesIn) return;
 
-							Log()('socket', 'VOTETIMER');
-							Sockets.games[Player.room].votesIn = true;
+						// 	Log()('socket', 'VOTETIMER');
+						// 	Sockets.games[Player.room].votesIn = true;
 
-							var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
+						// 	var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
 
-							for(x = 0; x < votedEntryCount; ++x){
-								if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count > highestScore) highestScore = Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count;
-							}
+						// 	for(x = 0; x < votedEntryCount; ++x){
+						// 		if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count > highestScore) highestScore = Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count;
+						// 	}
 
-							for(x = 0; x < votedEntryCount; ++x){
-								if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count === highestScore) Sockets.games[Player.room].currentVotes[votedEntryNames[x]].winner = true;
-							}
+						// 	for(x = 0; x < votedEntryCount; ++x){
+						// 		if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count === highestScore) Sockets.games[Player.room].currentVotes[votedEntryNames[x]].winner = true;
+						// 	}
 
-							Log()('socket', 'vote_results', Sockets.games[Player.room].currentVotes);
+						// 	Log()('socket', 'vote_results', Sockets.games[Player.room].currentVotes);
 
-							Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
+						// 	Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
 
-							Sockets.games[Player.room].newBlack();
-						}, Sockets.games[Player.room].timer / 2);
+						// 	Sockets.games[Player.room].newBlack();
+						// }, Sockets.games[Player.room].timer / 2);
 					}
 				}
 
@@ -199,12 +201,12 @@ var Sockets = {
 
 					Sockets.games[Player.room].started = true;
 
-					setTimeout(function(){
-						Log()('socket', 'GAMETIMER');
-						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
-					}, Sockets.games[Player.room].timer);
+					// setTimeout(function(){
+					// 	Log()('socket', 'GAMETIMER');
+					// 	Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
+					// }, Sockets.games[Player.room].timer);
 
-					Log()('socket', 'timer ms: ', Sockets.games[Player.room].timer);
+					// Log()('socket', 'timer ms: ', Sockets.games[Player.room].timer);
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'start_timer', room: Player.room }));
 				}
@@ -227,6 +229,8 @@ var Sockets = {
 				Sockets.games[Player.room].players.splice(playerNameIndex, 1);
 
 				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
+
+				Sockets.games[Player.room].newBlack();
 
 				Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 			};
