@@ -104,6 +104,7 @@ var Sockets = {
 							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
 
 							Sockets.games[this.name].started = false;
+							Sockets.games[this.name].votesIn = false;
 							Sockets.games[this.name].currentGuesses = [];
 							Sockets.games[this.name].currentVotes = {};
 							Sockets.games[this.name].voteCount = 0;
@@ -126,11 +127,34 @@ var Sockets = {
 
 					if(Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
 						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
+
+						setTimeout(function(){
+							if(Sockets.games[Player.room].votesIn) return;
+							
+							Log()('socket', 'VOTETIMER');
+							Sockets.games[Player.room].votesIn = true;
+
+							var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
+
+							for(x = 0; x < votedEntryCount; ++x){
+								if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count > highestScore) highestScore = Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count;
+							}
+
+							for(x = 0; x < votedEntryCount; ++x){
+								if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count === highestScore) Sockets.games[Player.room].currentVotes[votedEntryNames[x]].winner = true;
+							}
+
+							Log()('socket', 'vote_results', Sockets.games[Player.room].currentVotes);
+
+							Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', votes: Sockets.games[Player.room].currentVotes }));
+
+							Sockets.games[Player.room].newBlack();
+						}, Sockets.games[Player.room].timer / 2);
 					}
 				}
 
 				else if(data.command === 'game_vote'){
-					Log()('socket', 'game_vote', data.vote);
+					Log()('socket', 'game_vote', data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left', Sockets.games[Player.room].votesIn ? 'All votes are IN' : 'All votes are NOT IN');
 
 					if(!Sockets.games[Player.room].currentVotes[data.vote]){
 						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
@@ -143,7 +167,9 @@ var Sockets = {
 					++Sockets.games[Player.room].currentVotes[data.vote].count;
 					++Sockets.games[Player.room].voteCount;
 
-					if(Sockets.games[Player.room].voteCount === Sockets.games[Player.room].players.length){
+					if(!Sockets.games[Player.room].votesIn && Sockets.games[Player.room].voteCount === Sockets.games[Player.room].players.length){
+						Sockets.games[Player.room].votesIn = true;
+
 						var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
 
 						for(x = 0; x < votedEntryCount; ++x){
