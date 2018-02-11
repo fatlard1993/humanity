@@ -100,7 +100,7 @@ function Load(){
 
 			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: 'Play Again' });
 
-			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Lobby' });
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			for(x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
