@@ -23,7 +23,7 @@ var Sockets = {
 					if(Player.currentWhites.length > 7) return;
 
 					var totalWhites = Player.allWhites.length;
-					var randWhite = Cjs.randInt(0, totalWhites + 1);
+					var randWhite = Cjs.randInt(0, totalWhites);
 					var newWhite = Player.allWhites[randWhite];
 
 					Player.currentWhites.push(newWhite);
@@ -97,7 +97,7 @@ var Sockets = {
 						cards: Cards.get(data.packs.length ? data.packs : ['base']),
 						newBlack: function(){
 							var totalBlacks = Sockets.games[this.name].cards.blacks.length;
-							var randBlack = Cjs.randInt(0, totalBlacks + 1);
+							var randBlack = Cjs.randInt(0, totalBlacks);
 
 							Sockets.games[this.name].currentBlack = Sockets.games[this.name].cards.blacks[randBlack];
 
