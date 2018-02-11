@@ -15,7 +15,8 @@ function Load(){
 	var Game = {
 		currentBlack: '',
 		currentView: '',
-		currentWhites: []
+		currentWhites: [],
+		playersReady: []
 	};
 
 	var views = {
@@ -37,6 +38,18 @@ function Load(){
 			Dom.Content.appendChild(joinGameForm);
 
 			nameInput.focus();
+		},
+		start_screen: function(){
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
+			var startButton = Dom.createElem('button', { id: 'GameStartButton', textContent: 'Start' });
+
+			var playersList = Dom.createElem('ul', { id: 'PlayersList' });
+
+			Dom.Content.appendChild(lobbyButton);
+			Dom.Content.appendChild(startButton);
+			Dom.Content.appendChild(playersList);
+
+			drawPlayersList();
 		},
 		guess: function(){
 			var joinGameForm = Dom.createElem('div', { id: 'GameGuessForm' });
@@ -135,9 +148,11 @@ function Load(){
 
 		else if(data.command === 'challenge_accept'){
 			Game.currentBlack = data.black;
+			Game.players = data.players;
 			if(data.whites) Game.currentWhites = data.whites;
 
-			Dom.draw('guess', data.black);
+			// Dom.draw('guess');
+			Dom.draw('start_screen');
 		}
 
 		else if(data.command === 'new_whites'){
@@ -175,6 +190,54 @@ function Load(){
 
 		else if(data.command === 'start_timer'){
 			Game.started = true;
+		}
+
+		else if(data.command === 'player_join'){
+			if(data.name === Player.name) return;
+
+			Game.players.push(data.name);
+
+			drawPlayersList();
+		}
+
+		else if(data.command === 'player_leave'){
+			Game.players.splice(Game.players.indexOf(data.name), 1);
+
+			if(Game.playersReady.includes(data.name)) Game.playersReady.splice(Game.playersReady.indexOf(data.name), 1);
+
+			drawPlayersList();
+		}
+
+		else if(data.command === 'player_ready'){
+			var playersList = document.getElementById('PlayersList');
+			var playerCount = playersList.children.length;
+
+			Game.playersReady.push(data.name);
+
+			for(x = 0; x < playerCount; ++x){
+				var player_li = playersList.children[x];
+
+				if(player_li.textContent.replace(' (you)', '') === data.name) player_li.textContent += ' READY';
+			}
+		}
+
+		else if(data.command === 'game_begin'){
+			Dom.draw('guess');
+		}
+	}
+
+	function drawPlayersList(){
+		var playersList = document.getElementById('PlayersList');
+		var playerCount = Game.players.length;
+
+		Dom.empty(playersList);
+
+		for(x = 0; x < playerCount; ++x){
+			var playerNameText = Game.players[x] === Player.name ? Game.players[x] +' (you)' : Game.players[x];
+			if(Game.playersReady.includes(Game.players[x])) playerNameText += ' READY';
+			var player_li = Dom.createElem('li', { className: 'player', textContent: playerNameText });
+
+			playersList.appendChild(player_li);
 		}
 	}
 
@@ -229,6 +292,14 @@ function Load(){
 			evt.preventDefault();
 
 			joinGame();
+		}
+
+		else if(evt.target.id === 'GameStartButton'){
+			evt.preventDefault();
+
+			Dom.remove(evt.target);
+
+			Socket.active.send('{ "command": "ready_to_play" }');
 		}
 
 		else if(evt.target.id === 'PlayAgainButton'){

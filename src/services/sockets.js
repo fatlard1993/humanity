@@ -81,9 +81,11 @@ var Sockets = {
 
 						Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[data.game_room].currentBlack, whites: Player.currentWhites }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players }));
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+						Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
 					}
 				}
 
@@ -97,6 +99,7 @@ var Sockets = {
 						timer: data.timer * (1000 * 60),
 						packs: data.packs,
 						players: [],
+						playersReady: 0,
 						currentGuesses: [],
 						currentVotes: {},
 						voteCount: 0,
@@ -120,6 +123,7 @@ var Sockets = {
 							Sockets.games[this.name].currentGuesses = [];
 							Sockets.games[this.name].currentVotes = {};
 							Sockets.games[this.name].voteCount = 0;
+							Sockets.games[this.name].playersReady = 0;
 						}
 					};
 
@@ -203,7 +207,19 @@ var Sockets = {
 				else if(data.command === 'play_again'){
 					Log()('socket', 'play_again');
 
-					socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack }));
+					socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players }));
+				}
+
+				else if(data.command === 'ready_to_play'){
+					Log()('socket', 'ready_to_play');
+
+					++Sockets.games[Player.room].playersReady;
+
+					Player.ready = true;
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'player_ready', room: Player.room, name: Player.name }));
+
+					if(Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady) Sockets.wss.broadcast(JSON.stringify({ command: 'game_begin', room: Player.room }));
 				}
 
 				else if(data.command === 'game_start' && Sockets.games[Player.room] && !Sockets.games[Player.room].started){
@@ -240,9 +256,16 @@ var Sockets = {
 
 				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
 
-				Sockets.games[Player.room].newBlack();
-
 				Sockets.wss.broadcast(JSON.stringify({ command: 'reload_lobby', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+				Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
+
+				if(Player.ready) --Sockets.games[Player.room].playersReady;
+
+				Log()('Players ready: ', Sockets.games[Player.room].players.length, Sockets.games[Player.room].playersReady);
+
+				if(!Sockets.games[Player.room].players.length) Sockets.games[Player.room].newBlack();
+				else if(Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady) Sockets.wss.broadcast(JSON.stringify({ command: 'game_begin', room: Player.room }));
 			};
 		});
 

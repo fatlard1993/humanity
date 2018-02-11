@@ -45,7 +45,7 @@ input#GameGuess {
 	margin: 10px auto 0;
 }
 
-button#GameGuessDoneButton, button#LobbyButton, button#PlayAgainButton {
+button#GameGuessDoneButton, button#LobbyButton, button#PlayAgainButton, button#GameStartButton {
 	display: block;
 	font-size: 30px;
 	width: 40%;
@@ -138,4 +138,33 @@ button#EmptyGameGuessButton {
 	right: 0;
 	height: 28px;
 	width: 60px;
+}
+
+ul#PlayersList {
+	border: 2px solid $grey;
+	width: 70%;
+	margin: 1% auto;
+
+	li {
+		font-size: 20px;
+		padding: 7px;
+		background: $black;
+		color: $white;
+		margin: 3px;
+		border: 2px solid $grey-light;
+		text-align: left;
+	}
+	li.player {
+		cursor: pointer;
+		text-align: center;
+	}
+	li.player:hover {
+		background: $grey-darker;
+		color: $grey-lighter;
+	}
+	li.player:active, li.player.selected {
+		background: $white;
+		color: $black;
+		border-color: $black;
+	}
 }
