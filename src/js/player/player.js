@@ -43,8 +43,12 @@ function Load(){
 
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
+			var guessWrapper = Dom.createElem('div', { id: 'GameGuessWrapper' });
+
 			var guessInput = Dom.createElem('input', { id: 'GameGuess', validation: /.{1,}/ });
 			Dom.validate(guessInput);
+
+			var emptyGuessButton = Dom.createElem('button', { id: 'EmptyGameGuessButton', textContent: 'Clear' });
 
 			var doneButton = Dom.createElem('button', { id: 'GameGuessDoneButton', textContent: 'Done' });
 
@@ -57,8 +61,10 @@ function Load(){
 				whitesList.appendChild(li);
 			}
 
+			guessWrapper.appendChild(guessInput);
+			guessWrapper.appendChild(emptyGuessButton);
 			joinGameForm.appendChild(currentBlackHeading);
-			joinGameForm.appendChild(guessInput);
+			joinGameForm.appendChild(guessWrapper);
 			joinGameForm.appendChild(doneButton);
 			joinGameForm.appendChild(whitesList);
 			Dom.Content.appendChild(joinGameForm);
@@ -115,6 +121,8 @@ function Load(){
 			Dom.Content.appendChild(submissionList);
 			Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
+
+			Socket.disconnect();
 		}
 	};
 
@@ -226,7 +234,9 @@ function Load(){
 
 			Dom.empty(Dom.Content);
 
-			Socket.active.send('{ "command": "play_again" }');
+			window.location.reload();
+
+			// Socket.active.send('{ "command": "play_again" }');
 		}
 
 		else if(evt.target.id === 'LobbyButton'){
@@ -266,6 +276,13 @@ function Load(){
 			evt.preventDefault();
 
 			voteOnSubmission(evt.target.textContent);
+		}
+
+		else if(evt.target.id === 'EmptyGameGuessButton'){
+			evt.preventDefault();
+
+			document.getElementById('GameGuess').value = '';
+			Dom.validate(document.getElementById('GameGuess'));
 		}
 	};
 

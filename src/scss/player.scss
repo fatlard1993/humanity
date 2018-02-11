@@ -128,3 +128,14 @@ ul#WhitesList {
 		border-color: $black;
 	}
 }
+
+div#GameGuessWrapper {
+	position: relative;
+}
+button#EmptyGameGuessButton {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 28px;
+	width: 60px;
+}
