@@ -22,12 +22,14 @@ function Load(){
 		main: function(){
 			var joinGameForm = Dom.createElem('div', { id: 'JoinGameForm' });
 
-			var nameInput = Dom.createElem('input', { id: 'JoinGameName', placeholder: 'Your Name', validation: /.{4,}/ });
+			var cachedName = Dom.cookie.get('player_name');
+
+			var nameInput = Dom.createElem('input', { id: 'JoinGameName', placeholder: 'Your Name', validation: /.{4,}/, value: cachedName ? cachedName : '' });
 			Dom.validate(nameInput);
 
 			var joinButton = Dom.createElem('button', { id: 'JoinGameButton', textContent: 'Join' });
 
-			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Lobby' });
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			joinGameForm.appendChild(nameInput);
 			joinGameForm.appendChild(joinButton);
@@ -75,7 +77,7 @@ function Load(){
 			var submissionCount = submissions.length;
 
 			if(!submissionCount){
-				var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Lobby' });
+				var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 				currentBlackHeading.textContent = 'No one is playing here';
 
@@ -173,6 +175,8 @@ function Load(){
 
 		Player.name = name;
 
+		Dom.cookie.set('player_name', Player.name);
+
 		Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'", "playerName": "'+ name +'" }');
 
 		Dom.draw('waiting_room');
@@ -183,13 +187,13 @@ function Load(){
 
 		Player.currentGuess = guess;
 
-		Socket.active.send('{ "command": "game_guess", "guess": "'+ guess +'" }');
+		Socket.active.send('{ "command": "game_guess", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
 
 		Dom.draw('waiting_room');
 	}
 
 	function voteOnSubmission(submission){
-		Socket.active.send('{ "command": "game_vote", "vote": "'+ submission +'" }');
+		Socket.active.send('{ "command": "game_vote", "vote": "'+ submission.replace(/"/gm, '\\"') +'" }');
 
 		Dom.draw('waiting_room');
 	}
@@ -255,7 +259,7 @@ function Load(){
 				Socket.active.send('{ "command": "game_start" }');
 			}
 
-			Socket.active.send('{ "command": "remove_white", "text": "'+ evt.target.textContent +'" }');
+			Socket.active.send('{ "command": "remove_white", "text": "'+ evt.target.textContent.replace(/"/gm, '\\"') +'" }');
 		}
 
 		else if(evt.target.className === 'submission'){
