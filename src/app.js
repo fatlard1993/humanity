@@ -32,6 +32,9 @@ function initExpress(cb){
 	});
 
 	app.get('/dev', function(req, res, next){
+		Log()('Reinitalizing card packs...');
+		Cards.init();
+
 		Log()('Reloading clients...');
 
 		Sockets.wss.broadcast(JSON.stringify({ command: 'reload', delay: 1500 }));
