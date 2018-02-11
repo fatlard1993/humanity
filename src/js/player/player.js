@@ -174,6 +174,8 @@ function Load(){
 		Player.name = name;
 
 		Socket.active.send('{ "command": "challenge_response", "room": "player", "game_room": "'+ Player.room +'", "playerName": "'+ name +'" }');
+
+		Dom.draw('waiting_room');
 	}
 
 	function makeGuess(){

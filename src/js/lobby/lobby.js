@@ -86,6 +86,8 @@ function Load(){
 
 	function createNewGame(){
 		if(!document.querySelectorAll('.invalid').length){
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
 			createdGame = document.getElementById('NewGameRoomName').value;
 			var newGameTimer = document.getElementById('NewGameTimer').value;
 			var newGamePacksList = [];
@@ -102,6 +104,8 @@ function Load(){
 			Log()(createdGame, newGamePacksList);
 
 			Socket.active.send(JSON.stringify({ command: 'new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList }));
+
+			Dom.empty(Dom.Content);
 		}
 	}
 
