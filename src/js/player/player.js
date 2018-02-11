@@ -69,7 +69,7 @@ function Load(){
 			Dom.Content.appendChild(waitingHeading);
 		},
 		vote: function(submissions){
-			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
+			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack +'<br><br>Vote for your favorite!' });
 
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
 			var submissionCount = submissions.length;
