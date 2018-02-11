@@ -237,6 +237,10 @@ function Load(){
 			guessInput.value = evt.target.textContent;
 			Dom.validate(guessInput);
 
+			Game.started = true;
+
+			Socket.active.send('{ "command": "game_start" }');
+
 			Socket.active.send('{ "command": "remove_white", "text": "'+ evt.target.textContent +'" }');
 		}
 
