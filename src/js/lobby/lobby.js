@@ -107,7 +107,7 @@ function Load(){
 
 			Log()(createdGame, newGamePacksList);
 
-			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList }));
+			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList.length ? newGamePacksList : ['base'] }));
 
 			Dom.empty(Dom.Content);
 		}
