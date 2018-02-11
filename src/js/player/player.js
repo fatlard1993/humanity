@@ -152,6 +152,7 @@ function Load(){
 			if(data.whites) Game.currentWhites = data.whites;
 
 			if(data.votingStarted) return Dom.draw('vote', data.submissions);
+			else if(data.guessingStarted) return Dom.draw('guess');
 
 			// Dom.draw('guess');
 			Dom.draw('start_screen');
@@ -174,7 +175,7 @@ function Load(){
 			}
 		}
 
-		if(!data.room || !Player.room || data.room !== Player.room) return;
+		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
 
 		if(data.command === 'vote'){
 			var submissions = Cjs.clone(data.submissions), submissionCount = data.submissions.length;
@@ -231,6 +232,8 @@ function Load(){
 	function drawPlayersList(){
 		var playersList = document.getElementById('PlayersList');
 		var playerCount = Game.players.length;
+
+		if(!playersList) return;
 
 		Dom.empty(playersList);
 
