@@ -38,14 +38,14 @@ div#WaitingHeading {
 	width: 50%;
 }
 
-input#GameGuess {
+input#SubmissionEntry {
 	display: block;
 	font-size: 20px;
 	width: 80%;
 	margin: 10px auto 0;
 }
 
-button#GameGuessDoneButton, button#LobbyButton, button#PlayAgainButton, button#GameStartButton {
+button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameStartButton {
 	display: block;
 	font-size: 30px;
 	width: 40%;
@@ -135,10 +135,10 @@ ul#WhitesList {
 	}
 }
 
-div#GameGuessWrapper {
+div#SubmissionEntryWrapper {
 	position: relative;
 }
-button#EmptyGameGuessButton {
+button#EmptySubmissionEntry {
 	position: absolute;
 	top: 2px;
 	right: 10%;

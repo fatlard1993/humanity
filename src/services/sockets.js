@@ -78,41 +78,73 @@ var Sockets = {
 				if(!validConnection) return;
 
 				if(data.command === 'lobby_new_game'){
-					Log()('socket', 'lobby_new_game', data.name, data.timer, data.packs);
+					Log()('socket', 'lobby_new_game', data.name, data.packs);
 
 					Sockets.games[data.name] = {
 						name: data.name,
-						timer: data.timer * (1000 * 60),
 						packs: data.packs,
+						cards: Cards.get(data.packs),
 						state: 'new',
 						players: [],
 						playersReady: 0,
-						currentGuesses: [],
+						submissions: [],
 						currentVotes: {},
 						voteCount: 0,
-						cards: Cards.get(data.packs.length ? data.packs : ['base']),
-						newBlack: function(){
-							var totalBlacks = Sockets.games[this.name].cards.blacks.length;
-							var randBlack = Cjs.randInt(0, totalBlacks);
+						checkState: function(){
+							if(!this.players.length) this.newBlack();
 
-							Sockets.games[this.name].currentBlack = Sockets.games[this.name].cards.blacks[randBlack];
+							else if(this.state === 'new' && this.players.length === this.playersReady){
+								this.state = 'entering_submissions';
 
-							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
-
-							if(Sockets.games[this.name].currentBlack === 'undefined' || Sockets.games[this.name].currentBlack === undefined){
-								if(!Sockets.games[this.name].cards.blacks.length) Sockets.games[this.name].cards = Cards.get(this.packs.length ? this.packs : ['base']);
-
-								return Sockets.games[this.name].newBlack();
+								Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: this.name }));
 							}
 
-							Sockets.games[this.name].votingStarted = false;
-							Sockets.games[this.name].guessingStarted = false;
-							Sockets.games[this.name].votesIn = false;
-							Sockets.games[this.name].currentGuesses = [];
-							Sockets.games[this.name].currentVotes = {};
-							Sockets.games[this.name].voteCount = 0;
-							Sockets.games[this.name].playersReady = 0;
-							Sockets.games[this.name].state = 'new';
+							else if(this.state === 'entering_submissions' && this.submissions.length === this.players.length){
+								this.state = 'voting';
+
+								Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: this.name, submissions: this.submissions }));
+							}
+
+							else if(this.state === 'voting' && this.voteCount === this.players.length){
+								this.tallyVotes();
+							}
+						},
+						newBlack: function(){
+							var totalBlacks = this.cards.blacks.length;
+							var randBlack = Cjs.randInt(0, totalBlacks);
+
+							this.currentBlack = this.cards.blacks[randBlack];
+
+							this.cards.blacks.splice(randBlack, 1);
+
+							if(this.currentBlack === 'undefined' || this.currentBlack === undefined){
+								if(!this.cards.blacks.length) this.cards = Cards.get(this.packs.length ? this.packs : ['base']);
+
+								return this.newBlack();
+							}
+
+							this.state = 'new';
+							this.playersReady = 0;
+							this.submissions = [];
+							this.currentVotes = {};
+							this.voteCount = 0;
+						},
+						tallyVotes: function(){
+							var highestScore = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
+
+							for(x = 0; x < votedEntryCount; ++x){
+								if(this.currentVotes[votedEntryNames[x]].count > highestScore) highestScore = this.currentVotes[votedEntryNames[x]].count;
+							}
+
+							for(x = 0; x < votedEntryCount; ++x){
+								if(this.currentVotes[votedEntryNames[x]].count === highestScore) this.currentVotes[votedEntryNames[x]].winner = true;
+							}
+
+							Log()('socket', 'player_vote_results', this.currentVotes);
+
+							Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes }));
+
+							this.newBlack();
 						}
 					};
 
@@ -136,90 +168,11 @@ var Sockets = {
 
 					Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
 
-					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players, guessingStarted: Sockets.games[Player.room].guessingStarted, votingStarted: Sockets.games[Player.room].votingStarted, submissions: Sockets.games[Player.room].currentGuesses }));
-
-					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions }));
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
-				}
 
-				else if(data.command === 'player_enter_submission'){
-					Log()('socket', 'player_enter_submission', data.guess, Sockets.games[Player.room].players.length - Sockets.games[Player.room].currentGuesses.length +' guesses left');
-
-					Player.currentGuess = data.guess;
-
-					Sockets.games[Player.room].currentGuesses.push({ player: Player.name, guess: data.guess });
-
-					if(Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
-						Sockets.games[Player.room].votingStarted = true;
-						Sockets.games[Player.room].state = 'voting';
-
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
-
-						// setTimeout(function(){
-						// 	if(Sockets.games[Player.room].votesIn) return;
-
-						// 	Log()('socket', 'VOTETIMER');
-						// 	Sockets.games[Player.room].votesIn = true;
-
-						// 	var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
-
-						// 	for(x = 0; x < votedEntryCount; ++x){
-						// 		if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count > highestScore) highestScore = Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count;
-						// 	}
-
-						// 	for(x = 0; x < votedEntryCount; ++x){
-						// 		if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count === highestScore) Sockets.games[Player.room].currentVotes[votedEntryNames[x]].winner = true;
-						// 	}
-
-						// 	Log()('socket', 'player_vote_results', Sockets.games[Player.room].currentVotes);
-
-						// 	Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
-
-						// 	Sockets.games[Player.room].newBlack();
-						// }, Sockets.games[Player.room].timer / 2);
-					}
-				}
-
-				else if(data.command === 'player_place_vote'){
-					Log()('socket', 'player_place_vote', data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left', Sockets.games[Player.room].votesIn ? 'All votes are IN' : 'All votes are NOT IN');
-
-					if(!Sockets.games[Player.room].currentVotes[data.vote]){
-						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
-
-						for(x = 0; x < Sockets.games[Player.room].currentGuesses.length; ++x){
-							if(Sockets.games[Player.room].currentGuesses[x].guess === data.vote) Sockets.games[Player.room].currentVotes[data.vote].player = Sockets.games[Player.room].currentGuesses[x].player;
-						}
-					}
-
-					++Sockets.games[Player.room].currentVotes[data.vote].count;
-					++Sockets.games[Player.room].voteCount;
-
-					if(!Sockets.games[Player.room].votesIn && Sockets.games[Player.room].voteCount === Sockets.games[Player.room].players.length){
-						Sockets.games[Player.room].votesIn = true;
-
-						var highestScore = 0, votedEntryNames = Object.keys(Sockets.games[Player.room].currentVotes), votedEntryCount = votedEntryNames.length;
-
-						for(x = 0; x < votedEntryCount; ++x){
-							if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count > highestScore) highestScore = Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count;
-						}
-
-						for(x = 0; x < votedEntryCount; ++x){
-							if(Sockets.games[Player.room].currentVotes[votedEntryNames[x]].count === highestScore) Sockets.games[Player.room].currentVotes[votedEntryNames[x]].winner = true;
-						}
-
-						Log()('socket', 'player_vote_results', Sockets.games[Player.room].currentVotes);
-
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
-
-						Sockets.games[Player.room].newBlack();
-					}
-				}
-
-				else if(data.command === 'player_play_again'){
-					Log()('socket', 'player_play_again');
-
-					socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players }));
+					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 				}
 
 				else if(data.command === 'player_ready_to_play'){
@@ -231,10 +184,42 @@ var Sockets = {
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_ready', room: Player.room, name: Player.name }));
 
-					if(Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady){
-						Sockets.games[Player.room].guessingStarted = true;
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_guessing', room: Player.room }));
+					Sockets.games[Player.room].checkState();
+				}
+
+				else if(data.command === 'player_enter_submission'){
+					Log()('socket', 'player_enter_submission', data.submission);
+
+					Player.submission = data.submission;
+
+					Sockets.games[Player.room].submissions.push({ player: Player.name, submission: data.submission });
+
+					Sockets.games[Player.room].checkState();
+				}
+
+				else if(data.command === 'player_place_vote'){
+					Log()('socket', 'player_place_vote', data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left');
+
+					if(!Sockets.games[Player.room].currentVotes[data.vote]){
+						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
+
+						for(x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+							if(Sockets.games[Player.room].submissions[x].submission === data.vote) Sockets.games[Player.room].currentVotes[data.vote].player = Sockets.games[Player.room].submissions[x].player;
+						}
 					}
+
+					++Sockets.games[Player.room].currentVotes[data.vote].count;
+					++Sockets.games[Player.room].voteCount;
+
+					Player.voted = true;
+
+					Sockets.games[Player.room].checkState();
+				}
+
+				else if(data.command === 'player_play_again'){
+					Log()('socket', 'player_play_again');
+
+					socket.send(JSON.stringify({ command: 'challenge_accept', black: Sockets.games[Player.room].currentBlack, whites: Player.currentWhites, players: Sockets.games[Player.room].players }));
 				}
 
 				else if(data.command === 'player_remove_white'){
@@ -261,13 +246,28 @@ var Sockets = {
 				Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
 
 				if(Player.ready) --Sockets.games[Player.room].playersReady;
+				if(Player.voted) --Sockets.games[Player.room].voteCount;
 
 				Log()('Players ready: ', Sockets.games[Player.room].players.length, Sockets.games[Player.room].playersReady);
 
 				if(!Sockets.games[Player.room].players.length) Sockets.games[Player.room].newBlack();
-				else if(Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady){
-					Sockets.games[Player.room].guessingStarted = true;
-					Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_guessing', room: Player.room }));
+				else if(Sockets.games[Player.room].state === 'new' && Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady){
+					Sockets.games[Player.room].state = 'entering_submissions';
+					Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: Player.room }));
+				}
+				else if(Sockets.games[Player.room].state === 'entering_submissions' && Player.submission){
+					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+						if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
+					}
+
+					if(Sockets.games[Player.room].submissions.length === Sockets.games[Player.room].players.length){
+						Sockets.games[Player.room].state = 'voting';
+
+						Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: Player.room, submissions: Sockets.games[Player.room].submissions }));
+					}
+				}
+				else if(Sockets.games[Player.room].state === 'voting' && Sockets.games[Player.room].voteCount === Sockets.games[Player.room].players.length){
+					Sockets.games[Player.room].tallyVotes();
 				}
 			};
 		});

@@ -52,19 +52,17 @@ function Load(){
 
 			drawPlayersList();
 		},
-		guess: function(){
-			var joinGameForm = Dom.createElem('div', { id: 'GameGuessForm' });
-
+		enter_submission: function(){
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
-			var guessWrapper = Dom.createElem('div', { id: 'GameGuessWrapper' });
+			var submissionWrapper = Dom.createElem('div', { id: 'SubmissionEntryWrapper' });
 
-			var guessInput = Dom.createElem('input', { id: 'GameGuess', validation: /^.{1,256}$/ });
-			Dom.validate(guessInput);
+			var submissionInput = Dom.createElem('input', { id: 'SubmissionEntry', validation: /^.{1,256}$/ });
+			Dom.validate(submissionInput);
 
-			var emptyGuessButton = Dom.createElem('button', { id: 'EmptyGameGuessButton', textContent: 'Clear' });
+			var emptySubmissionButton = Dom.createElem('button', { id: 'EmptySubmissionEntry', textContent: 'Clear' });
 
-			var doneButton = Dom.createElem('button', { id: 'GameGuessDoneButton', textContent: 'Done' });
+			var doneButton = Dom.createElem('button', { id: 'EnterSubmission', textContent: 'Done' });
 
 			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
 			var whiteCount = Game.currentWhites.length;
@@ -75,15 +73,14 @@ function Load(){
 				whitesList.appendChild(li);
 			}
 
-			guessWrapper.appendChild(guessInput);
-			guessWrapper.appendChild(emptyGuessButton);
-			joinGameForm.appendChild(currentBlackHeading);
-			joinGameForm.appendChild(guessWrapper);
-			joinGameForm.appendChild(doneButton);
-			joinGameForm.appendChild(whitesList);
-			Dom.Content.appendChild(joinGameForm);
+			submissionWrapper.appendChild(submissionInput);
+			submissionWrapper.appendChild(emptySubmissionButton);
+			Dom.Content.appendChild(currentBlackHeading);
+			Dom.Content.appendChild(submissionWrapper);
+			Dom.Content.appendChild(doneButton);
+			Dom.Content.appendChild(whitesList);
 
-			guessInput.focus();
+			submissionInput.focus();
 		},
 		waiting_room: function(){
 			var waitingHeading = Dom.createElem('div', { id: 'WaitingHeading', textContent: 'Waiting...' });
@@ -111,7 +108,7 @@ function Load(){
 			}
 
 			for(x = 0; x < submissionCount; ++x){
-				submissionList.appendChild(Dom.createElem('li', { className: 'submission' + (submissions[x].guess === Player.currentGuess ? ' disabled' : ''), textContent: submissions[x].guess }));
+				submissionList.appendChild(Dom.createElem('li', { className: 'submission' + (submissions[x].submission === Player.submission ? ' disabled' : ''), textContent: submissions[x].submission }));
 			}
 
 			Dom.Content.appendChild(currentBlackHeading);
@@ -159,12 +156,13 @@ function Load(){
 		else if(data.command === 'player_join_accept'){
 			Game.currentBlack = data.black;
 			Game.players = data.players;
-			if(data.whites) Game.currentWhites = data.whites;
+			Game.currentWhites = data.whites;
 
-			if(data.votingStarted) return Dom.draw('vote', data.submissions);
-			else if(data.guessingStarted) return Dom.draw('guess');
+			if(data.state === 'voting') Dom.draw('vote', data.submissions);
 
-			Dom.draw('start_screen');
+			else if(data.state === 'entering_submissions') Dom.draw('enter_submission');
+
+			else Dom.draw('start_screen');
 		}
 
 		else if(data.command === 'player_join'){
@@ -223,8 +221,8 @@ function Load(){
 			}
 		}
 
-		else if(data.command === 'player_start_guessing'){
-			Dom.draw('guess');
+		else if(data.command === 'player_start_entering_submissions'){
+			Dom.draw('enter_submission');
 		}
 	}
 
@@ -265,13 +263,13 @@ function Load(){
 		}
 	}
 
-	function makeGuess(){
+	function enterSubmission(){
 		if(!document.querySelectorAll('.invalid').length){
-			var guess = document.getElementById('GameGuess').value;
+			var submission = document.getElementById('SubmissionEntry').value;
 
-			Player.currentGuess = guess;
+			Player.submission = submission;
 
-			Socket.active.send('{ "command": "player_enter_submission", "guess": "'+ guess.replace(/"/gm, '\\"') +'" }');
+			Socket.active.send('{ "command": "player_enter_submission", "submission": "'+ submission.replace(/"/gm, '\\"') +'" }');
 
 			Dom.draw('waiting_room');
 		}
@@ -334,19 +332,19 @@ function Load(){
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/lobby';
 		}
 
-		else if(evt.target.id === 'GameGuessDoneButton'){
+		else if(evt.target.id === 'EnterSubmission'){
 			evt.preventDefault();
 
-			makeGuess();
+			enterSubmission();
 		}
 
 		else if(evt.target.className === 'white'){
 			evt.preventDefault();
 
-			var guessInput = document.getElementById('GameGuess');
+			var submissionInput = document.getElementById('SubmissionEntry');
 
-			guessInput.value = evt.target.textContent;
-			Dom.validate(guessInput);
+			submissionInput.value = evt.target.textContent;
+			Dom.validate(submissionInput);
 
 			Socket.active.send('{ "command": "player_remove_white", "text": "'+ evt.target.textContent.replace(/"/gm, '\\"') +'" }');
 		}
@@ -357,11 +355,11 @@ function Load(){
 			voteOnSubmission(evt.target.textContent);
 		}
 
-		else if(evt.target.id === 'EmptyGameGuessButton'){
+		else if(evt.target.id === 'EmptySubmissionEntry'){
 			evt.preventDefault();
 
-			document.getElementById('GameGuess').value = '';
-			Dom.validate(document.getElementById('GameGuess'));
+			document.getElementById('SubmissionEntry').value = '';
+			Dom.validate(document.getElementById('SubmissionEntry'));
 		}
 	};
 
@@ -373,10 +371,10 @@ function Load(){
 				joinGame();
 			}
 
-			else if(document.getElementById('GameGuessDoneButton')){
+			else if(document.getElementById('EnterSubmission')){
 				evt.preventDefault();
 
-				makeGuess();
+				enterSubmission();
 			}
 		}
 	};
