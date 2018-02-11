@@ -30,6 +30,11 @@ var Sockets = {
 
 					Player.allWhites.splice(randWhite, 1);
 
+					if(!newWhite){
+						if(!Player.allWhites.length) Player.allWhites = Cjs.clone(Sockets.games[Player.room].cards.whites);
+						return Player.newWhite();
+					}
+
 					Log()('New white', newWhite);
 
 					socket.send(JSON.stringify({ command: 'new_whites', whites: Player.currentWhites }));
@@ -90,6 +95,7 @@ var Sockets = {
 					Sockets.games[data.name] = {
 						name: data.name,
 						timer: data.timer * (1000 * 60),
+						packs: data.packs,
 						players: [],
 						currentGuesses: [],
 						currentVotes: {},
@@ -103,7 +109,11 @@ var Sockets = {
 
 							Sockets.games[this.name].cards.blacks.splice(randBlack, 1);
 
-							if(Sockets.games[this.name].currentBlack === 'undefined' || Sockets.games[this.name].currentBlack === undefined) return Sockets.games[this.name].newBlack();
+							if(Sockets.games[this.name].currentBlack === 'undefined' || Sockets.games[this.name].currentBlack === undefined){
+								if(!Sockets.games[this.name].cards.blacks.length) Sockets.games[this.name].cards = Cards.get(this.packs.length ? this.packs : ['base']);
+
+								return Sockets.games[this.name].newBlack();
+							}
 
 							Sockets.games[this.name].started = false;
 							Sockets.games[this.name].votesIn = false;
