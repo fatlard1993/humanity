@@ -126,11 +126,11 @@ var Sockets = {
 					Sockets.games[Player.room].currentGuesses.push({ player: Player.name, guess: data.guess });
 
 					if(Sockets.games[Player.room].started && Sockets.games[Player.room].currentGuesses.length === Sockets.games[Player.room].players.length){
-						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
+						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
 
 						setTimeout(function(){
 							if(Sockets.games[Player.room].votesIn) return;
-							
+
 							Log()('socket', 'VOTETIMER');
 							Sockets.games[Player.room].votesIn = true;
 
@@ -146,7 +146,7 @@ var Sockets = {
 
 							Log()('socket', 'vote_results', Sockets.games[Player.room].currentVotes);
 
-							Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', votes: Sockets.games[Player.room].currentVotes }));
+							Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
 
 							Sockets.games[Player.room].newBlack();
 						}, Sockets.games[Player.room].timer / 2);
@@ -182,7 +182,7 @@ var Sockets = {
 
 						Log()('socket', 'vote_results', Sockets.games[Player.room].currentVotes);
 
-						Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', votes: Sockets.games[Player.room].currentVotes }));
+						Sockets.wss.broadcast(JSON.stringify({ command: 'vote_results', room: Player.room, votes: Sockets.games[Player.room].currentVotes }));
 
 						Sockets.games[Player.room].newBlack();
 					}
@@ -201,12 +201,12 @@ var Sockets = {
 
 					setTimeout(function(){
 						Log()('socket', 'GAMETIMER');
-						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', submissions: Sockets.games[Player.room].currentGuesses }));
+						Sockets.wss.broadcast(JSON.stringify({ command: 'vote', room: Player.room, submissions: Sockets.games[Player.room].currentGuesses }));
 					}, Sockets.games[Player.room].timer);
 
 					Log()('socket', 'timer ms: ', Sockets.games[Player.room].timer);
 
-					Sockets.wss.broadcast(JSON.stringify({ command: 'start_timer' }));
+					Sockets.wss.broadcast(JSON.stringify({ command: 'start_timer', room: Player.room }));
 				}
 
 				else if(data.command === 'remove_white'){

@@ -130,24 +130,6 @@ function Load(){
 			Dom.draw('guess', data.black);
 		}
 
-		else if(data.command === 'vote'){
-			var submissions = Cjs.clone(data.submissions), submissionCount = data.submissions.length;
-
-			for(var x = 0; x < submissionCount; ++x){
-				if(data.submissions[x].guess === Player.currentGuess) submissions.splice(x, 1);
-			}
-
-			Dom.draw('vote', submissions);
-		}
-
-		else if(data.command === 'vote_results'){
-			Dom.draw('vote_results', data.votes);
-		}
-
-		else if(data.command === 'start_timer'){
-			Game.started = true;
-		}
-
 		else if(data.command === 'new_whites'){
 			Game.currentWhites = data.whites;
 
@@ -163,6 +145,26 @@ function Load(){
 
 				whitesList.appendChild(li);
 			}
+		}
+
+		if(!data.room || !Player.room || data.room !== Player.room) return;
+
+		if(data.command === 'vote'){
+			var submissions = Cjs.clone(data.submissions), submissionCount = data.submissions.length;
+
+			for(var x = 0; x < submissionCount; ++x){
+				if(data.submissions[x].guess === Player.currentGuess) submissions.splice(x, 1);
+			}
+
+			Dom.draw('vote', submissions);
+		}
+
+		else if(data.command === 'vote_results'){
+			Dom.draw('vote_results', data.votes);
+		}
+
+		else if(data.command === 'start_timer'){
+			Game.started = true;
 		}
 	}
 
