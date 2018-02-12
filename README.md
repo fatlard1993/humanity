@@ -27,17 +27,17 @@ This is just a platform that allows for playing a version of the wonderful/terri
 
 More in ```./screenshots```
 
-![lobby_new_game](./screenshots/lobby_new_game)
-![player_enter_submission](./screenshots/player_enter_submission)
-![player_vote_results](./screenshots/player_vote_results)
+![lobby_new_game](./screenshots/lobby_new_game.png)
+![player_enter_submission](./screenshots/player_enter_submission.png)
+![player_vote_results](./screenshots/player_vote_results.png)
 
 ## More card packs
 
 [JSON cards](https://www.crhallberg.com/cah/)
 
-1. copy raw json string data from above
+1. copy raw json string data from the above link
 2. paste into file, eg: temp.json
-3. run: node conv_cah.js temp "Pack Name"
+3. run: ```node conv_cah.js temp "Pack Name"```
 
 ## Even more content
 
