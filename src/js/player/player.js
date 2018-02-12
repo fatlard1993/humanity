@@ -66,13 +66,6 @@ function Load(){
 			var doneButton = Dom.createElem('button', { id: 'EnterSubmission', textContent: 'Done' });
 
 			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
-			var whiteCount = Game.currentWhites.length;
-
-			for(x = 0; x < whiteCount; ++x){
-				var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
-
-				whitesList.appendChild(li);
-			}
 
 			submissionWrapper.appendChild(submissionInput);
 			submissionWrapper.appendChild(emptySubmissionButton);
@@ -80,6 +73,8 @@ function Load(){
 			Dom.Content.appendChild(submissionWrapper);
 			Dom.Content.appendChild(doneButton);
 			Dom.Content.appendChild(whitesList);
+
+			drawWhitesList();
 
 			submissionInput.focus();
 		},
@@ -186,8 +181,8 @@ function Load(){
 
 		else if(data.command === 'player_join_accept'){
 			Game.currentBlack = data.black;
-			Game.players = data.players;
 			Game.currentWhites = data.whites;
+			Game.players = data.players;
 
 			if(data.state === 'voting') Dom.draw('vote', data.submissions);
 
@@ -216,7 +211,7 @@ function Load(){
 			for(x = 0; x < playerCount; ++x){
 				var player_li = playersList.children[x];
 
-				if(player_li.textContent.replace(' (you)', '') === data.name) player_li.textContent += ' READY';
+				if(player_li.textContent === data.name) player_li.textContent += ' READY';
 			}
 		}
 
@@ -226,6 +221,12 @@ function Load(){
 			if(Game.readyPlayers.includes(data.name)) Game.readyPlayers.splice(Game.readyPlayers.indexOf(data.name), 1);
 
 			drawPlayersList();
+		}
+
+		else if(data.command === 'player_new_white'){
+			Game.currentWhites.push(data.white);
+
+			drawWhitesList();
 		}
 
 		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
@@ -261,23 +262,6 @@ function Load(){
 				waitingOnPlayersList.appendChild(li);
 			}
 		}
-
-		else if(data.command === 'player_new_whites'){
-			Game.currentWhites = data.whites;
-
-			var whitesList = document.getElementById('WhitesList');
-			var whiteCount = Game.currentWhites.length;
-
-			if(!whitesList) return;
-
-			Dom.empty(whitesList);
-
-			for(x = 0; x < whiteCount; ++x){
-				var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
-
-				whitesList.appendChild(li);
-			}
-		}
 	}
 
 	function drawPlayersList(){
@@ -289,11 +273,26 @@ function Load(){
 		Dom.empty(playersList);
 
 		for(x = 0; x < playerCount; ++x){
-			var playerNameText = Game.players[x] === Player.name ? Game.players[x] +' (you)' : Game.players[x];
+			var playerNameText = Game.players[x];
 			if(Game.readyPlayers.includes(Game.players[x])) playerNameText += ' READY';
 			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : ''), textContent: playerNameText });
 
 			playersList.appendChild(player_li);
+		}
+	}
+
+	function drawWhitesList(){
+		var whitesList = document.getElementById('WhitesList');
+		var whiteCount = Game.currentWhites.length;
+
+		if(!whitesList) return;
+
+		Dom.empty(whitesList);
+
+		for(x = 0; x < whiteCount; ++x){
+			var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
+
+			whitesList.appendChild(li);
 		}
 	}
 
