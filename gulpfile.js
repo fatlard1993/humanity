@@ -1,6 +1,5 @@
 const fs = require('fs');
 const exec = require('child_process').exec;
-const execFile = require('child_process').execFile;
 
 const gulp = require('gulp');
 const sass = require('gulp-sass');
@@ -9,6 +8,8 @@ const autoprefixer = require('gulp-autoprefixer');
 const uglify = require('gulp-uglify');
 const babel = require('gulp-babel');//&& babel-core && babel-preset-env
 const concat = require('gulp-concat');
+
+const Log = require('./src/js/_log.js');
 
 const autoprefixerOptions = {
 	flexBox: 'no-2009',
@@ -23,7 +24,7 @@ const babelOptions = {
 function browse(folder, cb){
 	var folders = [];
 
-	exec('ls -d "'+ folder +'"/*/', function(err, stdout, stderr){
+	exec('ls -d "'+ folder +'"/*/', function(err, stdout){
 		var folderNames = stdout.split('\n');
 
 		folderNames.forEach(function(folderName){
@@ -32,11 +33,11 @@ function browse(folder, cb){
 
 		var files = [];
 
-		exec('ls -p "'+ folder +'/" | grep -v /', function(err, stdout, stderr){
+		exec('ls -p "'+ folder +'/" | grep -v /', function(err, stdout){
 			var fileNames = stdout.split('\n');
 
 			fileNames.forEach(function(fileName){
-				if(fileName && fileName.length) files.push(fileName);///\/([^\/]*?\..{3,4})$/.exec(fileName)[1]
+				if(fileName && fileName.length) files.push(fileName);
 			});
 
 			cb({ folder: folder, folders: folders, files: files });
@@ -45,7 +46,7 @@ function browse(folder, cb){
 }
 
 function concatJS(name, files, applyBabel){
-	console.log('building js file: ', name, files, 'with'+ (applyBabel ? '' : ' NO') +' babel');
+	Log(1)('building js file: ', name, files, 'with'+ (applyBabel ? '' : ' NO') +' babel');
 
 	var proc = gulp.src(files).pipe(concat(name +'.js'));
 
@@ -59,7 +60,7 @@ function createHTML(name, includes){
 	htmlIncludes.push(name +'.js');
 	htmlIncludes.push(name +'.css');
 
-	console.log('building html file: ', name, htmlIncludes);
+	Log(1)('building html file: ', name, htmlIncludes);
 
 	var includesHTML = '';
 	for(var x = 0; x < htmlIncludes.length; x++){
@@ -89,14 +90,14 @@ gulp.task('setup', ['compile-dev', 'npm-install', 'notify-done']);
 gulp.task('notify-done', function(){
 	exec('notify-send done!');
 
-	exec('curl localhost/dev');
+	exec('curl localhost/dev || wget localhost/dev');
 });
 
 gulp.task('npm-install', function(){
 	exec('sleep 2s && cd ./out && npm i', function(err){
-		if(err) return console.error(err);
+		if(err) return Log.error()(err);
 
-		console.log('Installed npm packages!');
+		Log()('Installed npm packages!');
 	});
 });
 
@@ -123,22 +124,22 @@ gulp.task('update-server-files', function(){
 
 gulp.task('compile-js', function(){
 	browse('./src/js', function(data){
-		// console.log(data);
+		Log(2)(data);
 
 		for(var x = 0; x < data.folders.length; x++){
 			browse(data.folder +'/'+ data.folders[x], function(folderData){
-				// console.log(folderData);
+				Log(2)(folderData);
 
 				var outputSettings;
 
 				if(folderData.files.includes('output.json')){
 					folderData.files.splice(folderData.files.indexOf('output.json'), 1);
 
-					// console.log('reading: '+ folderData.folder +'/output.json');
+					Log(2)('reading: '+ folderData.folder +'/output.json');
 					fs.readFile(folderData.folder +'/output.json', function(err, data){
 						outputSettings = JSON.parse(data);
 
-						// console.log(outputSettings);
+						Log(2)(outputSettings);
 
 						for(var y = 0; y < folderData.files.length; y++){
 							folderData.files[y] = folderData.folder +'/'+ folderData.files[y];
@@ -161,6 +162,8 @@ gulp.task('uglify-js', ['compile-js'], function(){
 });
 
 gulp.task('generate-html', function(){
+	exec('mkdir -p ./out/resources/html');
+
 	gulp.src([
 		'./src/html/_start.html',
 		'./src/html/_errorEnd.html',
@@ -169,7 +172,7 @@ gulp.task('generate-html', function(){
 	fs.readFile('./src/html/output.json', function(err, data){
 		if(data){
 			var outputSettings = JSON.parse(data);
-			// console.log(outputSettings);
+			Log(2)(outputSettings);
 
 			for(var x = 0; x < outputSettings.pages.length; x++){
 				createHTML(outputSettings.pages[x], outputSettings.page_includes);
