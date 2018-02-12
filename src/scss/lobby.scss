@@ -1,17 +1,8 @@
 @import 'boilerplate';
 
 ul#GamesList {
-	width: 70%;
-	margin: 1% auto;
-
 	li {
 		cursor: pointer;
-		font-size: 20px;
-		padding: 7px;
-		background: $black;
-		color: $white;
-		margin: 3px;
-		border: 2px solid $grey-light;
 		text-align: right;
 
 		span {
@@ -26,14 +17,10 @@ ul#GamesList {
 	li:after{
 		@extend .clear;
 	}
-	li:hover {
-		background: $grey-darker;
-		color: $grey-lighter;
-	}
 	li:active {
-		background: $white;
+		background-color: $white;
 		color: $black;
-		border-color: $black;
+		border-color: $teal;
 	}
 	li#NewGame {
 		text-align: center;
@@ -41,27 +28,14 @@ ul#GamesList {
 }
 
 ul#PacksList {
-	width: 70%;
-	margin: 1% auto;
-
 	li {
 		cursor: pointer;
-		font-size: 20px;
-		padding: 7px;
-		background: $black;
-		color: $white;
-		margin: 3px;
-		border: 2px solid $grey-light;
 		text-align: left;
 	}
-	li:hover {
-		background: $grey-darker;
-		color: $grey-lighter;
-	}
-	li:active, li.selected {
-		background: $white;
+	li:active {
+		background-color: $white;
 		color: $black;
-		border-color: $black;
+		border-color: $teal;
 	}
 }
 
