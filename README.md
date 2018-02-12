@@ -6,10 +6,27 @@
 	1. optional port for first param
 
 
-## more cards
+## More card packs
 
 [JSON cards](https://www.crhallberg.com/cah/)
 
 1. copy raw json string data from above
 2. paste into file, eg: temp.json
 3. run: node conv_cah.js temp "Pack Name"
+
+## Even more content
+
+Make your own, put it in: ```./src/cards/```!
+
+Template:
+
+```
+{
+	"blacks": [
+		"card text"
+	],
+	"whites": [
+		"card text"
+	]
+}
+```
