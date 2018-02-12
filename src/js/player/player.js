@@ -17,7 +17,8 @@ function Load(){
 		currentView: '',
 		currentWhites: [],
 		players: [],
-		playersReady: []
+		readyPlayers: [],
+		waitingOn: []
 	};
 
 	var views = {
@@ -83,12 +84,20 @@ function Load(){
 			submissionInput.focus();
 		},
 		waiting_room: function(){
-			var waitingHeading = Dom.createElem('div', { id: 'WaitingHeading', textContent: 'Waiting...' });
+			var waitingHeading = Dom.createElem('div', { id: 'WaitingHeading', textContent: 'Waiting on...' });
 
-			var playersList = Dom.createElem('ul', { id: 'WaitingOnPlayersList' });
+			var waitingOnPlayersList = Dom.createElem('ul', { id: 'WaitingOnPlayersList' });
+
+			var waitingOnPlayerCount = Game.waitingOn.length;
+
+			for(x = 0; x < waitingOnPlayerCount; ++x){
+				var li = Dom.createElem('li', { textContent: Game.waitingOn[x] });
+
+				waitingOnPlayersList.appendChild(li);
+			}
 
 			Dom.Content.appendChild(waitingHeading);
-			Dom.Content.appendChild(playersList);
+			Dom.Content.appendChild(waitingOnPlayersList);
 		},
 		vote: function(submissions){
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack +'<br><br>Vote for your favorite!' });
@@ -149,6 +158,7 @@ function Load(){
 
 		else if(data.command === 'challenge_accept'){
 			Game.players = data.players;
+			Game.readyPlayers = data.readyPlayers;
 
 			Dom.draw();
 		}
@@ -173,22 +183,60 @@ function Load(){
 			drawPlayersList();
 		}
 
+		else if(data.command === 'player_ready'){
+			var playersList = document.getElementById('PlayersList');
+
+			Game.readyPlayers.push(data.name);
+
+			if(!playersList) return;
+
+			var playerCount = playersList.children.length;
+
+			for(x = 0; x < playerCount; ++x){
+				var player_li = playersList.children[x];
+
+				if(player_li.textContent.replace(' (you)', '') === data.name) player_li.textContent += ' READY';
+			}
+		}
+
 		else if(data.command === 'player_leave'){
 			Game.players.splice(Game.players.indexOf(data.name), 1);
 
-			if(Game.playersReady.includes(data.name)) Game.playersReady.splice(Game.playersReady.indexOf(data.name), 1);
+			if(Game.readyPlayers.includes(data.name)) Game.readyPlayers.splice(Game.readyPlayers.indexOf(data.name), 1);
 
 			drawPlayersList();
 		}
 
 		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
 
-		if(data.command === 'player_start_voting'){
+		if(data.command === 'player_start_entering_submissions'){
+			Dom.draw('enter_submission');
+		}
+
+		else if(data.command === 'player_start_voting'){
 			Dom.draw('vote', data.submissions);
 		}
 
 		else if(data.command === 'player_vote_results'){
 			Dom.draw('vote_results', data.votes);
+		}
+
+		else if(data.command === 'player_waiting_on'){
+			var waitingOnPlayersList = document.getElementById('WaitingOnPlayersList');
+
+			Game.waitingOn = data.players;
+
+			var waitingOnPlayerCount = data.players.length;
+
+			if(!waitingOnPlayersList) return;
+
+			Dom.empty(waitingOnPlayersList);
+
+			for(x = 0; x < waitingOnPlayerCount; ++x){
+				var li = Dom.createElem('li', { textContent: data.players[x] });
+
+				waitingOnPlayersList.appendChild(li);
+			}
 		}
 
 		else if(data.command === 'player_new_whites'){
@@ -207,23 +255,6 @@ function Load(){
 				whitesList.appendChild(li);
 			}
 		}
-
-		else if(data.command === 'player_ready'){
-			var playersList = document.getElementById('PlayersList');
-			var playerCount = playersList.children.length;
-
-			Game.playersReady.push(data.name);
-
-			for(x = 0; x < playerCount; ++x){
-				var player_li = playersList.children[x];
-
-				if(player_li.textContent.replace(' (you)', '') === data.name) player_li.textContent += ' READY';
-			}
-		}
-
-		else if(data.command === 'player_start_entering_submissions'){
-			Dom.draw('enter_submission');
-		}
 	}
 
 	function drawPlayersList(){
@@ -236,7 +267,7 @@ function Load(){
 
 		for(x = 0; x < playerCount; ++x){
 			var playerNameText = Game.players[x] === Player.name ? Game.players[x] +' (you)' : Game.players[x];
-			if(Game.playersReady.includes(Game.players[x])) playerNameText += ' READY';
+			if(Game.readyPlayers.includes(Game.players[x])) playerNameText += ' READY';
 			var player_li = Dom.createElem('li', { className: 'player', textContent: playerNameText });
 
 			playersList.appendChild(player_li);
@@ -253,13 +284,15 @@ function Load(){
 				return;
 			}
 
+			Dom.Content = Dom.Content || document.getElementById('Content');
+
 			Player.name = nameInput.value;
 
 			Dom.cookie.set('player_name', Player.name);
 
 			Socket.active.send('{ "command": "player_join", "game_room": "'+ Player.room +'", "playerName": "'+ Player.name +'" }');
 
-			Dom.draw('waiting_room');
+			Dom.empty(Dom.Content);
 		}
 	}
 

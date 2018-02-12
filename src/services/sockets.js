@@ -71,7 +71,7 @@ var Sockets = {
 					else if(data.room === 'player'){
 						if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[data.game_room].players, gameState: Sockets.games[data.game_room].state }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[data.game_room].players, readyPlayers: Sockets.games[data.game_room].readyPlayers, gameState: Sockets.games[data.game_room].state }));
 					}
 				}
 
@@ -86,28 +86,53 @@ var Sockets = {
 						cards: Cards.get(data.packs),
 						state: 'new',
 						players: [],
-						playersReady: 0,
+						readyPlayers: [],
 						submissions: [],
 						currentVotes: {},
 						voteCount: 0,
 						checkState: function(){
+							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers);
+
 							if(!this.players.length) this.newBlack();
 
-							else if(this.state === 'new' && this.players.length === this.playersReady){
-								this.state = 'entering_submissions';
+							else if(this.state === 'new'){
+								if(this.players.length === this.readyPlayers.length){
+									this.state = 'entering_submissions';
+									this.readyPlayers = [];
 
-								Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: this.name }));
+									Log()('Changing state: ', this.state);
+
+									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: this.name }));
+								}
+								else{
+									Log()('Waiting for '+ waitingOn +' to be ready');
+								}
 							}
 
-							else if(this.state === 'entering_submissions' && this.submissions.length === this.players.length){
-								this.state = 'voting';
+							else if(this.state === 'entering_submissions'){
+								if(this.players.length === this.submissions.length){
+									this.state = 'voting';
+									this.readyPlayers = [];
 
-								Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: this.name, submissions: this.submissions }));
+									Log()('Changing state: ', this.state);
+
+									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: this.name, submissions: this.submissions }));
+								}
+								else{
+									Log()('Waiting for '+ waitingOn +' to make a submission');
+								}
 							}
 
-							else if(this.state === 'voting' && this.voteCount === this.players.length){
-								this.tallyVotes();
+							else if(this.state === 'voting'){
+								if(this.players.length === this.voteCount){
+									this.tallyVotes();
+								}
+								else{
+									Log()('Waiting for '+ waitingOn +' to vote');
+								}
 							}
+
+							if(waitingOn.length) Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn }));
 						},
 						newBlack: function(){
 							var totalBlacks = this.cards.blacks.length;
@@ -124,7 +149,7 @@ var Sockets = {
 							}
 
 							this.state = 'new';
-							this.playersReady = 0;
+							this.readyPlayers = [];
 							this.submissions = [];
 							this.currentVotes = {};
 							this.voteCount = 0;
@@ -173,14 +198,14 @@ var Sockets = {
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+					Sockets.games[Player.room].checkState();
 				}
 
 				else if(data.command === 'player_ready_to_play'){
 					Log()('socket', 'player_ready_to_play');
 
-					++Sockets.games[Player.room].playersReady;
-
-					Player.ready = true;
+					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_ready', room: Player.room, name: Player.name }));
 
@@ -189,6 +214,8 @@ var Sockets = {
 
 				else if(data.command === 'player_enter_submission'){
 					Log()('socket', 'player_enter_submission', data.submission);
+
+					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
 					Player.submission = data.submission;
 
@@ -199,6 +226,8 @@ var Sockets = {
 
 				else if(data.command === 'player_place_vote'){
 					Log()('socket', 'player_place_vote', data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left');
+
+					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
 					if(!Sockets.games[Player.room].currentVotes[data.vote]){
 						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
@@ -233,42 +262,26 @@ var Sockets = {
 			socket.onclose = function(data){
 				Log(2)('socket', 'onclose', data);
 
-				if(!Player.name) return Log(1)('undefined player left');
+				if(!Player.name) return Log(1)('socket', 'undefined player left');
 
-				var playerNameIndex = Sockets.games[Player.room].players.indexOf(Player.name);
+				Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
 
-				Sockets.games[Player.room].players.splice(playerNameIndex, 1);
-
-				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
-
-				Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
-
-				Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
-
-				if(Player.ready) --Sockets.games[Player.room].playersReady;
+				if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
 				if(Player.voted) --Sockets.games[Player.room].voteCount;
 
-				Log()('Players ready: ', Sockets.games[Player.room].players.length, Sockets.games[Player.room].playersReady);
-
-				if(!Sockets.games[Player.room].players.length) Sockets.games[Player.room].newBlack();
-				else if(Sockets.games[Player.room].state === 'new' && Sockets.games[Player.room].players.length === Sockets.games[Player.room].playersReady){
-					Sockets.games[Player.room].state = 'entering_submissions';
-					Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: Player.room }));
-				}
-				else if(Sockets.games[Player.room].state === 'entering_submissions' && Player.submission){
+				if(Player.submission){
 					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
 						if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
 					}
-
-					if(Sockets.games[Player.room].submissions.length === Sockets.games[Player.room].players.length){
-						Sockets.games[Player.room].state = 'voting';
-
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: Player.room, submissions: Sockets.games[Player.room].submissions }));
-					}
 				}
-				else if(Sockets.games[Player.room].state === 'voting' && Sockets.games[Player.room].voteCount === Sockets.games[Player.room].players.length){
-					Sockets.games[Player.room].tallyVotes();
-				}
+
+				Sockets.games[Player.room].checkState();
+
+				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
+
+				Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
+
+				Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 			};
 		});
 
