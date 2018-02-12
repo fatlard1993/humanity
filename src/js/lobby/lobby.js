@@ -9,6 +9,7 @@ function Load(){
 	var games;
 	var packs;
 	var createdGame = false;
+	var currentView = 'main';
 
 	var views = {
 		main: function(){
@@ -108,7 +109,7 @@ function Load(){
 
 			if(data.command === 'lobby_reload' && createdGame) return Dom.draw('existing_game', createdGame);
 
-			Dom.draw();
+			if(currentView === 'main') Dom.draw();
 		}
 	}
 
@@ -165,13 +166,15 @@ function Load(){
 	}
 
 	Dom.draw = function draw(view){
+		currentView = view || 'main';
+
 		Dom.Content = Dom.Content || document.getElementById('Content');
 
 		Dom.empty(Dom.Content);
 
 		Dom.setTitle('humanity - lobby');
 
-		views[view || 'main'](arguments[1]);
+		views[currentView](arguments[1]);
 	};
 
 	Interact.onPointerUp = function(evt){
