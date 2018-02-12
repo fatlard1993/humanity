@@ -29,11 +29,28 @@ function Load(){
 		new_game: function(){
 			var newGameForm = Dom.createElem('div', { id: 'NewGameForm' });
 
-			var nameInput = Dom.createElem('input', { id: 'NewGameRoomName', placeholder: 'Room Name', validation: /^.{4,32}$/ });
+			var nameInput = Dom.createElem('input', { type: 'text', id: 'NewGameRoomName', placeholder: 'Room Name', validation: /^.{4,32}$/ });
 			Dom.validate(nameInput);
 
-			var timerInput = Dom.createElem('input', { id: 'NewGameTimer', placeholder: 'Timer (1-10 min, def: 2)', validation: /(^([1-9]|10)$)|(^(?![\s\S]))/ });
-			Dom.validate(timerInput);
+			var submissionTimer = Dom.createElem('input', { type: 'text', id: 'NewGameSubmissionTimer', placeholder: '0 :: Submission Timer 0-128 sec', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(submissionTimer);
+
+			var voteTimer = Dom.createElem('input', { type: 'text', id: 'NewGameVoteTimer', placeholder: '0 :: Vote Timer 0-128 sec', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(voteTimer);
+
+			var whiteCardCount = Dom.createElem('input', { type: 'text', id: 'NewGameWhiteCardCount', placeholder: '7 :: Whites 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(whiteCardCount);
+
+			var npcCount = Dom.createElem('input', { type: 'text', id: 'NewGameNPCCount', placeholder: '0 :: NPCs 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(npcCount);
+
+			var lastManOut = Dom.createElem('button', { id: 'NewGameLastManOut', className: 'toggle', textContent: 'Enable Last Man Out' });
+
+			var fillInMissing = Dom.createElem('button', { id: 'NewGameFillInMissing', className: 'toggle', textContent: 'Enable Fill In Missing' });
+
+			var editFieldToggle = Dom.createElem('button', { id: 'NewGameEditField', className: 'toggle selected', textContent: 'Enable Edit Field' });
+
+			var persistentWhites = Dom.createElem('button', { id: 'NewGamePersistentWhites', className: 'toggle selected', textContent: 'Enable Persistent Whites' });
 
 			var packsList = Dom.createElem('ul', { id: 'PacksList' });
 			var packCount = packs.length;
@@ -48,7 +65,14 @@ function Load(){
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			newGameForm.appendChild(nameInput);
-			// newGameForm.appendChild(timerInput);
+			newGameForm.appendChild(submissionTimer);
+			newGameForm.appendChild(voteTimer);
+			newGameForm.appendChild(whiteCardCount);
+			newGameForm.appendChild(npcCount);
+			newGameForm.appendChild(lastManOut);
+			newGameForm.appendChild(fillInMissing);
+			newGameForm.appendChild(editFieldToggle);
+			newGameForm.appendChild(persistentWhites);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			newGameForm.appendChild(lobbyButton);
@@ -93,21 +117,48 @@ function Load(){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			createdGame = document.getElementById('NewGameRoomName').value;
-			// var newGameTimer = document.getElementById('NewGameTimer').value;
+			var submissionTimer = document.getElementById('NewGameSubmissionTimer').value;
+			var voteTimer = document.getElementById('NewGameVoteTimer').value;
+			var whiteCardCount = document.getElementById('NewGameWhiteCardCount').value;
+			var npcCount = document.getElementById('NewGameNPCCount').value;
+
+			var lastManOut = document.getElementById('NewGameLastManOut').className.includes('selected');
+			var fillInMissing = document.getElementById('NewGameFillInMissing').className.includes('selected');
+			var editField = document.getElementById('NewGameEditField').className.includes('selected');
+			var persistentWhites = document.getElementById('NewGamePersistentWhites').className.includes('selected');
+
+			submissionTimer = submissionTimer.length ? parseInt(submissionTimer) : 0;
+			voteTimer = voteTimer.length ? parseInt(voteTimer) : 0;
+			whiteCardCount = whiteCardCount.length ? parseInt(whiteCardCount) : 7;
+			npcCount = npcCount.length ? parseInt(npcCount) : 0;
+
 			var newGamePacksList = [];
 
 			var packsList = document.getElementById('PacksList');
 			var packNames = Object.keys(packsList.children), packCount = packNames.length;
 
-			var newGameTimer = typeof newGameTimer === 'number' ? newGameTimer : 2;
-
 			for(var x = 0; x < packCount; ++x){
 				if(packsList.children[x].className.includes('selected')) newGamePacksList.push(packsList.children[x].textContent);
 			}
 
-			Log()(createdGame, newGamePacksList);
+			newGamePacksList = newGamePacksList.length ? newGamePacksList : ['base'];
 
-			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', name: createdGame, timer: newGameTimer, packs: newGamePacksList.length ? newGamePacksList : ['base'] }));
+			var options = {
+				name: createdGame,
+				packs: newGamePacksList,
+				submissionTimer: submissionTimer,
+				voteTimer: voteTimer,
+				whiteCardCount: whiteCardCount,
+				npcCount: npcCount,
+				lastManOut: lastManOut,
+				fillInMissing: fillInMissing,
+				editField: editField,
+				persistentWhites: persistentWhites
+			};
+
+			Log()(createdGame, options);
+
+			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', options: options }));
 
 			Dom.empty(Dom.Content);
 		}
@@ -148,6 +199,14 @@ function Load(){
 			Log()(evt.target.textContent);
 
 			evt.target.className = evt.target.className.includes('selected') ? 'pack' : 'pack selected';
+		}
+
+		else if(evt.target.className.includes('toggle')){
+			evt.preventDefault();
+
+			Log()(evt.target.textContent);
+
+			evt.target.className = evt.target.className.includes('selected') ? 'toggle' : 'toggle selected';
 		}
 
 		else if(evt.target.id === 'NewGameCreateButton'){
