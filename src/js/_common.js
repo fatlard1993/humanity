@@ -79,6 +79,15 @@ var Cjs = {
 
 		return result;
 	},
+	differenceArr: function differenceArr(arr1, arr2){
+		var result = [], arr1Len = arr1.length, arr2Len = arr2.length, longerArr = arr1Len > arr2Len ? arr1 : arr2, shorterArr = arr1Len > arr2Len ? arr2 : arr1;
+
+		for(var x = 0; x < longerArr.length; ++x){
+			if(!shorterArr.includes(longerArr[x])) result.push(longerArr[x]);
+		}
+
+		return result;
+	},
 	arrIsNegative: function arrIsNegative(arr){
 		return arr.every(function(element, index, array){ return element < 0; });
 	},
