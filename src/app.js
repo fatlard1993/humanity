@@ -73,7 +73,7 @@ function initExpress(cb){
 	app.get('/player', function(req, res, next){
 		Log()('Load player', req.socket.remoteAddress, req.query.room);
 
-		if(req.query.room && !Sockets.games[req.query.room]) return res.redirect('/lobby');
+		if(req.query.room && !Sockets.games[req.query.room]) return res.redirect(301, '/lobby');
 
 		res.sendFile(process.env.DIR +'/resources/html/player.html');
 	});
