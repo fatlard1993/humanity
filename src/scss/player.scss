@@ -44,7 +44,7 @@ input#SubmissionEntry {
 	margin: 10px auto 0;
 }
 
-button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameStartButton {
+button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameStartButton, button#ScoresButton {
 	display: block;
 	font-size: 30px;
 	width: 40%;
@@ -163,6 +163,12 @@ ul#PlayersList {
 		color: $black;
 		border-color: $black;
 	}
+	li.player.disabled {
+		cursor: not-allowed;
+		background: $grey-dark !important;
+		color: $grey-light !important;
+		border-color: $white !important;
+	}
 }
 
 ul#WaitingOnPlayersList {
@@ -177,5 +183,22 @@ ul#WaitingOnPlayersList {
 		margin: 3px;
 		border: 2px solid $grey-light;
 		text-align: center;
+	}
+}
+
+ul#ScoresList {
+	width: 70%;
+	margin: 1% auto;
+
+	li {
+		font-size: 20px;
+		padding: 7px;
+		background: $black;
+		color: $white;
+		margin: 3px;
+		border: 2px solid $grey-light;
+		text-align: left;
+		white-space: pre-wrap;
+		line-height: 32px;
 	}
 }

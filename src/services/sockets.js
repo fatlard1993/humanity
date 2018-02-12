@@ -85,6 +85,7 @@ var Sockets = {
 						packs: data.packs,
 						cards: Cards.get(data.packs),
 						state: 'new',
+						scores: {},
 						players: [],
 						readyPlayers: [],
 						submissions: [],
@@ -125,7 +126,32 @@ var Sockets = {
 
 							else if(this.state === 'voting'){
 								if(this.players.length === this.voteCount){
-									this.tallyVotes();
+									var highestScore = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
+
+									for(x = 0; x < votedEntryCount; ++x){
+										if(this.currentVotes[votedEntryNames[x]].count > highestScore) highestScore = this.currentVotes[votedEntryNames[x]].count;
+									}
+
+									for(x = 0; x < votedEntryCount; ++x){
+										if(this.currentVotes[votedEntryNames[x]].count && this.currentVotes[votedEntryNames[x]].count > 0){
+											if(!this.scores[this.currentVotes[votedEntryNames[x]].player]) this.scores[this.currentVotes[votedEntryNames[x]].player] = { votes: 0, winningVotes: 0, wins: 0 };
+
+											if(this.currentVotes[votedEntryNames[x]].count === highestScore){
+												this.currentVotes[votedEntryNames[x]].winner = true;
+
+												++this.scores[this.currentVotes[votedEntryNames[x]].player].wins;
+												this.scores[this.currentVotes[votedEntryNames[x]].player].winningVotes += this.currentVotes[votedEntryNames[x]].count;
+											}
+
+											this.scores[this.currentVotes[votedEntryNames[x]].player].votes += this.currentVotes[votedEntryNames[x]].count;
+										}
+									}
+
+									Log()('socket', 'player_vote_results', this.currentVotes);
+
+									Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes, scores: Sockets.games[this.name].scores }));
+
+									this.newBlack();
 								}
 								else{
 									Log()('Waiting for '+ waitingOn +' to vote');
@@ -153,23 +179,6 @@ var Sockets = {
 							this.submissions = [];
 							this.currentVotes = {};
 							this.voteCount = 0;
-						},
-						tallyVotes: function(){
-							var highestScore = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
-
-							for(x = 0; x < votedEntryCount; ++x){
-								if(this.currentVotes[votedEntryNames[x]].count > highestScore) highestScore = this.currentVotes[votedEntryNames[x]].count;
-							}
-
-							for(x = 0; x < votedEntryCount; ++x){
-								if(this.currentVotes[votedEntryNames[x]].count === highestScore) this.currentVotes[votedEntryNames[x]].winner = true;
-							}
-
-							Log()('socket', 'player_vote_results', this.currentVotes);
-
-							Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes }));
-
-							this.newBlack();
 						}
 					};
 

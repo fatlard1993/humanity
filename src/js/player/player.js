@@ -131,6 +131,8 @@ function Load(){
 
 			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: 'Play Again' });
 
+			var scoresButton = Dom.createElem('button', { id: 'ScoresButton', textContent: 'Scores' });
+
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			for(x = 0; x < submissionCount; ++x){
@@ -142,10 +144,29 @@ function Load(){
 
 			Dom.Content.appendChild(currentBlackHeading);
 			Dom.Content.appendChild(submissionList);
+			Dom.Content.appendChild(scoresButton);
 			Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
 
 			Socket.disconnect();
+		},
+		scores: function(){
+			var scoresList = Dom.createElem('ul', { id: 'ScoresList' });
+			var scoreNames = Object.keys(Game.scores), scoreCount = scoreNames.length;
+
+			for(x = 0; x < scoreCount; ++x){
+				var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes });
+
+				scoresList.appendChild(li);
+			}
+
+			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: 'Play Again' });
+
+			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
+
+			Dom.Content.appendChild(scoresList);
+			Dom.Content.appendChild(playAgainButton);
+			Dom.Content.appendChild(lobbyButton);
 		}
 	};
 
@@ -218,6 +239,8 @@ function Load(){
 		}
 
 		else if(data.command === 'player_vote_results'){
+			Game.scores = data.scores;
+
 			Dom.draw('vote_results', data.votes);
 		}
 
@@ -268,7 +291,7 @@ function Load(){
 		for(x = 0; x < playerCount; ++x){
 			var playerNameText = Game.players[x] === Player.name ? Game.players[x] +' (you)' : Game.players[x];
 			if(Game.readyPlayers.includes(Game.players[x])) playerNameText += ' READY';
-			var player_li = Dom.createElem('li', { className: 'player', textContent: playerNameText });
+			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : ''), textContent: playerNameText });
 
 			playersList.appendChild(player_li);
 		}
@@ -341,6 +364,12 @@ function Load(){
 			Dom.remove(evt.target);
 
 			Socket.active.send('{ "command": "player_ready_to_play" }');
+		}
+
+		else if(evt.target.id === 'ScoresButton'){
+			evt.preventDefault();
+
+			Dom.draw('scores');
 		}
 
 		else if(evt.target.id === 'PlayAgainButton'){
