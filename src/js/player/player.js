@@ -58,7 +58,8 @@ function Load(){
 
 			var submissionWrapper = Dom.createElem('div', { id: 'SubmissionEntryWrapper' });
 
-			var submissionInput = Dom.createElem('input', { id: 'SubmissionEntry', validation: /^.{1,256}$/ });
+			var submissionInput = Dom.createElem('input', { type: 'text', id: 'SubmissionEntry', validation: /^.{1,256}$/ });
+			if(!Game.options.editField) submissionInput.disabled = 'true';
 			Dom.validate(submissionInput);
 
 			var emptySubmissionButton = Dom.createElem('button', { id: 'EmptySubmissionEntry', textContent: 'Clear' });
@@ -183,6 +184,7 @@ function Load(){
 			Game.currentBlack = data.black;
 			Game.currentWhites = data.whites;
 			Game.players = data.players;
+			Game.options = data.options;
 
 			if(data.state === 'voting') Dom.draw('vote', data.submissions);
 
