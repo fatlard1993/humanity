@@ -122,7 +122,11 @@ function Load(){
 			}
 
 			for(x = 0; x < submissionCount; ++x){
-				submissionList.appendChild(Dom.createElem('li', { className: 'submission' + (submissions[x].submission === Player.submission ? ' disabled' : ''), textContent: submissions[x].submission }));
+				var li = Dom.createElem('li', { className: 'submission' + (submissions[x].submission === Player.submission ? ' disabled' : ''), innerHTML: submissions[x].submission });
+
+				li.setAttribute('data-text', submissions[x].submission);
+
+				submissionList.appendChild(li);
 			}
 
 			if(Game.options.voteTimer){
@@ -460,7 +464,7 @@ function Load(){
 		else if(evt.target.className === 'submission'){
 			evt.preventDefault();
 
-			voteOnSubmission(evt.target.textContent);
+			voteOnSubmission(evt.target.getAttribute('data-text'));
 		}
 
 		else if(evt.target.id === 'EmptySubmissionEntry'){
