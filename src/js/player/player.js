@@ -9,7 +9,8 @@ function Load(){
 	var x;
 
 	var Player = {
-		room: Dom.location.query.get('room')
+		room: Dom.location.query.get('room'),
+		usedWhite: ''
 	};
 
 	var Game = {
@@ -326,7 +327,19 @@ function Load(){
 
 			Player.submission = submission;
 
-			Socket.active.send('{ "command": "player_enter_submission", "submission": "'+ submission.replace(/"/gm, '\\"') +'" }');
+			var submissionCommand = {
+				command: 'player_enter_submission',
+				submission: submission
+			};
+
+			if(submission !== Player.usedWhite) submissionCommand.customWhite = true;
+
+			if(Player.usedWhite.length){
+				Socket.active.send(JSON.stringify({ command: 'player_use_white', text: Player.usedWhite }));
+				Player.usedWhite = '';
+			}
+
+			Socket.active.send(JSON.stringify(submissionCommand));
 
 			Dom.draw('waiting_room');
 		}
@@ -409,7 +422,7 @@ function Load(){
 			submissionInput.value = evt.target.textContent;
 			Dom.validate(submissionInput);
 
-			Socket.active.send('{ "command": "player_remove_white", "text": "'+ evt.target.textContent.replace(/"/gm, '\\"') +'" }');
+			Player.usedWhite = evt.target.textContent;
 		}
 
 		else if(evt.target.className === 'submission'){
@@ -423,6 +436,8 @@ function Load(){
 
 			document.getElementById('SubmissionEntry').value = '';
 			Dom.validate(document.getElementById('SubmissionEntry'));
+
+			Player.usedWhite = '';
 		}
 	};
 
@@ -439,6 +454,10 @@ function Load(){
 
 				enterSubmission();
 			}
+		}
+
+		else if(evt.target.id === 'SubmissionEntry' && keyPressed === 'BACK_SPACE' && evt.target.value.length < 5){
+			Player.usedWhite = '';
 		}
 	};
 

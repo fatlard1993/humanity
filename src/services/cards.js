@@ -52,6 +52,30 @@ const Cards = {
 		}
 
 		return output;
+	},
+	recordCustom: function(text){
+		Log()('cards', 'record custom: ', text);
+
+		fs.readFile(process.env.DIR +'/../src/cards/custom.json', function(err, data){
+			var packData;
+
+			try{
+				packData = JSON.parse(data);
+			}
+			catch(e){
+				packData = { blacks: [], whites: [] };
+			}
+
+			packData.whites.push(text);
+
+			Cards.packs.custom = packData;
+
+			Log()(`Loaded custom`);
+
+			fs.writeFile(process.env.DIR +'/../src/cards/custom.json', JSON.stringify(packData), function(err){
+				Log()(`Saved custom`);
+			});
+		});
 	}
 };
 

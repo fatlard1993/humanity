@@ -51,6 +51,7 @@ var Sockets = {
 						packs: data.options.packs,
 						options: data.options,
 						cards: Cards.get(data.options.packs),
+						playerHands: {},
 						state: 'new',
 						scores: {},
 						players: [],
@@ -222,15 +223,17 @@ var Sockets = {
 
 					Sockets.games[Player.room].players.push(Player.name);
 
-					var whites = [];
+					if(!Sockets.games[Player.room].playerHands[Player.name] || !Sockets.games[Player.room].options.persistentWhites){
+						Sockets.games[Player.room].playerHands[Player.name] = [];
 
-					for(var x = 0; x < Sockets.games[Player.room].options.whiteCardCount; ++x){
-						whites.push(Sockets.games[Player.room].newWhite());
+						for(var x = 0; x < Sockets.games[Player.room].options.whiteCardCount; ++x){
+							Sockets.games[Player.room].playerHands[Player.name].push(Sockets.games[Player.room].newWhite());
+						}
 					}
 
 					Log()(`Player "${Player.name}" joined ${Player.room} | Current players: ${Sockets.games[Player.room].players}`);
 
-					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: whites, players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions, options:	Sockets.games[Player.room].options }));
+					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Sockets.games[Player.room].playerHands[Player.name], players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions, options:	Sockets.games[Player.room].options }));
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: Player.room, name: Player.name }));
 
@@ -259,6 +262,8 @@ var Sockets = {
 					Sockets.games[Player.room].submissions.push({ player: Player.name, submission: data.submission });
 
 					Sockets.games[Player.room].checkState();
+
+					if(data.customWhite && Sockets.games[Player.room].options.recordCustomWhites) Cards.recordCustom(data.submission);
 				}
 
 				else if(data.command === 'player_place_vote'){
@@ -288,8 +293,14 @@ var Sockets = {
 					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions }));
 				}
 
-				else if(data.command === 'player_request_white'){
-					socket.send(JSON.stringify({ command: 'player_new_white', white: Sockets.games.newWhite() }));
+				else if(data.command === 'player_use_white'){
+					Log()('socket', 'player_use_white', data.text);
+
+					var newWhite = Sockets.games[Player.room].newWhite();
+
+					Sockets.games[Player.room].playerHands[Player.name][Sockets.games[Player.room].playerHands[Player.name].indexOf(data.text)] = newWhite;
+
+					socket.send(JSON.stringify({ command: 'player_new_white', white: newWhite }));
 				}
 
 				delete data.command;

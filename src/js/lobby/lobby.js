@@ -53,6 +53,8 @@ function Load(){
 
 			var persistentWhites = Dom.createElem('button', { id: 'NewGamePersistentWhites', className: 'toggle selected', textContent: 'Enable Persistent Whites' });
 
+			var recordCustomWhites = Dom.createElem('button', { id: 'NewGameRecordCustomWhites', className: 'toggle', textContent: 'Enable Record Custom Whites' });
+
 			var packsList = Dom.createElem('ul', { id: 'PacksList' });
 			var packCount = packs.length;
 
@@ -74,6 +76,7 @@ function Load(){
 			newGameForm.appendChild(fillInMissing);
 			newGameForm.appendChild(editFieldToggle);
 			newGameForm.appendChild(persistentWhites);
+			newGameForm.appendChild(recordCustomWhites);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			newGameForm.appendChild(lobbyButton);
@@ -127,6 +130,7 @@ function Load(){
 			var fillInMissing = document.getElementById('NewGameFillInMissing').className.includes('selected');
 			var editField = document.getElementById('NewGameEditField').className.includes('selected');
 			var persistentWhites = document.getElementById('NewGamePersistentWhites').className.includes('selected');
+			var recordCustomWhites = document.getElementById('NewGameRecordCustomWhites').className.includes('selected');
 
 			submissionTimer = submissionTimer.length ? parseInt(submissionTimer) : 0;
 			voteTimer = voteTimer.length ? parseInt(voteTimer) : 0;
@@ -154,7 +158,8 @@ function Load(){
 				lastManOut: lastManOut,
 				fillInMissing: fillInMissing,
 				editField: editField,
-				persistentWhites: persistentWhites
+				persistentWhites: persistentWhites,
+				recordCustomWhites: recordCustomWhites
 			};
 
 			Log()(createdGame, options);
