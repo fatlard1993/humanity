@@ -159,7 +159,10 @@ var Sockets = {
 
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes, scores: Sockets.games[this.name].scores, gameWinner: gameWinner }));
 
-									if(gameWinner) return;
+									if(gameWinner){
+										this.scores = {};
+										this.playerHands = {};
+									}
 
 									this.newBlack();
 
@@ -344,6 +347,7 @@ var Sockets = {
 				Log(2)('socket', 'onclose', data);
 
 				if(!Player.name) return Log(1)('socket', 'undefined player left');
+				if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
 
 				Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
 
