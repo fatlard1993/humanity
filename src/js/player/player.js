@@ -69,6 +69,14 @@ function Load(){
 
 			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
 
+			if(Game.options.submissionTimer){
+				var gameTimer = Dom.createElem('div', { id: 'GameTimer' });
+
+				Dom.Content.appendChild(gameTimer);
+
+				updateGameTimer(Game.options.submissionTimer);
+			}
+
 			submissionWrapper.appendChild(submissionInput);
 			submissionWrapper.appendChild(emptySubmissionButton);
 			Dom.Content.appendChild(currentBlackHeading);
@@ -115,6 +123,14 @@ function Load(){
 
 			for(x = 0; x < submissionCount; ++x){
 				submissionList.appendChild(Dom.createElem('li', { className: 'submission' + (submissions[x].submission === Player.submission ? ' disabled' : ''), textContent: submissions[x].submission }));
+			}
+
+			if(Game.options.voteTimer){
+				var gameTimer = Dom.createElem('div', { id: 'GameTimer' });
+
+				Dom.Content.appendChild(gameTimer);
+
+				updateGameTimer(Game.options.voteTimer);
 			}
 
 			Dom.Content.appendChild(currentBlackHeading);
@@ -265,6 +281,20 @@ function Load(){
 				waitingOnPlayersList.appendChild(li);
 			}
 		}
+	}
+
+	function updateGameTimer(timeLeft){
+		var gameTimer = document.getElementById('GameTimer');
+
+		if(!gameTimer) return;
+
+		gameTimer.textContent = timeLeft +' Seconds Remaining';
+
+		if(timeLeft === 0) return;
+
+		setTimeout(function(){
+			updateGameTimer(timeLeft - 1);
+		}, 1000);
 	}
 
 	function drawPlayersList(){

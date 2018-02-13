@@ -59,7 +59,7 @@ var Sockets = {
 						submissions: [],
 						currentVotes: {},
 						voteCount: 0,
-						checkState: function(){
+						checkState: function(forceChange){
 							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), x;
 
 							if(!this.players.length) this.newBlack();
@@ -73,6 +73,10 @@ var Sockets = {
 
 									if(this.options.submissionTimer){
 										Log()('Enabling submission timer for: ', this.options.submissionTimer);
+
+										setTimeout(function(){
+											Sockets.games[data.options.name].checkState(1);
+										}, this.options.submissionTimer * 1000);
 									}
 
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: this.name }));
@@ -83,7 +87,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'entering_submissions'){
-								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.submissions.length){
+								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.submissions.length || forceChange){
 									this.state = 'voting';
 									this.readyPlayers = [];
 
@@ -98,6 +102,10 @@ var Sockets = {
 
 									if(this.options.voteTimer){
 										Log()('Enabling vote timer for: ', this.options.voteTimer);
+
+										setTimeout(function(){
+											Sockets.games[data.options.name].checkState(1);
+										}, this.options.voteTimer * 1000);
 									}
 
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: this.name, submissions: this.submissions }));
@@ -108,7 +116,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'voting'){
-								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.voteCount){
+								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.voteCount || forceChange){
 									var highestScore = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
 									for(x = 0; x < votedEntryCount; ++x){

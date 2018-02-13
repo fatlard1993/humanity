@@ -33,10 +33,10 @@ function Load(){
 			var nameInput = Dom.createElem('input', { type: 'text', id: 'NewGameRoomName', placeholder: 'Room Name', validation: /^.{4,32}$/ });
 			Dom.validate(nameInput);
 
-			var submissionTimer = Dom.createElem('input', { type: 'text', id: 'NewGameSubmissionTimer', placeholder: '0 :: Submission Timer 0-128 sec', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			var submissionTimer = Dom.createElem('input', { type: 'text', id: 'NewGameSubmissionTimer', placeholder: '0 :: Submission Timer 0-128 sec', validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/ });
 			Dom.validate(submissionTimer);
 
-			var voteTimer = Dom.createElem('input', { type: 'text', id: 'NewGameVoteTimer', placeholder: '0 :: Vote Timer 0-128 sec', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			var voteTimer = Dom.createElem('input', { type: 'text', id: 'NewGameVoteTimer', placeholder: '0 :: Vote Timer 0-128 sec', validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/ });
 			Dom.validate(voteTimer);
 
 			var whiteCardCount = Dom.createElem('input', { type: 'text', id: 'NewGameWhiteCardCount', placeholder: '7 :: Whites 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });

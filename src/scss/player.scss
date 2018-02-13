@@ -149,3 +149,14 @@ ul#ScoresList {
 		line-height: 32px;
 	}
 }
+
+div#GameTimer {
+	font-size: 20px;
+	background: $black;
+	width: 210px;
+	height: 25px;
+	color: $white;
+	text-align: right;
+	padding: 3px 5px 1px 0;
+	border-bottom-right-radius: 4px;
+}
