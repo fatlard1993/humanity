@@ -182,7 +182,7 @@ function Load(){
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			Dom.Content.appendChild(scoresList);
-			Dom.Content.appendChild(playAgainButton);
+			if(!Game.winner) Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
 		}
 	};
