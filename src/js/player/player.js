@@ -122,11 +122,12 @@ function Load(){
 			}
 
 			for(x = 0; x < submissionCount; ++x){
-				var li = Dom.createElem('li', { className: 'submission' + (submissions[x].submission === Player.submission ? ' disabled' : ''), innerHTML: submissions[x].submission });
+				var isPlayerSubmission = submissions[x].submission === Player.submission;
+				var li = Dom.createElem('li', { className: 'submission' + (isPlayerSubmission ? ' disabled' : ''), innerHTML: submissions[x].submission });
 
 				li.setAttribute('data-text', submissions[x].submission);
 
-				submissionList.appendChild(li);
+				submissionList[isPlayerSubmission ? 'insertBefore' : 'appendChild'](li, isPlayerSubmission && submissionList.children.length ? submissionList.children[0] : null);
 			}
 
 			if(Game.options.voteTimer){
@@ -156,7 +157,7 @@ function Load(){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
 				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
 
-				submissionList.appendChild(li);
+				submissionList[submissions[submissionNames[x]].winner ? 'insertBefore' : 'appendChild'](li, submissions[submissionNames[x]].winner && submissionList.children.length ? submissionList.children[0] : null);
 			}
 
 			Dom.Content.appendChild(currentBlackHeading);
@@ -314,7 +315,7 @@ function Load(){
 			if(Game.readyPlayers.includes(Game.players[x])) playerNameText += ' READY';
 			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : ''), textContent: playerNameText });
 
-			playersList.appendChild(player_li);
+				playersList[Game.players[x] === Player.name ? 'insertBefore' : 'appendChild'](player_li, Game.players[x] === Player.name && playersList.children.length ? playersList.children[0] : null);
 		}
 	}
 
