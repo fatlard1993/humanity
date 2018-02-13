@@ -323,7 +323,8 @@ function Load(){
 		Dom.empty(whitesList);
 
 		for(x = 0; x < whiteCount; ++x){
-			var li = Dom.createElem('li', { className: 'white', textContent: Game.currentWhites[x] });
+			var li = Dom.createElem('li', { className: 'white', innerHTML: Game.currentWhites[x] });
+			li.setAttribute('data-text', Game.currentWhites[x]);
 
 			whitesList.appendChild(li);
 		}
@@ -448,11 +449,12 @@ function Load(){
 			evt.preventDefault();
 
 			var submissionInput = document.getElementById('SubmissionEntry');
+			var whiteText = evt.target.getAttribute('data-text');
 
-			submissionInput.value = evt.target.textContent;
+			submissionInput.value = whiteText;
 			Dom.validate(submissionInput);
 
-			Player.usedWhite = evt.target.textContent;
+			Player.usedWhite = whiteText;
 		}
 
 		else if(evt.target.className === 'submission'){
