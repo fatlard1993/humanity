@@ -76,7 +76,7 @@ var Sockets = {
 
 										setTimeout(function(){
 											Sockets.games[data.options.name].checkState(1);
-										}, this.options.submissionTimer * 1000);
+										}, (this.options.submissionTimer + 5) * 1000);
 									}
 
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_entering_submissions', room: this.name }));
@@ -91,9 +91,13 @@ var Sockets = {
 									this.state = 'voting';
 									this.readyPlayers = [];
 
-									if(this.options.lastManOut) this.submissions.push({ player: this.newPlayerName(), submission: this.newWhite() });
 									if(this.options.npcCount){
 										for(x = 0; x < this.options.npcCount; ++x){
+											this.submissions.push({ player: this.newPlayerName(), submission: this.newWhite() });
+										}
+									}
+									if(this.options.fillInMissing && waitingOn.length){
+										for(x = 0; x < waitingOn.length; ++x){
 											this.submissions.push({ player: this.newPlayerName(), submission: this.newWhite() });
 										}
 									}
@@ -105,7 +109,7 @@ var Sockets = {
 
 										setTimeout(function(){
 											Sockets.games[data.options.name].checkState(1);
-										}, this.options.voteTimer * 1000);
+										}, (this.options.voteTimer + 5) * 1000);
 									}
 
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_start_voting', room: this.name, submissions: this.submissions }));
