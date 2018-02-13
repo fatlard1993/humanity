@@ -165,8 +165,6 @@ function Load(){
 			Dom.Content.appendChild(scoresButton);
 			Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
-
-			Socket.disconnect();
 		},
 		scores: function(){
 			var scoresList = Dom.createElem('ul', { id: 'ScoresList' });
@@ -206,6 +204,7 @@ function Load(){
 			Game.currentBlack = data.black;
 			Game.currentWhites = data.whites;
 			Game.players = data.players;
+			Game.readyPlayers = data.readyPlayers;
 			Game.options = data.options;
 
 			if(data.state === 'voting') Dom.draw('vote', data.submissions);
@@ -429,9 +428,7 @@ function Load(){
 
 			Dom.empty(Dom.Content);
 
-			window.location.reload();
-
-			// Socket.active.send('{ "command": "player_play_again" }');
+			Socket.active.send('{ "command": "player_play_again" }');
 		}
 
 		else if(evt.target.id === 'LobbyButton'){
