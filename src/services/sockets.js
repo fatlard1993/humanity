@@ -348,6 +348,7 @@ var Sockets = {
 
 				if(!Player.name) return Log(1)('socket', 'undefined player left');
 				if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
+				if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
 
 				Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
 
