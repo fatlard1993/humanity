@@ -155,7 +155,8 @@ function Load(){
 
 			for(x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
-				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + (submissions[submissionNames[x]].winner ? '		WINNER' : '') }));
+				var winnerText = '		'+ (submissions[submissionNames[x]].player === Game.winner ? 'BIG ' : '') + (submissions[submissionNames[x]].winner ? 'WINNER' : '');
+				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + winnerText }));
 
 				submissionList[submissions[submissionNames[x]].winner ? 'insertBefore' : 'appendChild'](li, submissions[submissionNames[x]].winner && submissionList.children.length ? submissionList.children[0] : null);
 			}
@@ -163,7 +164,7 @@ function Load(){
 			Dom.Content.appendChild(currentBlackHeading);
 			Dom.Content.appendChild(submissionList);
 			Dom.Content.appendChild(scoresButton);
-			Dom.Content.appendChild(playAgainButton);
+			if(!Game.winner) Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
 		},
 		scores: function(){
@@ -171,7 +172,7 @@ function Load(){
 			var scoreNames = Object.keys(Game.scores), scoreCount = scoreNames.length;
 
 			for(x = 0; x < scoreCount; ++x){
-				var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes });
+				var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes +'\nTotal Points:\t'+ Game.scores[scoreNames[x]].points });
 
 				scoresList.appendChild(li);
 			}
@@ -264,6 +265,7 @@ function Load(){
 
 		else if(data.command === 'player_vote_results'){
 			Game.scores = data.scores;
+			Game.winner = data.gameWinner;
 
 			Dom.draw('vote_results', data.votes);
 		}

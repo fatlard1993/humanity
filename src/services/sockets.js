@@ -121,30 +121,45 @@ var Sockets = {
 
 							else if(this.state === 'voting'){
 								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.voteCount || forceChange){
-									var highestScore = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
+									var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
 									for(x = 0; x < votedEntryCount; ++x){
-										if(this.currentVotes[votedEntryNames[x]].count > highestScore) highestScore = this.currentVotes[votedEntryNames[x]].count;
+										if(this.currentVotes[votedEntryNames[x]].count > mostVotesOnSingleSubmission) mostVotesOnSingleSubmission = this.currentVotes[votedEntryNames[x]].count;
 									}
 
 									for(x = 0; x < votedEntryCount; ++x){
 										if(this.currentVotes[votedEntryNames[x]].count && this.currentVotes[votedEntryNames[x]].count > 0){
-											if(!this.scores[this.currentVotes[votedEntryNames[x]].player]) this.scores[this.currentVotes[votedEntryNames[x]].player] = { votes: 0, winningVotes: 0, wins: 0 };
+											if(!this.scores[this.currentVotes[votedEntryNames[x]].player]) this.scores[this.currentVotes[votedEntryNames[x]].player] = { votes: 0, winningVotes: 0, wins: 0, points: 0 };
 
-											if(this.currentVotes[votedEntryNames[x]].count === highestScore){
+											var newVotes = this.currentVotes[votedEntryNames[x]].count;
+											var newWins = this.currentVotes[votedEntryNames[x]].winner ? 1 : 0;
+
+											if(newVotes === mostVotesOnSingleSubmission){
 												this.currentVotes[votedEntryNames[x]].winner = true;
 
 												++this.scores[this.currentVotes[votedEntryNames[x]].player].wins;
-												this.scores[this.currentVotes[votedEntryNames[x]].player].winningVotes += this.currentVotes[votedEntryNames[x]].count;
+												this.scores[this.currentVotes[votedEntryNames[x]].player].winningVotes += newVotes;
 											}
 
-											this.scores[this.currentVotes[votedEntryNames[x]].player].votes += this.currentVotes[votedEntryNames[x]].count;
+											this.scores[this.currentVotes[votedEntryNames[x]].player].votes += newVotes;
+
+											this.scores[this.currentVotes[votedEntryNames[x]].player].points += newVotes * (newWins + 1 + (this.players.length - votedEntryCount) + (votedEntryCount === 1 ? 1 : 0));
 										}
 									}
 
 									Log()('socket', 'player_vote_results', this.currentVotes);
 
-									Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes, scores: Sockets.games[this.name].scores }));
+									var scorePlayerNames = Object.keys(this.scores), scorePlayerCount = scorePlayerNames.length;
+									var gameWinner;
+
+									for(x = 0; x < scorePlayerCount; ++x){
+										if(this.options.winGoal && this.scores[scorePlayerNames[x]].wins >= this.options.winGoal) gameWinner = scorePlayerNames[x];
+										if(this.options.pointGoal && this.scores[scorePlayerNames[x]].points >= this.options.pointGoal) gameWinner = scorePlayerNames[x];
+									}
+
+									Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes, scores: Sockets.games[this.name].scores, gameWinner: gameWinner }));
+
+									if(gameWinner) return;
 
 									this.newBlack();
 

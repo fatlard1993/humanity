@@ -45,6 +45,12 @@ function Load(){
 			var npcCount = Dom.createElem('input', { type: 'text', id: 'NewGameNPCCount', placeholder: '0 :: NPCs 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
 			Dom.validate(npcCount);
 
+			var winGoal = Dom.createElem('input', { type: 'text', id: 'NewGameWinGoal', placeholder: '5 :: Win Goal 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(winGoal);
+
+			var pointGoal = Dom.createElem('input', { type: 'text', id: 'NewGamePointGoal', placeholder: '50 :: Point Goal 0-128', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/ });
+			Dom.validate(pointGoal);
+
 			var lastManOut = Dom.createElem('button', { id: 'NewGameLastManOut', className: 'toggle', textContent: 'Enable Last Man Out' });
 
 			var fillInMissing = Dom.createElem('button', { id: 'NewGameFillInMissing', className: 'toggle', textContent: 'Enable Fill In Missing' });
@@ -72,6 +78,8 @@ function Load(){
 			newGameForm.appendChild(voteTimer);
 			newGameForm.appendChild(whiteCardCount);
 			newGameForm.appendChild(npcCount);
+			newGameForm.appendChild(winGoal);
+			newGameForm.appendChild(pointGoal);
 			newGameForm.appendChild(lastManOut);
 			newGameForm.appendChild(fillInMissing);
 			newGameForm.appendChild(editFieldToggle);
@@ -125,6 +133,8 @@ function Load(){
 			var voteTimer = document.getElementById('NewGameVoteTimer').value;
 			var whiteCardCount = document.getElementById('NewGameWhiteCardCount').value;
 			var npcCount = document.getElementById('NewGameNPCCount').value;
+			var winGoal = document.getElementById('NewGameWinGoal').value;
+			var pointGoal = document.getElementById('NewGamePointGoal').value;
 
 			var lastManOut = document.getElementById('NewGameLastManOut').className.includes('selected');
 			var fillInMissing = document.getElementById('NewGameFillInMissing').className.includes('selected');
@@ -136,6 +146,8 @@ function Load(){
 			voteTimer = voteTimer.length ? parseInt(voteTimer) : 0;
 			whiteCardCount = whiteCardCount.length ? parseInt(whiteCardCount) : 7;
 			npcCount = npcCount.length ? parseInt(npcCount) : 0;
+			winGoal = winGoal.length ? parseInt(winGoal) : 5;
+			pointGoal = pointGoal.length ? parseInt(pointGoal) : 50;
 
 			var newGamePacksList = [];
 
@@ -155,6 +167,8 @@ function Load(){
 				voteTimer: voteTimer,
 				whiteCardCount: whiteCardCount,
 				npcCount: npcCount,
+				winGoal: winGoal,
+				pointGoal: pointGoal,
 				lastManOut: lastManOut,
 				fillInMissing: fillInMissing,
 				editField: editField,
