@@ -10,7 +10,7 @@ This is just a platform that allows for playing a version of the wonderful/terri
 
 ## Setup
 
-1. npm i
+1. npm i --only=dev
 2. gulp setup
 
 
