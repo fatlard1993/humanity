@@ -68,6 +68,16 @@ ul#SubmissionList {
 	li:after{
 		@extend .clear;
 	}
+	li.winner {
+		background-color: $teal-darkest;
+		color: $teal-lighter;
+		border-color: $teal-dark;
+	}
+	li.big_winner {
+		background-color: $teal-light;
+		color: $teal-black;
+		border-color: $teal-lightest;
+	}
 	li.submission {
 		cursor: pointer;
 		text-align: center;
