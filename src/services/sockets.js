@@ -143,7 +143,7 @@ var Sockets = {
 
 											this.scores[this.currentVotes[votedEntryNames[x]].player].votes += newVotes;
 
-											this.scores[this.currentVotes[votedEntryNames[x]].player].points += newVotes * (newWins + 1 + (this.players.length - votedEntryCount) + (votedEntryCount === 1 ? 1 : 0));
+											this.scores[this.currentVotes[votedEntryNames[x]].player].points += newVotes * (newWins + 1 + (this.players.length - votedEntryCount) + (votedEntryCount === 2 ? 1 : 0));
 										}
 									}
 
