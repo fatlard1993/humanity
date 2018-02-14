@@ -132,7 +132,6 @@ var Sockets = {
 											if(!this.scores[this.currentVotes[votedEntryNames[x]].player]) this.scores[this.currentVotes[votedEntryNames[x]].player] = { votes: 0, winningVotes: 0, wins: 0, points: 0 };
 
 											var newVotes = this.currentVotes[votedEntryNames[x]].count;
-											var newWins = this.currentVotes[votedEntryNames[x]].winner ? 1 : 0;
 
 											if(newVotes === mostVotesOnSingleSubmission){
 												this.currentVotes[votedEntryNames[x]].winner = true;
@@ -143,7 +142,12 @@ var Sockets = {
 
 											this.scores[this.currentVotes[votedEntryNames[x]].player].votes += newVotes;
 
-											this.scores[this.currentVotes[votedEntryNames[x]].player].points += newVotes * (newWins + 1 + (this.players.length - votedEntryCount) + (votedEntryCount === 2 ? 1 : 0));
+											var newWins = this.currentVotes[votedEntryNames[x]].winner ? 1 : 0;
+											var mod = (newWins + 1 + (newWins ? (this.players.length - votedEntryCount) + (votedEntryCount === 2 ? 1 : 0) : 0));
+
+											this.scores[this.currentVotes[votedEntryNames[x]].player].points += newVotes * mod;
+
+											Log()(`${this.currentVotes[votedEntryNames[x]].player} got ${newVotes * mod} points with a modifier of: ${mod}`);
 										}
 									}
 
