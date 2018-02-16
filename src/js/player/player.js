@@ -154,7 +154,7 @@ function Load(){
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			for(x = 0; x < submissionCount; ++x){
-				var li = Dom.createElem('li', { className: 'submission_result', textContent: 'Votes: '+ submissions[submissionNames[x]].count });
+				var li = Dom.createElem('li', { className: 'submission_result'+ (submissions[submissionNames[x]].player === Game.winner ? ' big_winner' : (submissions[submissionNames[x]].winner ? ' winner' : '')), textContent: 'Votes: '+ submissions[submissionNames[x]].count });
 				var winnerText = '		'+ (submissions[submissionNames[x]].player === Game.winner ? 'BIG ' : '') + (submissions[submissionNames[x]].winner ? 'WINNER' : '');
 				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + winnerText }));
 
