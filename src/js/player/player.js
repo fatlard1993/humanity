@@ -253,7 +253,7 @@ function Load(){
 			drawWhitesList();
 		}
 
-		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results') return;
+		if(!data.room || !Player.room || data.room !== Player.room || Game.currentView === 'main' ||	Game.currentView === 'vote_results' ||	Game.currentView === 'scores') return;
 
 		if(data.command === 'player_start_entering_submissions'){
 			Dom.draw('enter_submission');
