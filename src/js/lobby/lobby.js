@@ -1,4 +1,4 @@
-/* global Cjs, Dom, Log, Socket, Interact */
+/* global Cjs, Dom, Log, WS, Interact */
 
 var Loaded = false;
 
@@ -106,24 +106,6 @@ function Load(){
 		}
 	};
 
-	function onSocketMessage(data){
-		console.log(data);
-
-		if(data.command === 'challenge'){
-			Socket.active.send('{ "command": "challenge_response", "room": "lobby" }');
-		}
-
-		else if(data.command === 'challenge_accept' || data.command === 'lobby_reload'){
-			games = data.games;
-
-			packs = data.packs;
-
-			if(data.command === 'lobby_reload' && createdGame) return Dom.draw('existing_game', createdGame);
-
-			if(currentView === 'main') Dom.draw();
-		}
-	}
-
 	function createNewGame(){
 		if(!document.querySelectorAll('.invalid').length){
 			Dom.Content = Dom.Content || document.getElementById('Content');
@@ -178,7 +160,7 @@ function Load(){
 
 			Log()(createdGame, options);
 
-			Socket.active.send(JSON.stringify({ command: 'lobby_new_game', options: options }));
+			WS.send({ command: 'lobby_new_game', options: options });
 
 			Dom.empty(Dom.Content);
 		}
@@ -212,7 +194,8 @@ function Load(){
 
 			Log()(evt.target.textContent);
 
-			Dom.draw('existing_game', evt.target.children[0].textContent);
+			// Dom.draw('existing_game', evt.target.children[0].textContent);
+			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/player?room='+ evt.target.children[0].textContent;
 		}
 
 		else if(evt.target.className.includes('pack')){
@@ -278,7 +261,30 @@ function Load(){
 		}
 	};
 
-	Socket.init(null, onSocketMessage);
+	WS.onmessage = function(data){
+		console.log(data);
+
+		if(data.command === 'challenge_accept' || data.command === 'lobby_reload'){
+			games = data.games;
+			packs = data.packs;
+
+			if(WS.reconnecting){
+				WS.reconnecting = false;
+
+				WS.flushQueue();
+
+				if(currentView === 'main') Dom.draw();
+			}
+
+			else if(data.command === 'lobby_reload' && createdGame) window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/player?room='+ createdGame;
+
+			else if(currentView === 'main') Dom.draw();
+		}
+	};
+
+	WS.room = 'lobby';
+
+	WS.connect();
 }
 
 document.addEventListener('DOMContentLoaded', Load);
