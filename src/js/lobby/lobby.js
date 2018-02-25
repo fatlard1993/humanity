@@ -61,6 +61,8 @@ function Load(){
 
 			var recordCustomWhites = Dom.createElem('button', { id: 'NewGameRecordCustomWhites', className: 'toggle', textContent: 'Enable Record Custom Whites' });
 
+			var selectAllPacks = Dom.createElem('button', { id: 'SelectAllPacks', textContent: 'Select All Packs' });
+
 			var packsList = Dom.createElem('ul', { id: 'PacksList' });
 			var packCount = packs.length;
 
@@ -85,6 +87,7 @@ function Load(){
 			newGameForm.appendChild(editFieldToggle);
 			newGameForm.appendChild(persistentWhites);
 			newGameForm.appendChild(recordCustomWhites);
+			newGameForm.appendChild(selectAllPacks);
 			newGameForm.appendChild(packsList);
 			newGameForm.appendChild(createButton);
 			newGameForm.appendChild(lobbyButton);
@@ -198,6 +201,21 @@ function Load(){
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/player?room='+ evt.target.children[0].textContent;
 		}
 
+		else if(evt.target.id === 'SelectAllPacks'){
+			evt.preventDefault();
+
+			var packItems = document.querySelectorAll('li.pack');
+			var selectedCount = document.querySelectorAll('li.pack.selected').length;
+			var packCount = packs.length;
+			var selectBool = selectedCount < packCount;
+
+			for(var x = 0; x < packCount; ++x){
+				packItems[x].className = 'pack'+ (selectBool ? ' selected' : '');
+			}
+
+			evt.target.textContent = (selectBool ? 'Uns' : 'S') +'elect All Packs';
+		}
+
 		else if(evt.target.className.includes('pack')){
 			evt.preventDefault();
 
@@ -266,7 +284,7 @@ function Load(){
 
 		if(data.command === 'challenge_accept' || data.command === 'lobby_reload'){
 			games = data.games;
-			packs = data.packs;
+			packs = Cjs.sortArrAlphaNumeric(data.packs);
 
 			if(WS.reconnecting){
 				WS.reconnecting = false;
