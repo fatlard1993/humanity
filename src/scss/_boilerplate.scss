@@ -91,6 +91,9 @@ ul {
 		color: $grey-light !important;
 		border-color: $white !important;
 	}
+	li *{
+		pointer-events: none;
+	}
 }
 
 body {
