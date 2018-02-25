@@ -112,6 +112,7 @@ function Load(){
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack +'<br><br>Vote for your favorite!' });
 
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
+			var voteConfirmButton = Dom.createElem('button', { id: 'VoteConfirmButton', textContent: 'Confirm Vote' });
 			var submissionCount = submissions.length;
 
 			if(submissionCount <= 1){
@@ -143,6 +144,7 @@ function Load(){
 			}
 
 			Dom.Content.appendChild(currentBlackHeading);
+			Dom.Content.appendChild(voteConfirmButton);
 			Dom.Content.appendChild(submissionList);
 		},
 		vote_results: function(submissions){
@@ -382,7 +384,21 @@ function Load(){
 		else if(evt.target.className === 'submission'){
 			evt.preventDefault();
 
-			voteOnSubmission(evt.target.getAttribute('data-text'));
+			Log()(evt.target.textContent);
+
+			var oldSelection = document.querySelector('.selected');
+
+			if(oldSelection) oldSelection.className = 'submission';
+
+			Player.vote = evt.target.getAttribute('data-text');
+
+			evt.target.className = 'submission selected';
+		}
+
+		else if(evt.target.id === 'VoteConfirmButton'){
+			evt.preventDefault();
+
+			if(Player.vote) voteOnSubmission(Player.vote);
 		}
 
 		else if(evt.target.id === 'EmptySubmissionEntry'){
