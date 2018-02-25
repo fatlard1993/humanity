@@ -6,8 +6,6 @@ var Interact = {
 		Interact.pointerTarget = null;
 	},
 	pointerDown: function pointerDown(evt){
-		if(Socket) Socket.activity++;
-
 		if(evt.which === 2 || !evt.target.className.includes || !evt.cancelable) return;
 
 		Interact.pointerTarget = evt.target;
@@ -48,8 +46,6 @@ var Interact = {
 		}
 
 		else Interact.pressedKeys[keyPressed] = 1;
-
-		if(Socket) Socket.activity++;
 
 		if(evt.target.nodeName === 'SELECT') return;
 

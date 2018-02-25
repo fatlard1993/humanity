@@ -12,11 +12,37 @@ var Sockets = {
 		Sockets.wss.on('connection', function(socket){
 			Log()('\nsocket', '"Someone" connected...');
 
-			socket.send(`{ "command": "challenge" }`);
+			setTimeout(function(){ socket.send(`{ "command": "challenge" }`); }, 200);
 
 			var validConnection = false;
 
-			var Player = {};
+			var Player = {
+				disconnect: function(){
+					Sockets[Player.name +'_disconnect_TO'] = setTimeout(function(){
+						if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
+						if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
+
+						Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
+
+						if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+						if(Player.voted) --Sockets.games[Player.room].voteCount;
+
+						if(Player.submission){
+							for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+								if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
+							}
+						}
+
+						Sockets.games[Player.room].checkState();
+
+						Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
+
+						Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
+
+						Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+					}, 10 * 1000);
+				}
+			};
 
 			socket.onmessage = function(message){
 				Log(3)(message);
@@ -28,16 +54,20 @@ var Sockets = {
 				}
 
 				else if(data.command === 'challenge_response'){
+					Log()('socket', 'challenge_response');
+
 					validConnection = true;
 
 					if(data.room === 'lobby'){
 						socket.send(JSON.stringify({ command: 'challenge_accept', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 					}
 
-					else if(data.room === 'player'){
-						if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
+					else if(data.room.startsWith('player')){
+						var room = data.room.replace(/^player_/, '');
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[data.game_room].players, readyPlayers: Sockets.games[data.game_room].readyPlayers, gameState: Sockets.games[data.game_room].state }));
+						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
+
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
 					}
 				}
 
@@ -242,6 +272,10 @@ var Sockets = {
 							return name || 'computer';
 						},
 						addPlayer: function(playerName){
+							clearTimeout(Sockets[playerName +'_disconnect_TO']);
+
+							if(this.players.includes(playerName)) return;
+
 							this.players.push(playerName);
 
 							if(!this.playerHands[playerName] || !this.options.persistentWhites){
@@ -270,6 +304,8 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_join'){
+					Log()('socket', 'player_join');
+
 					if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
 
 					Player.name = data.playerName;
@@ -282,6 +318,8 @@ var Sockets = {
 
 				else if(data.command === 'player_ready_to_play'){
 					Log()('socket', 'player_ready_to_play');
+
+					if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) return;
 
 					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
@@ -343,35 +381,16 @@ var Sockets = {
 					socket.send(JSON.stringify({ command: 'player_new_white', white: newWhite }));
 				}
 
-				delete data.command;
-				if(Object.keys(data).length) Log()('socket', 'Command data: ', data, '\n');
+				// delete data.command;
+				// if(Object.keys(data).length) Log()('socket', 'Command data: ', data, '\n');
 			};
 
 			socket.onclose = function(data){
-				Log(2)('socket', 'onclose', data);
+				Log()('socket', 'onclose', data);
 
 				if(!Player.name) return Log(1)('socket', 'undefined player left');
-				if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
-				if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
 
-				Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
-
-				if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
-				if(Player.voted) --Sockets.games[Player.room].voteCount;
-
-				if(Player.submission){
-					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
-						if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
-					}
-				}
-
-				Sockets.games[Player.room].checkState();
-
-				Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
-
-				Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
-
-				Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+				Player.disconnect();
 			};
 		});
 
