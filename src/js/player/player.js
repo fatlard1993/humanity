@@ -188,6 +188,8 @@ function Load(){
 			for(x = 0; x < scoreCount; ++x){
 				var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes +'\nTotal Points:\t'+ Game.scores[scoreNames[x]].points });
 
+				if(scoreNames[x] === Player.name) li.className = 'selected';
+
 				scoresList.appendChild(li);
 			}
 
