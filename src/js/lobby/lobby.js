@@ -181,11 +181,12 @@ function Load(){
 		views[currentView](arguments[1]);
 	};
 
-	Interact.onPointerUp = function(evt){
+	Interact.onPointerUp.push(function(evt){
 		console.log(evt);
 
 		if(evt.target.id === 'NewGame'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Log()(evt.target.textContent);
 
@@ -194,6 +195,7 @@ function Load(){
 
 		else if(evt.target.className === 'game'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Log()(evt.target.textContent);
 
@@ -203,6 +205,7 @@ function Load(){
 
 		else if(evt.target.id === 'SelectAllPacks'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			var packItems = document.querySelectorAll('li.pack');
 			var selectedCount = document.querySelectorAll('li.pack.selected').length;
@@ -218,6 +221,7 @@ function Load(){
 
 		else if(evt.target.className.includes('pack')){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Log()(evt.target.textContent);
 
@@ -226,6 +230,7 @@ function Load(){
 
 		else if(evt.target.className.includes('toggle')){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Log()(evt.target.textContent);
 
@@ -234,12 +239,14 @@ function Load(){
 
 		else if(evt.target.id === 'NewGameCreateButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			createNewGame();
 		}
 
 		else if(evt.target.id === 'ViewButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
@@ -250,6 +257,7 @@ function Load(){
 
 		else if(evt.target.id === 'PlayButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			window.location = window.location.protocol +'//'+ window.location.hostname +':'+ window.location.port +'/player?room='+ document.getElementsByClassName('gameTitle')[0].textContent;
 
@@ -260,6 +268,7 @@ function Load(){
 
 		else if(evt.target.id === 'LobbyButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
@@ -267,9 +276,9 @@ function Load(){
 
 			window.location.reload();
 		}
-	};
+	});
 
-	Interact.onKeyUp = function(evt, keyPressed){
+	Interact.onKeyUp.push(function(evt, keyPressed){
 		if(keyPressed === 'ENTER'){
 			if(document.getElementById('NewGameCreateButton')){
 				evt.preventDefault();
@@ -277,7 +286,7 @@ function Load(){
 				createNewGame();
 			}
 		}
-	};
+	});
 
 	WS.onmessage = function(data){
 		console.log(data);
