@@ -24,23 +24,23 @@ var Sockets = {
 
 						Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
 
-						if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
-						if(Player.voted) --Sockets.games[Player.room].voteCount;
+						// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+						// if(Player.voted) --Sockets.games[Player.room].voteCount;
 
-						if(Player.submission){
-							for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
-								if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
-							}
-						}
-
-						Sockets.games[Player.room].checkState();
+						// if(Player.submission){
+						// 	for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+						// 		if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
+						// 	}
+						// }
 
 						Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
-					}, 10 * 1000);
+
+						Sockets.games[Player.room].checkState();
+					}, 3 * 1000);
 				}
 			};
 
@@ -54,7 +54,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'challenge_response'){
-					Log()('socket', 'challenge_response');
+					Log()('socket', 'challenge_response', data.room);
 
 					validConnection = true;
 
@@ -99,7 +99,7 @@ var Sockets = {
 									this.state = 'entering_submissions';
 									this.readyPlayers = [];
 
-									Log()('Changing state: ', this.state);
+									Log()('\nChanging state: ', this.state);
 
 									if(this.options.submissionTimer){
 										Log()('Enabling submission timer for: ', this.options.submissionTimer);
@@ -132,7 +132,7 @@ var Sockets = {
 										}
 									}
 
-									Log()('Changing state: ', this.state);
+									Log()('\nChanging state: ', this.state);
 
 									if(this.options.voteTimer){
 										Log()('Enabling vote timer for: ', this.options.voteTimer);
@@ -150,7 +150,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'voting'){
-								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.voteCount || forceChange){
+								if((this.players.length - (this.options.lastManOut ? 1 : 0)) <= this.voteCount || forceChange){
 									var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
 									for(x = 0; x < votedEntryCount; ++x){
@@ -212,7 +212,8 @@ var Sockets = {
 								}
 							}
 
-							if(waitingOn.length) Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn }));
+							// if(waitingOn.length)
+							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn }));
 						},
 						newBlack: function(){
 							var totalBlacks = this.cards.blacks.length;
@@ -304,20 +305,36 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_join'){
-					Log()('socket', 'player_join');
+					Log()('socket', 'player_join', data.playerName);
 
 					if(!Sockets.games[data.game_room]) return socket.send('{ "command": "goto_lobby" }');
 
 					Player.name = data.playerName;
 					Player.room = data.game_room;
 
+					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+						if(Sockets.games[Player.room].submissions[x].player === Player.name) Player.submission = Sockets.games[Player.room].submissions[x].submission;
+					}
+
 					Sockets.games[Player.room].addPlayer(Player.name);
 
-					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Sockets.games[Player.room].playerHands[Player.name], players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions, options: Sockets.games[Player.room].options, readyPlayers: Sockets.games[Player.room].readyPlayers }));
+					socket.send(JSON.stringify({
+						command: 'player_join_accept',
+						submission: Player.submission,
+						black: Sockets.games[Player.room].currentBlack,
+						whites: Sockets.games[Player.room].playerHands[Player.name],
+						players: Sockets.games[Player.room].players,
+						state: Sockets.games[Player.room].state,
+						submissions: Sockets.games[Player.room].submissions,
+						options: Sockets.games[Player.room].options,
+						readyPlayers: Sockets.games[Player.room].readyPlayers
+					}));
+
+					Sockets.games[Player.room].checkState();
 				}
 
 				else if(data.command === 'player_ready_to_play'){
-					Log()('socket', 'player_ready_to_play');
+					Log()('socket', 'player_ready_to_play', Player.name, Player.room);
 
 					if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) return;
 
@@ -329,7 +346,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_enter_submission'){
-					Log()('socket', 'player_enter_submission', data.submission);
+					Log()('socket', 'player_enter_submission', Player.name, data.submission);
 
 					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
@@ -343,7 +360,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_place_vote'){
-					Log()('socket', 'player_place_vote', data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left');
+					Log()('socket', 'player_place_vote', Player.name, data.vote, Sockets.games[Player.room].players.length - Sockets.games[Player.room].voteCount +' votes left');
 
 					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
@@ -364,7 +381,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_play_again'){
-					Log()('socket', 'player_play_again');
+					Log()('socket', 'player_play_again', Player.name);
 
 					Sockets.games[Player.room].addPlayer(Player.name);
 
@@ -372,7 +389,7 @@ var Sockets = {
 				}
 
 				else if(data.command === 'player_use_white'){
-					Log()('socket', 'player_use_white', data.text);
+					Log()('socket', 'player_use_white', Player.name, data.text);
 
 					var newWhite = Sockets.games[Player.room].newWhite();
 

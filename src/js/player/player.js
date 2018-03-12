@@ -157,7 +157,7 @@ function Load(){
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
 			var submissionNames = Object.keys(submissions), submissionCount = submissionNames.length;
 
-			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: 'Play Again' });
+			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Start Over' : 'Play Again' });
 
 			var scoresButton = Dom.createElem('button', { id: 'ScoresButton', textContent: 'Scores' });
 
@@ -174,7 +174,7 @@ function Load(){
 			Dom.Content.appendChild(currentBlackHeading);
 			Dom.Content.appendChild(submissionList);
 			Dom.Content.appendChild(scoresButton);
-			if(!Game.winner) Dom.Content.appendChild(playAgainButton);
+			Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
 
 			if(wakelock) wakelock.cancel();
@@ -193,12 +193,12 @@ function Load(){
 				scoresList.appendChild(li);
 			}
 
-			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: 'Play Again' });
+			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Start Over' : 'Play Again' });
 
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			Dom.Content.appendChild(scoresList);
-			if(!Game.winner) Dom.Content.appendChild(playAgainButton);
+			Dom.Content.appendChild(playAgainButton);
 			Dom.Content.appendChild(lobbyButton);
 		}
 	};
@@ -316,17 +316,19 @@ function Load(){
 		views[view || 'main'](arguments[1]);
 	};
 
-	Interact.onPointerUp = function(evt){
+	Interact.onPointerUp.push(function(evt){
 		Log()(evt);
 
 		if(evt.target.id === 'JoinGameButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			joinGame();
 		}
 
 		else if(evt.target.id === 'GameStartButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			if(wakelock) wakelock.createRequest();
 
@@ -341,12 +343,14 @@ function Load(){
 
 		else if(evt.target.id === 'ScoresButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Dom.draw('scores');
 		}
 
 		else if(evt.target.id === 'PlayAgainButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
@@ -357,6 +361,7 @@ function Load(){
 
 		else if(evt.target.id === 'LobbyButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
@@ -367,12 +372,14 @@ function Load(){
 
 		else if(evt.target.id === 'EnterSubmission'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			enterSubmission();
 		}
 
 		else if(evt.target.className === 'white'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			var submissionInput = document.getElementById('SubmissionEntry');
 			var whiteText = evt.target.getAttribute('data-text');
@@ -385,6 +392,7 @@ function Load(){
 
 		else if(evt.target.className === 'submission'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			Log()(evt.target.textContent);
 
@@ -399,21 +407,23 @@ function Load(){
 
 		else if(evt.target.id === 'VoteConfirmButton'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			if(Player.vote) voteOnSubmission(Player.vote);
 		}
 
 		else if(evt.target.id === 'EmptySubmissionEntry'){
 			evt.preventDefault();
+			Interact.pointerTarget = null;
 
 			document.getElementById('SubmissionEntry').value = '';
 			Dom.validate(document.getElementById('SubmissionEntry'));
 
 			Player.usedWhite = '';
 		}
-	};
+	});
 
-	Interact.onKeyUp = function(evt, keyPressed){
+	Interact.onKeyUp.push(function(evt, keyPressed){
 		if(keyPressed === 'ENTER'){
 			if(document.getElementById('JoinGameButton')){
 				evt.preventDefault();
@@ -431,7 +441,7 @@ function Load(){
 		else if(evt.target.id === 'SubmissionEntry' && keyPressed === 'BACK_SPACE' && evt.target.value.length < 5){
 			Player.usedWhite = '';
 		}
-	};
+	});
 
 	WS.onmessage = function(data){
 		if(data.command === 'challenge_accept'){
@@ -457,9 +467,10 @@ function Load(){
 			Game.players = data.players;
 			Game.readyPlayers = data.readyPlayers;
 			Game.options = data.options;
+			Player.submission = data.submission;
 
 			if(data.state === 'voting'){
-				if(Player.placedVote) Dom.draw('waiting_room');
+				if(Game.readyPlayers.includes(Player.name) || Player.placedVote) Dom.draw('waiting_room');
 
 				else Dom.draw('vote', data.submissions);
 			}
