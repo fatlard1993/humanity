@@ -1,4 +1,4 @@
-/* global Cjs, Dom, Log, WS, Interact, LogHelp */
+/* global Dom, Log, WS, Interact */
 
 var Loaded = false;
 

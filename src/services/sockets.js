@@ -18,37 +18,40 @@ var Sockets = {
 
 			var Player = {
 				disconnect: function(){
-					Sockets[Player.name +'_disconnect_TO'] = setTimeout(function(){
-						if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
-						if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
+					if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
+					if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
 
-						Sockets.games[Player.room].activePlayers.splice(Sockets.games[Player.room].activePlayers.indexOf(Player.name), 1);
-						if(Sockets.games[Player.room].state === 'new') Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+					Sockets.games[Player.room].activePlayers.splice(Sockets.games[Player.room].activePlayers.indexOf(Player.name), 1);
+					if(Sockets.games[Player.room].state === 'new'){
+						Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
+						Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+					}
 
-						// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
-						// if(Player.voted) --Sockets.games[Player.room].voteCount;
+					// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+					// if(Player.voted) --Sockets.games[Player.room].voteCount;
 
-						// if(Player.submission){
-						// 	for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
-						// 		if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
-						// 	}
-						// }
+					// if(Player.submission){
+					// 	for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+					// 		if(Sockets.games[Player.room].submissions[x].submission === Player.submission) Sockets.games[Player.room].submissions.splice(x, 1);
+					// 	}
+					// }
 
-						Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].activePlayers}`);
+					Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].activePlayers}`);
 
-						Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
+					Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
 
-						Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 
-						Sockets.games[Player.room].checkState();
-					}, 1 * 1000);
+					Sockets.games[Player.room].checkState();
+					// Sockets[Player.name +'_disconnect_TO'] = setTimeout(function(){
+					// }, 1 * 1000);
 				}
 			};
 
 			socket.onmessage = function(message){
 				Log(3)(message);
 
-				var data = JSON.parse(message.data);
+				var data = JSON.parse(message.data), x;
 
 				if(data.command === 'test'){
 					Log()('socket', 'test');
@@ -92,12 +95,21 @@ var Sockets = {
 						currentVotes: {},
 						voteCount: 0,
 						checkState: function(forceChange){
-							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), x;
+							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), waitingOnCount = waitingOn.length, newWaitingOn = [], x;
 
-							if(!this.activePlayers.length) this.newBlack();
+							for(x = 0; x < waitingOnCount; ++x){
+								if(this.activePlayers.includes(waitingOn[x])) newWaitingOn.push(waitingOn[x]);
+							}
+
+							Log()(waitingOn, this.activePlayers, this.readyPlayers, newWaitingOn);
+
+							waitingOn = newWaitingOn;
+							waitingOnCount = waitingOn.length;
+
+							if(!this.players.length) this.newBlack();
 
 							else if(this.state === 'new'){
-								if(this.activePlayers.length === this.readyPlayers.length){
+								if(!waitingOnCount){//this.players.length === this.readyPlayers.length
 									this.state = 'entering_submissions';
 									this.readyPlayers = [];
 
@@ -119,7 +131,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'entering_submissions'){
-								if(waitingOn.length - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){ //(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.submissions.length
+								if(waitingOnCount - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){ //(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.submissions.length
 									this.state = 'voting';
 									this.readyPlayers = [];
 
@@ -128,8 +140,8 @@ var Sockets = {
 											this.submissions.push({ player: this.newPlayerName(), submission: this.newWhite() });
 										}
 									}
-									if(this.options.fillInMissing && waitingOn.length){
-										for(x = 0; x < waitingOn.length; ++x){
+									if(this.options.fillInMissing && waitingOnCount){
+										for(x = 0; x < waitingOnCount; ++x){
 											this.submissions.push({ player: this.newPlayerName(), submission: this.newWhite() });
 										}
 									}
@@ -152,7 +164,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'voting'){
-								if(waitingOn.length - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){//(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.voteCount
+								if(waitingOnCount - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){//(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.voteCount
 									var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
 									for(x = 0; x < votedEntryCount; ++x){
@@ -215,7 +227,7 @@ var Sockets = {
 								}
 							}
 
-							// if(waitingOn.length)
+							// if(waitingOnCount)
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn, activePlayers: this.activePlayers }));
 						},
 						newBlack: function(){
@@ -275,12 +287,12 @@ var Sockets = {
 
 							return name || 'computer';
 						},
-						addPlayer: function(playerName, playerSocket){
-							clearTimeout(Sockets[playerName +'_disconnect_TO']);
+						addPlayer: function(playerName, playerSocket, submission){
+							// clearTimeout(Sockets[playerName +'_disconnect_TO']);
 
-							if(this.players.includes(playerName)) return;
+							if(!this.players.includes(playerName)) this.players.push(playerName);
 
-							this.players.push(playerName);
+							if(!this.activePlayers.includes(playerName)) this.activePlayers.push(playerName);
 
 							if(!this.playerHands[playerName] || !this.options.persistentWhites){
 								this.playerHands[playerName] = [];
@@ -290,13 +302,9 @@ var Sockets = {
 								}
 							}
 
-							Log()(`Player "${playerName}" joined ${this.name} | Current players: ${this.players}`);
-
-							Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
-
 							playerSocket.send(JSON.stringify({
 								command: 'player_join_accept',
-								submission: Player.submission,
+								submission: submission,
 								black: this.currentBlack,
 								whites: this.playerHands[playerName],
 								players: this.players,
@@ -307,9 +315,11 @@ var Sockets = {
 								activePlayers: this.activePlayers
 							}));
 
+							Log()(`Player "${playerName}" joined ${this.name} | Current players: ${this.players}`);
+
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: this.name, name: playerName }));
 
-							this.activePlayers.push(playerName);
+							Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 
 							this.checkState();
 						}
@@ -331,17 +341,17 @@ var Sockets = {
 					Player.room = data.game_room;
 					Player.socket = socket;
 
-					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+					for(x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
 						if(Sockets.games[Player.room].submissions[x].player === Player.name) Player.submission = Sockets.games[Player.room].submissions[x].submission;
 					}
 
-					Sockets.games[Player.room].addPlayer(Player.name, socket);
+					Sockets.games[Player.room].addPlayer(Player.name, socket, Player.submission);
 				}
 
 				else if(data.command === 'player_ready_to_play'){
 					Log()('socket', 'player_ready_to_play', Player.name, Player.room);
 
-					if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) return;
+					// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) return;
 
 					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
@@ -372,7 +382,7 @@ var Sockets = {
 					if(!Sockets.games[Player.room].currentVotes[data.vote]){
 						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
 
-						for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
+						for(x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
 							if(Sockets.games[Player.room].submissions[x].submission === data.vote) Sockets.games[Player.room].currentVotes[data.vote].player = Sockets.games[Player.room].submissions[x].player;
 						}
 					}
@@ -407,7 +417,7 @@ var Sockets = {
 				// if(Object.keys(data).length) Log()('socket', 'Command data: ', data, '\n');
 			};
 
-			socket.onclose = function(data){
+			socket.onclose = function(){
 				// Log()('socket', 'onclose', data);
 
 				if(!Player.name) return Log(1)('socket', 'undefined player left');
