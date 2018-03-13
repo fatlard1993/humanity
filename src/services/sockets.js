@@ -22,7 +22,8 @@ var Sockets = {
 						if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
 						if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
 
-						Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
+						Sockets.games[Player.room].activePlayers.splice(Sockets.games[Player.room].activePlayers.indexOf(Player.name), 1);
+						if(Sockets.games[Player.room].state === 'new') Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
 
 						// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
 						// if(Player.voted) --Sockets.games[Player.room].voteCount;
@@ -33,14 +34,14 @@ var Sockets = {
 						// 	}
 						// }
 
-						Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].players}`);
+						Log()(`Player "${Player.name}" left ${Player.room} | Players left: ${Sockets.games[Player.room].activePlayers}`);
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
 
 						Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 
 						Sockets.games[Player.room].checkState();
-					}, 3 * 1000);
+					}, 1 * 1000);
 				}
 			};
 
@@ -67,7 +68,7 @@ var Sockets = {
 
 						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, activePlayers: Sockets.games[room].activePlayers, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
 					}
 				}
 
@@ -85,6 +86,7 @@ var Sockets = {
 						state: 'new',
 						scores: {},
 						players: [],
+						activePlayers: [],
 						readyPlayers: [],
 						submissions: [],
 						currentVotes: {},
@@ -92,10 +94,10 @@ var Sockets = {
 						checkState: function(forceChange){
 							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), x;
 
-							if(!this.players.length) this.newBlack();
+							if(!this.activePlayers.length) this.newBlack();
 
 							else if(this.state === 'new'){
-								if(this.players.length === this.readyPlayers.length){
+								if(this.activePlayers.length === this.readyPlayers.length){
 									this.state = 'entering_submissions';
 									this.readyPlayers = [];
 
@@ -117,7 +119,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'entering_submissions'){
-								if((this.players.length - (this.options.lastManOut ? 1 : 0)) === this.submissions.length || forceChange){
+								if(waitingOn.length - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){ //(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.submissions.length
 									this.state = 'voting';
 									this.readyPlayers = [];
 
@@ -150,7 +152,7 @@ var Sockets = {
 							}
 
 							else if(this.state === 'voting'){
-								if((this.players.length - (this.options.lastManOut ? 1 : 0)) <= this.voteCount || forceChange){
+								if(waitingOn.length - (this.options.lastManOut ? 1 : 0) <= 0 || forceChange){//(this.activePlayers.length - (this.options.lastManOut ? 1 : 0)) <= this.voteCount
 									var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
 									for(x = 0; x < votedEntryCount; ++x){
@@ -203,6 +205,7 @@ var Sockets = {
 									this.state = 'new';
 									this.players = [];
 									this.readyPlayers = [];
+									this.activePlayers = [];
 									this.submissions = [];
 									this.currentVotes = {};
 									this.voteCount = 0;
@@ -213,7 +216,7 @@ var Sockets = {
 							}
 
 							// if(waitingOn.length)
-							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn }));
+							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn, activePlayers: this.activePlayers }));
 						},
 						newBlack: function(){
 							var totalBlacks = this.cards.blacks.length;
@@ -272,7 +275,7 @@ var Sockets = {
 
 							return name || 'computer';
 						},
-						addPlayer: function(playerName){
+						addPlayer: function(playerName, playerSocket){
 							clearTimeout(Sockets[playerName +'_disconnect_TO']);
 
 							if(this.players.includes(playerName)) return;
@@ -289,9 +292,24 @@ var Sockets = {
 
 							Log()(`Player "${playerName}" joined ${this.name} | Current players: ${this.players}`);
 
+							Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+							playerSocket.send(JSON.stringify({
+								command: 'player_join_accept',
+								submission: Player.submission,
+								black: this.currentBlack,
+								whites: this.playerHands[playerName],
+								players: this.players,
+								state: this.state,
+								submissions: this.submissions,
+								options: this.options,
+								readyPlayers: this.readyPlayers,
+								activePlayers: this.activePlayers
+							}));
+
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_join', room: this.name, name: playerName }));
 
-							Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+							this.activePlayers.push(playerName);
 
 							this.checkState();
 						}
@@ -311,26 +329,13 @@ var Sockets = {
 
 					Player.name = data.playerName;
 					Player.room = data.game_room;
+					Player.socket = socket;
 
 					for(var x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
 						if(Sockets.games[Player.room].submissions[x].player === Player.name) Player.submission = Sockets.games[Player.room].submissions[x].submission;
 					}
 
-					Sockets.games[Player.room].addPlayer(Player.name);
-
-					socket.send(JSON.stringify({
-						command: 'player_join_accept',
-						submission: Player.submission,
-						black: Sockets.games[Player.room].currentBlack,
-						whites: Sockets.games[Player.room].playerHands[Player.name],
-						players: Sockets.games[Player.room].players,
-						state: Sockets.games[Player.room].state,
-						submissions: Sockets.games[Player.room].submissions,
-						options: Sockets.games[Player.room].options,
-						readyPlayers: Sockets.games[Player.room].readyPlayers
-					}));
-
-					Sockets.games[Player.room].checkState();
+					Sockets.games[Player.room].addPlayer(Player.name, socket);
 				}
 
 				else if(data.command === 'player_ready_to_play'){
@@ -383,9 +388,9 @@ var Sockets = {
 				else if(data.command === 'player_play_again'){
 					Log()('socket', 'player_play_again', Player.name);
 
-					Sockets.games[Player.room].addPlayer(Player.name);
+					Sockets.games[Player.room].addPlayer(Player.name, socket);
 
-					socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Sockets.games[Player.room].playerHands[Player.name], players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions, options: Sockets.games[Player.room].options, readyPlayers: Sockets.games[Player.room].readyPlayers }));
+					// socket.send(JSON.stringify({ command: 'player_join_accept', black: Sockets.games[Player.room].currentBlack, whites: Sockets.games[Player.room].playerHands[Player.name], players: Sockets.games[Player.room].players, state: Sockets.games[Player.room].state, submissions: Sockets.games[Player.room].submissions, options: Sockets.games[Player.room].options, readyPlayers: Sockets.games[Player.room].readyPlayers }));
 				}
 
 				else if(data.command === 'player_use_white'){
@@ -403,7 +408,7 @@ var Sockets = {
 			};
 
 			socket.onclose = function(data){
-				Log()('socket', 'onclose', data);
+				// Log()('socket', 'onclose', data);
 
 				if(!Player.name) return Log(1)('socket', 'undefined player left');
 

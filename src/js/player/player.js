@@ -254,7 +254,7 @@ function Load(){
 		if(!document.querySelectorAll('.invalid').length){
 			var nameInput = document.getElementById('JoinGameName');
 
-			if(Game.players.includes(nameInput.value)){
+			if(Game.activePlayers.includes(nameInput.value)){
 				nameInput.className = nameInput.className.replace(/\svalidated|\sinvalid/g, '') +' invalid';
 
 				return;
@@ -447,6 +447,7 @@ function Load(){
 		if(data.command === 'challenge_accept'){
 			Game.players = data.players;
 			Game.readyPlayers = data.readyPlayers;
+			Game.activePlayers = data.activePlayers;
 
 			if(WS.reconnecting){
 				WS.reconnecting = false;
@@ -466,6 +467,7 @@ function Load(){
 			Game.currentWhites = data.whites;
 			Game.players = data.players;
 			Game.readyPlayers = data.readyPlayers;
+			Game.activePlayers = data.activePlayers;
 			Game.options = data.options;
 			Player.submission = data.submission;
 
@@ -482,6 +484,14 @@ function Load(){
 			}
 
 			else Dom.draw('start_screen');
+		}
+
+		else if(data.command === 'player_waiting_on' && Game.currentView === 'main'){
+			Game.activePlayers = data.activePlayers;
+		}
+
+		else if(data.command === 'player_vote_results' && Game.currentView === 'start_screen'){
+			Dom.draw('start_screen');
 		}
 
 		else if(data.command === 'player_join'){
