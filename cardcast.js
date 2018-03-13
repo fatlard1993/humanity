@@ -52,7 +52,7 @@ else if(process.argv[2] === 'get'){
 
 			console.log(`read ${blacksInCount} blacks & ${whitesInCount} whites : wrote ${blacks_out.length} blacks & ${whites_out.length} whites`);
 
-			fs.writeFile(`./src/cards/${outFile}.json`, JSON.stringify({ blacks: blacks_out, whites: whites_out }, '	'), function(){
+			fs.writeFile(`./src/cards/${outFile}.json`, JSON.stringify({ blacks: blacks_out, whites: whites_out }, ' ', 2), function(){
 				exec('gulp dev');
 			});
 		});
