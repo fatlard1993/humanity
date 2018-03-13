@@ -24,7 +24,7 @@ var Sockets = {
 					Sockets.games[Player.room].activePlayers.splice(Sockets.games[Player.room].activePlayers.indexOf(Player.name), 1);
 					if(Sockets.games[Player.room].state === 'new'){
 						Sockets.games[Player.room].players.splice(Sockets.games[Player.room].players.indexOf(Player.name), 1);
-						Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
+						if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
 					}
 
 					// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) Sockets.games[Player.room].readyPlayers.splice(Sockets.games[Player.room].readyPlayers.indexOf(Player.name), 1);
