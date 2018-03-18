@@ -471,7 +471,15 @@ function Load(){
 			Game.options = data.options;
 			Player.submission = data.submission;
 
-			if(data.state === 'voting'){
+			Player.ready = 1;
+
+			if(Player.retry_command){
+				WS.send(Player.retry_command);
+
+				delete Player.retry_command;
+			}
+
+			else if(data.state === 'voting'){
 				if(Game.readyPlayers.includes(Player.name) || Player.placedVote) Dom.draw('waiting_room');
 
 				else Dom.draw('vote', data.submissions);
@@ -483,7 +491,19 @@ function Load(){
 				else if(Game.currentView !== 'enter_submission') Dom.draw('enter_submission');
 			}
 
-			else Dom.draw('start_screen');
+			else{
+				Player.ready = 0;
+
+				Dom.draw('start_screen');
+			}
+		}
+
+		else if(data.command === 'rejoin_request'){
+			if(!Player.name || !Player.room) return Dom.draw('main');
+
+			Player.retry_command = data.retry_command;
+
+			WS.send({ command: 'player_join', game_room: Player.room, playerName: Player.name });
 		}
 
 		else if(data.command === 'player_waiting_on' && Game.currentView === 'main'){

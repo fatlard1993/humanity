@@ -10,7 +10,7 @@ var Sockets = {
 		Sockets.wss = new WebSocket.Server({ server });
 
 		Sockets.wss.on('connection', function(socket){
-			Log()('\nsocket', '"Someone" connected...');
+			Log()('\nNew socket connection opened...');
 
 			setTimeout(function(){ socket.send(`{ "command": "challenge" }`); }, 200);
 
@@ -73,6 +73,8 @@ var Sockets = {
 
 						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, activePlayers: Sockets.games[room].activePlayers, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
 					}
+
+					return;
 				}
 
 				if(!validConnection) return;
@@ -101,7 +103,7 @@ var Sockets = {
 								if(this.activePlayers.includes(waitingOn[x])) newWaitingOn.push(waitingOn[x]);
 							}
 
-							Log()(waitingOn, this.activePlayers, this.readyPlayers, newWaitingOn);
+							Log()(this.players, this.activePlayers, this.readyPlayers);
 
 							waitingOn = newWaitingOn;
 							waitingOnCount = waitingOn.length;
@@ -329,7 +331,7 @@ var Sockets = {
 
 					Log(2)('socket', 'Created New Game: ', Sockets.games[data.options.name]);
 
-					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+					return Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 				}
 
 				else if(data.command === 'player_join'){
@@ -348,7 +350,11 @@ var Sockets = {
 					Sockets.games[Player.room].addPlayer(Player.name, socket, Player.submission);
 				}
 
-				else if(data.command === 'player_ready_to_play'){
+				if(!Player.name || !Player.room){
+					return socket.send(JSON.stringify({ command: 'rejoin_request', retry_command: data }));
+				}
+
+				if(data.command === 'player_ready_to_play'){
 					Log()('socket', 'player_ready_to_play', Player.name, Player.room);
 
 					// if(Sockets.games[Player.room].readyPlayers.includes(Player.name)) return;
