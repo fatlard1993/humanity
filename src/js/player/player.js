@@ -61,6 +61,10 @@ function Load(){
 		enter_submission: function(){
 			var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
 
+			var vetoBlackDisplay = Dom.createElem('div', { id: 'VetoBlackDisplay', textContent: '0/'+ Game.players.length });
+
+			var vetoBlackButton = Dom.createElem('button', { id: 'VetoBlackButton' });
+
 			var submissionWrapper = Dom.createElem('div', { id: 'SubmissionEntryWrapper' });
 
 			var submissionInput = Dom.createElem('input', { type: 'text', id: 'SubmissionEntry', validation: /^.{1,256}$/ });
@@ -69,7 +73,9 @@ function Load(){
 
 			var emptySubmissionButton = Dom.createElem('button', { id: 'EmptySubmissionEntry', textContent: 'Clear' });
 
-			var doneButton = Dom.createElem('button', { id: 'EnterSubmission', textContent: 'Done' });
+			var trashWhiteCards = Dom.createElem('button', { id: 'TrashWhiteCards', textContent: 'Trash Whites' });
+
+			var doneButton = Dom.createElem('button', { id: 'EnterSubmission', textContent: 'Submit' });
 
 			var whitesList = Dom.createElem('ul', { id: 'WhitesList' });
 
@@ -83,9 +89,14 @@ function Load(){
 
 			submissionWrapper.appendChild(submissionInput);
 			submissionWrapper.appendChild(emptySubmissionButton);
+
+			currentBlackHeading.appendChild(vetoBlackDisplay);
+			currentBlackHeading.appendChild(vetoBlackButton);
+
 			Dom.Content.appendChild(currentBlackHeading);
 			Dom.Content.appendChild(submissionWrapper);
 			Dom.Content.appendChild(doneButton);
+			Dom.Content.appendChild(trashWhiteCards);
 			Dom.Content.appendChild(whitesList);
 
 			drawWhitesList();
@@ -115,25 +126,33 @@ function Load(){
 			var voteConfirmButton = Dom.createElem('button', { id: 'VoteConfirmButton', textContent: 'Confirm Vote' });
 			var submissionCount = submissions.length;
 
-			if(submissionCount <= 1){
-				var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
+			// if(submissionCount <= 1){
+			// 	var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
-				currentBlackHeading.textContent = 'No one is playing here';
+			// 	currentBlackHeading.textContent = 'No one is playing here';
 
-				Dom.Content.appendChild(currentBlackHeading);
-				Dom.Content.appendChild(lobbyButton);
+			// 	Dom.Content.appendChild(currentBlackHeading);
+			// 	Dom.Content.appendChild(lobbyButton);
 
-				return;
-			}
+			// 	return;
+			// }
+
+			Player.cantVote = 1;
 
 			for(x = 0; x < submissionCount; ++x){
+				if(!submissions[x].submission.length) continue;
+
 				var isPlayerSubmission = submissions[x].submission === Player.submission;
 				var li = Dom.createElem('li', { className: 'submission' + (isPlayerSubmission ? ' disabled' : ''), innerHTML: submissions[x].submission });
 
 				li.setAttribute('data-text', submissions[x].submission);
 
 				submissionList[isPlayerSubmission ? 'insertBefore' : 'appendChild'](li, isPlayerSubmission && submissionList.children.length ? submissionList.children[0] : null);
+
+				if(!isPlayerSubmission) Player.cantVote = 0;
 			}
+
+			if(Player.cantVote) voteConfirmButton.textContent = 'Continue';
 
 			if(Game.options.voteTimer){
 				var gameTimer = Dom.createElem('div', { id: 'GameTimer' });
@@ -273,7 +292,7 @@ function Load(){
 	}
 
 	function enterSubmission(){
-		if(!document.querySelectorAll('.invalid').length){
+		if(Game.trashingWhiteCards || !document.querySelectorAll('.invalid').length){
 			var submission = document.getElementById('SubmissionEntry').value;
 
 			Player.submission = submission;
@@ -299,9 +318,23 @@ function Load(){
 	function voteOnSubmission(submission){
 		Player.placedVote = 1;
 
-		WS.send({ command: 'player_place_vote', vote: submission }); //.replace(/"/gm, '\\"')
+		Player.cantVote = 0;
+
+		WS.send({ command: 'player_place_vote', vote: submission });
 
 		Dom.draw('waiting_room');
+	}
+
+	function updateVetoDisplay(count){
+		var vetoBlackDisplay = document.getElementById('VetoBlackDisplay');
+
+		if(!vetoBlackDisplay) return;
+
+		var vetoCount = parseInt(vetoBlackDisplay.textContent.split('/')[0]);
+
+		vetoCount += count || 0;
+
+		vetoBlackDisplay.textContent = vetoCount +'/'+ Game.players.length;
 	}
 
 	Dom.draw = function draw(view){
@@ -381,13 +414,22 @@ function Load(){
 			evt.preventDefault();
 			Interact.pointerTarget = null;
 
-			var submissionInput = document.getElementById('SubmissionEntry');
 			var whiteText = evt.target.getAttribute('data-text');
 
-			submissionInput.value = whiteText;
-			Dom.validate(submissionInput);
+			if(Game.trashingWhiteCards){
+				Dom.remove(evt.target);
 
-			Player.usedWhite = whiteText;
+				WS.send({ command: 'player_use_white', text: whiteText });
+			}
+
+			else{
+				var submissionInput = document.getElementById('SubmissionEntry');
+
+				submissionInput.value = whiteText;
+				Dom.validate(submissionInput);
+
+				Player.usedWhite = whiteText;
+			}
 		}
 
 		else if(evt.target.className === 'submission'){
@@ -409,7 +451,7 @@ function Load(){
 			evt.preventDefault();
 			Interact.pointerTarget = null;
 
-			if(Player.vote) voteOnSubmission(Player.vote);
+			if(Player.vote || Player.cantVote) voteOnSubmission(Player.vote);
 		}
 
 		else if(evt.target.id === 'EmptySubmissionEntry'){
@@ -420,6 +462,38 @@ function Load(){
 			Dom.validate(document.getElementById('SubmissionEntry'));
 
 			Player.usedWhite = '';
+		}
+
+		else if(evt.target.id === 'VetoBlackButton' && evt.target.className !== 'active'){
+			evt.preventDefault();
+			Interact.pointerTarget = null;
+
+			evt.target.className = 'active';
+
+			WS.send({ command: 'veto_black' });
+
+			updateVetoDisplay(1);
+		}
+
+		else if(evt.target.id === 'TrashWhiteCards'){
+			evt.preventDefault();
+			Interact.pointerTarget = null;
+
+			Game.trashingWhiteCards = true;
+
+			document.getElementById('CurrentBlackHeading').appendChild(Dom.createElem('div', { textContent: '\n\n - Trashing White Cards - ' }));
+
+			document.getElementById('EnterSubmission').textContent = 'Done Trashing';
+			Dom.remove(evt.target);
+
+			var submissionEntryField = document.getElementById('SubmissionEntry');
+
+			submissionEntryField.value = '';
+			Dom.validate(submissionEntryField, 1);
+
+			Player.usedWhite = '';
+
+			submissionEntryField.disabled = true;
 		}
 	});
 
@@ -472,6 +546,7 @@ function Load(){
 			Player.submission = data.submission;
 
 			Player.ready = 1;
+			Game.trashingWhiteCards = false;
 
 			if(Player.retry_command){
 				WS.send(Player.retry_command);
@@ -520,6 +595,7 @@ function Load(){
 			Game.players.push(data.name);
 
 			drawPlayersList();
+			updateVetoDisplay();
 		}
 
 		else if(data.command === 'player_ready'){
@@ -544,10 +620,11 @@ function Load(){
 			if(Game.readyPlayers.includes(data.name)) Game.readyPlayers.splice(Game.readyPlayers.indexOf(data.name), 1);
 
 			drawPlayersList();
+			updateVetoDisplay();
 		}
 
-		else if(data.command === 'player_new_white'){
-			Game.currentWhites.push(data.white);
+		else if(data.command === 'player_new_whites'){
+			Game.currentWhites = data.whites;
 
 			drawWhitesList();
 		}
@@ -585,6 +662,10 @@ function Load(){
 
 				waitingOnPlayersList.appendChild(li);
 			}
+		}
+
+		else if(data.command === 'veto_black' && data.player !== Player.name){
+			updateVetoDisplay(1);
 		}
 	};
 

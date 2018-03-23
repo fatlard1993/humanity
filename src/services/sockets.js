@@ -96,6 +96,7 @@ var Sockets = {
 						submissions: [],
 						currentVotes: {},
 						voteCount: 0,
+						currentBlackVetoCount: 0,
 						checkState: function(forceChange){
 							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), waitingOnCount = waitingOn.length, newWaitingOn = [], x;
 
@@ -222,6 +223,7 @@ var Sockets = {
 									this.activePlayers = [];
 									this.submissions = [];
 									this.currentVotes = {};
+									this.currentBlackVetoCount = 0;
 									this.voteCount = 0;
 								}
 								else{
@@ -385,7 +387,7 @@ var Sockets = {
 
 					Sockets.games[Player.room].readyPlayers.push(Player.name);
 
-					if(!Sockets.games[Player.room].currentVotes[data.vote]){
+					if(data.vote && !Sockets.games[Player.room].currentVotes[data.vote]){
 						Sockets.games[Player.room].currentVotes[data.vote] = { count: 0 };
 
 						for(x = 0; x < Sockets.games[Player.room].submissions.length; ++x){
@@ -393,7 +395,7 @@ var Sockets = {
 						}
 					}
 
-					++Sockets.games[Player.room].currentVotes[data.vote].count;
+					if(data.vote) ++Sockets.games[Player.room].currentVotes[data.vote].count;
 					++Sockets.games[Player.room].voteCount;
 
 					Player.voted = true;
@@ -416,7 +418,25 @@ var Sockets = {
 
 					Sockets.games[Player.room].playerHands[Player.name][Sockets.games[Player.room].playerHands[Player.name].indexOf(data.text)] = newWhite;
 
-					socket.send(JSON.stringify({ command: 'player_new_white', white: newWhite }));
+					socket.send(JSON.stringify({ command: 'player_new_whites', whites: Sockets.games[Player.room].playerHands[Player.name] }));
+				}
+
+				else if(data.command === 'veto_black'){
+					++Sockets.games[Player.room].currentBlackVetoCount;
+
+					data.player = Player.name;
+					data.room = Player.room;
+
+					Sockets.wss.broadcast(JSON.stringify(data));
+
+					Log()('black veto', Sockets.games[Player.room].currentBlackVetoCount, Sockets.games[Player.room].players.length);
+
+					if(Sockets.games[Player.room].currentBlackVetoCount >= Sockets.games[Player.room].players.length){
+						Log.info()('skip black');
+
+						Sockets.games[Player.room].state = 'voting';
+						Sockets.games[Player.room].checkState(1);
+					}
 				}
 
 				// delete data.command;

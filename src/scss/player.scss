@@ -9,6 +9,7 @@ div#JoinGameForm {
 		font-size: 20px;
 		width: 75%;
 		margin: 10px auto 0;
+		color: $white;
 	}
 
 	button {
@@ -26,8 +27,17 @@ div#CurrentBlackHeading {
 	width: 90%;
 	background: $black;
 	color: $white;
-	padding: 10px;
+	padding: 32px 10px 64px;
 	border-radius: 10px;
+	position: relative;
+
+	div#VetoBlackDisplay {
+		position: absolute;
+		font-size: 16px;
+		color: $red;
+		top: 6px;
+		right: 48px;
+	}
 }
 
 div#WaitingHeading {
@@ -40,11 +50,11 @@ div#WaitingHeading {
 input#SubmissionEntry {
 	display: block;
 	font-size: 20px;
-	width: 80%;
+	width: 65%;
 	margin: 10px auto 0;
 }
 
-button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameStartButton, button#ScoresButton, button#VoteConfirmButton {
+button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameStartButton, button#ScoresButton, button#VoteConfirmButton, button#TrashWhiteCards {
 	display: block;
 	font-size: 30px;
 	width: 40%;
@@ -120,9 +130,9 @@ div#SubmissionEntryWrapper {
 button#EmptySubmissionEntry {
 	position: absolute;
 	top: 2px;
-	right: 10%;
+	right: 1%;
 	height: 25px;
-	width: 62px;
+	width: 15%;
 }
 
 ul#PlayersList {
@@ -169,4 +179,25 @@ div#GameTimer {
 	text-align: right;
 	padding: 3px 5px 1px 0;
 	border-bottom-right-radius: 4px;
+}
+
+button#VetoBlackButton {
+	position: absolute;
+  top: 5px;
+	right: 5px;
+
+	&:before {
+		@extend .fontAwesome;
+
+		content: "\f165";
+		font-size: 24px !important;
+	}
+
+	&:active:before {
+		color: $red-dark;
+	}
+
+	&.active:before {
+		color: $red;
+	}
 }
