@@ -439,6 +439,12 @@ var Sockets = {
 					}
 				}
 
+				else if(data.command === 'player_bump'){
+					data.room = Player.room;
+
+					Sockets.wss.broadcast(JSON.stringify(data));
+				}
+
 				// delete data.command;
 				// if(Object.keys(data).length) Log()('socket', 'Command data: ', data, '\n');
 			};

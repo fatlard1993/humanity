@@ -495,6 +495,13 @@ function Load(){
 
 			submissionEntryField.disabled = true;
 		}
+
+		else if(evt.target.parentElement.id === 'WaitingOnPlayersList'){
+			evt.preventDefault();
+			Interact.pointerTarget = null;
+
+			WS.send({ command: 'player_bump', player: evt.target.textContent });
+		}
 	});
 
 	Interact.onKeyUp.push(function(evt, keyPressed){
@@ -666,6 +673,10 @@ function Load(){
 
 		else if(data.command === 'veto_black' && data.player !== Player.name){
 			updateVetoDisplay(1);
+		}
+
+		else if(data.command === 'player_bump' && data.player === Player.name){
+			if(window.navigator) window.navigator.vibrate(300);
 		}
 	};
 
