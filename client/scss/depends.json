@@ -1,0 +1,4 @@
+[
+	"../swiss-army-knife/scss/*.scss",
+	"../swiss-army-knife/scss/**/*.scss"
+]

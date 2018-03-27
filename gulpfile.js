@@ -3,13 +3,11 @@ const exec = require('child_process').exec;
 
 const gulp = require('gulp');
 const sass = require('gulp-sass');
-const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
-const uglify = require('gulp-uglify');
 const babel = require('gulp-babel');//&& babel-core && babel-preset-env
 const concat = require('gulp-concat');
 
-const Log = require('./src/js/_log.js');
+const Log = require(`${__dirname}/../swiss-army-knife/js/_log.js`);
 
 const autoprefixerOptions = {
 	flexBox: 'no-2009',
@@ -20,6 +18,12 @@ const autoprefixerOptions = {
 const babelOptions = {
 	presets: ['env']
 };
+
+function notify(message){
+	Log(1)(`NOTIFICATION : ${message}`);
+
+	exec(`notify-send ${message}`);
+}
 
 function browse(folder, cb){
 	var folders = [];
@@ -46,13 +50,13 @@ function browse(folder, cb){
 }
 
 function concatJS(name, files, applyBabel){
-	Log(1)('building js file: ', name, files, 'with'+ (applyBabel ? '' : ' NO') +' babel');
+	Log(1)(`building js file: ${name} ${files} with ${(applyBabel ? '' : ' NO')} babel`);
 
-	var proc = gulp.src(files).pipe(concat(name +'.js'));
+	var proc = gulp.src(files).pipe(concat(`${name}.js`));
 
 	if(applyBabel) proc.pipe(babel(babelOptions));
 
-	proc.pipe(gulp.dest('out/resources/js'));
+	proc.pipe(gulp.dest('client/public/js'));
 }
 
 function createHTML(name, includes){
@@ -60,70 +64,54 @@ function createHTML(name, includes){
 	htmlIncludes.push(name +'.js');
 	htmlIncludes.push(name +'.css');
 
-	Log(1)('building html file: ', name, htmlIncludes);
+	Log(1)(`building html file: ${name} ${htmlIncludes}`);
 
-	var includesHTML = '';
+	var includesHTML = '', includeHTML_part;
 	for(var x = 0; x < htmlIncludes.length; x++){
-		includesHTML += '\n\t\t'+ (htmlIncludes[x].endsWith('.js') ? '<script src="/js/'+ htmlIncludes[x] +'"></script>' : '<link rel="stylesheet" href="/css/'+ htmlIncludes[x] +'">');
+		includeHTML_part = htmlIncludes[x].endsWith('.js') ? `<script src="/js/${htmlIncludes[x]}"></script>` : `<link rel="stylesheet" href="/css/${htmlIncludes[x]}">`;
+		includesHTML += `\n\t\t${includeHTML_part}`;
 	}
 
-	fs.writeFile('./out/resources/html/_includes_'+ name +'.html', includesHTML, function(){
+	fs.writeFile(`./client/public/html/_includes_${name}.html`, includesHTML, function(){
 		gulp.src([
-			'./src/html/_start.html',
-			'./out/resources/html/_includes_'+ name +'.html',
-			'./src/html/_pageEnd.html',
-		]).pipe(concat('_'+ name +'_01.html')).pipe(gulp.dest('out/resources/html')).on('finish', function(){
-			exec('sed -e "s/XXX/'+ name.charAt(0).toUpperCase() + name.slice(1) +'/g" ./out/resources/html/_'+ name +'_01.html > ./out/resources/html/'+ name +'.html');
-			exec('cd ./out/resources/html && rm ./_'+ name +'_01.html ./_includes_'+ name +'.html');
+			'./client/html/_start.html',
+			`./client/public/html/_includes_${name}.html`,
+			'./client/html/_pageEnd.html',
+		]).pipe(concat(`_${name}_01.html`)).pipe(gulp.dest('client/public/html')).on('finish', function(){
+			exec(`sed -e "s/XXX/${name.charAt(0).toUpperCase() + name.slice(1)}/g" ./client/public/html/_${name}_01.html > ./client/public/html/${name}.html`);
+			exec(`cd ./client/public/html && rm ./_${name}_01.html ./_includes_${name}.html`);
 		});
 	});
 }
 
-gulp.task('compile', ['generate-html', 'uglify-js', 'uglify-css', 'update-server-files']);
+gulp.task('compile', ['generate-html', 'compile-js', 'compile-css']);
 
-gulp.task('compile-dev', ['generate-html', 'compile-js', 'compile-css', 'update-server-files']);
-
-gulp.task('dev', ['compile-dev', 'notify-done']);
-
-gulp.task('setup', ['compile-dev', 'npm-install', 'notify-done']);
-
-gulp.task('notify-done', function(){
-	exec('notify-send done!');
-
+gulp.task('dev', ['compile'], function(){
 	exec('curl localhost/dev || wget localhost/dev');
+
+	notify('done!');
 });
 
-gulp.task('npm-install', function(){
-	exec('sleep 2s && cd ./out && npm i', function(err){
-		if(err) return Log.error()(err);
+gulp.task('dist', ['compile'], function(){
+	gulp.src('server/*').pipe(gulp.dest('dist'));
+	gulp.src('server/**/*').pipe(gulp.dest('dist'));
 
-		Log()('Installed npm packages!');
-	});
-});
+	gulp.src('scripts/start').pipe(gulp.dest('dist'));
 
-gulp.task('update-server-files', function(){
-	gulp.src('src/app.js').pipe(gulp.dest('out'));
+	gulp.src('client/public/js/*').pipe(gulp.dest('dist/public/js'));
+	gulp.src('client/public/css/*').pipe(gulp.dest('dist/public/css'));
+	gulp.src('client/public/html/*').pipe(gulp.dest('dist/public/html'));
 
-	gulp.src('src/scripts/start').pipe(gulp.dest('out'));
+	gulp.src('../swiss-army-knife/fonts/*').pipe(gulp.dest('dist/public/fonts'));
 
-	gulp.src('src/middleware/*').pipe(gulp.dest('out/middleware'));
+	gulp.src('../swiss-army-knife/js/_log.js').pipe(gulp.dest('dist'));
+	gulp.src('../swiss-army-knife/js/_common.js').pipe(gulp.dest('dist'));
 
-	gulp.src('src/services/*').pipe(gulp.dest('out/services'));
-
-	gulp.src('src/cards/*').pipe(gulp.dest('out/cards'));
-
-	gulp.src('src/package.json').pipe(gulp.dest('out'));
-
-	gulp.src('./fonts/*').pipe(gulp.dest('out/resources/fonts'));
-
-	gulp.src('./src/_logo').pipe(gulp.dest('out'));
-
-	gulp.src('./src/js/_log.js').pipe(gulp.dest('out'));
-	gulp.src('./src/js/_common.js').pipe(gulp.dest('out'));
+	notify('done!');
 });
 
 gulp.task('compile-js', function(){
-	browse('./src/js', function(data){
+	browse('./client/js', function(data){
 		Log(2)(data);
 
 		for(var x = 0; x < data.folders.length; x++){
@@ -157,19 +145,15 @@ gulp.task('compile-js', function(){
 	});
 });
 
-gulp.task('uglify-js', ['compile-js'], function(){
-	gulp.src('out/resources/js/*.js').pipe(uglify()).pipe(gulp.dest('out/resources/js'));
-});
-
 gulp.task('generate-html', function(){
-	exec('mkdir -p ./out/resources/html');
+	exec('mkdir -p ./client/public/html');
 
 	gulp.src([
-		'./src/html/_start.html',
-		'./src/html/_errorEnd.html',
-	]).pipe(concat('error.html')).pipe(gulp.dest('out/resources/html'));
+		'./client/html/_start.html',
+		'./client/html/_errorEnd.html',
+	]).pipe(concat('error.html')).pipe(gulp.dest('client/public/html'));
 
-	fs.readFile('./src/html/output.json', function(err, data){
+	fs.readFile('./client/html/output.json', function(err, data){
 		if(data){
 			var outputSettings = JSON.parse(data);
 			Log(2)(outputSettings);
@@ -182,9 +166,20 @@ gulp.task('generate-html', function(){
 });
 
 gulp.task('compile-css', function(){
-	gulp.src('src/scss/*.scss').pipe(sass().on('error', sass.logError)).pipe(autoprefixer(autoprefixerOptions)).pipe(gulp.dest('out/resources/css'));
-});
+	fs.readFile('./client/scss/depends.json', function(err, data){
+		if(data){
+			var dependsArr = JSON.parse(data);
+			dependsArr.push('client/scss/*.scss', 'client/scss/**/*.scss');
 
-gulp.task('uglify-css', ['compile-css'], function(){
-	gulp.src('out/resources/css/*.css').pipe(cleanCSS()).pipe(gulp.dest('out/resources/css'));
+			Log(2)(dependsArr);
+
+			gulp.src(dependsArr).pipe(gulp.dest('client/public/css'));
+
+			setTimeout(function(){
+				gulp.src('client/public/css/*.scss').pipe(sass().on('error', sass.logError)).pipe(autoprefixer(autoprefixerOptions)).pipe(gulp.dest('client/public/css'));
+
+				exec(`sleep ${Math.ceil(0.2 * dependsArr.length)}s && cd ./client/public/css && rm ./*.scss`);
+			}, 100 * dependsArr.length);
+		}
+	});
 });

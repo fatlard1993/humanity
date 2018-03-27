@@ -1,0 +1,11 @@
+{
+	"babel": false,
+	"includes": [
+		"../swiss-army-knife/js/_polyfill.js",
+		"../swiss-army-knife/js/_dom.js",
+		"../swiss-army-knife/js/_log.js",
+		"../swiss-army-knife/js/_common.js",
+		"../swiss-army-knife/js/_interact.js",
+		"./client/js/_socket.js"
+	]
+}
