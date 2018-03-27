@@ -86,6 +86,8 @@ function createHTML(name, includes){
 
 gulp.task('compile', ['generate-html', 'compile-js', 'compile-css']);
 
+gulp.task('default', ['compile']);
+
 gulp.task('dev', ['compile'], function(){
 	exec('curl localhost/dev || wget localhost/dev');
 
