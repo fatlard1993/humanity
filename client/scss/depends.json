@@ -1,4 +1,4 @@
 [
-	"../swiss-army-knife/scss/*.scss",
-	"../swiss-army-knife/scss/**/*.scss"
+	"../swiss-army-knife/client/scss/*.scss",
+	"../swiss-army-knife/client/scss/**/*.scss"
 ]

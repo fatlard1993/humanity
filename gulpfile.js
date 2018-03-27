@@ -7,7 +7,7 @@ const autoprefixer = require('gulp-autoprefixer');
 const babel = require('gulp-babel');//&& babel-core && babel-preset-env
 const concat = require('gulp-concat');
 
-const Log = require(`${__dirname}/../swiss-army-knife/js/_log.js`);
+const Log = require(`${__dirname}/../swiss-army-knife/client/js/_log.js`);
 
 const autoprefixerOptions = {
 	flexBox: 'no-2009',
@@ -104,10 +104,10 @@ gulp.task('dist', ['compile'], function(){
 	gulp.src('client/public/css/*').pipe(gulp.dest('dist/public/css'));
 	gulp.src('client/public/html/*').pipe(gulp.dest('dist/public/html'));
 
-	gulp.src('../swiss-army-knife/fonts/*').pipe(gulp.dest('dist/public/fonts'));
+	gulp.src('../swiss-army-knife/client/fonts/*').pipe(gulp.dest('dist/public/fonts'));
 
-	gulp.src('../swiss-army-knife/js/_log.js').pipe(gulp.dest('dist'));
-	gulp.src('../swiss-army-knife/js/_common.js').pipe(gulp.dest('dist'));
+	gulp.src('../swiss-army-knife/client/js/_log.js').pipe(gulp.dest('dist'));
+	gulp.src('../swiss-army-knife/client/js/_common.js').pipe(gulp.dest('dist'));
 
 	notify('done!');
 });

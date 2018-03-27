@@ -4,5 +4,5 @@ npm i &&
 (cd ./server && npm i) &&
 ((cd ../swiss-army-knife && git pull) || (cd ../ && git clone https://github.com/fatlard1993/swiss-army-knife.git)) &&
 gulp compile &&
-ln -s $(pwd)/../swiss-army-knife/fonts/ $(pwd)/client/public/fonts &&
+ln -s $(pwd)/../swiss-army-knife/client/fonts/ $(pwd)/client/public/fonts &&
 echo -e "\nTo start, run: ./scripts/start <?port>"
