@@ -1,5 +1,7 @@
 /* global Dom, Log, WS, Interact */
 
+var Vibrate = window.navigator.vibrate || window.navigator.webkitVibrate || window.navigator.mozVibrate || window.navigator.msVibrate;
+
 var Loaded = false;
 
 function Load(){
@@ -8,7 +10,7 @@ function Load(){
 
 	var wakelock;
 
-	if(navigator.getWakeLock) wakelock = navigator.getWakeLock('screen');
+	if(window.navigator.getWakeLock) wakelock = window.navigator.getWakeLock('screen');
 
 	var x;
 
@@ -676,7 +678,7 @@ function Load(){
 		}
 
 		else if(data.command === 'player_bump' && data.player === Player.name){
-			if(window.navigator) window.navigator.vibrate(300);
+			if(Vibrate) Vibrate(300);
 		}
 	};
 
