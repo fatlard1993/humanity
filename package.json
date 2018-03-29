@@ -6,15 +6,14 @@
   "scripts": {},
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fatlard1993/humanity.git"
+  },
+  "dependencies": {
     "cardcast-api": "^0.2.3",
     "eslint": "^4.17.0",
     "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^4.1.0",
-    "gulp-babel": "^7.0.1",
-    "gulp-concat": "^2.6.1",
-    "gulp-sass": "^3.1.0"
+    "babel-preset-env": "^1.6.1"
   }
 }

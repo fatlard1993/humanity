@@ -35,5 +35,5 @@ elif [ "$1" == "dist" ]; then
 	fi
 else
 	echo "Starting, piping output to logger..."
-	DBG=1 PORT=$1 node app.js | logger
+	DBG=1 PORT=$1 node ./server/app.js | logger
 fi

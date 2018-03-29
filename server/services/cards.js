@@ -1,6 +1,6 @@
 const fs = require('fs');
 const exec = require('child_process').exec;
-const Log = require(process.env.DIST ? `${__dirname}/../_log.js` : `${__dirname}/../../../swiss-army-knife/client/js/_log.js`);
+const Log = require(process.env.DIST ? `${__dirname}/../_log.js` : `${__dirname}/../../../swiss-army-knife/js/_log.js`);
 
 function browse(folder, cb){
 	var folders = [];

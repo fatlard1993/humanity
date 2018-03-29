@@ -13,6 +13,11 @@ This is just a platform that allows for playing a version of the wonderful/terri
 /humanity$ ```./scripts/setup```
 
 
+## Update the project and dependencies
+
+/humanity$ ```./scripts/update```
+
+
 ## Run
 
 /humanity$ ```./scripts/start```

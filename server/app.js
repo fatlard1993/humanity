@@ -7,7 +7,7 @@ const httpServer = require('http').createServer(app);
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
-const Log = require(process.env.DIST ? `${__dirname}/_log.js` : `${__dirname}/../../swiss-army-knife/client/js/_log.js`);
+const Log = require(process.env.DIST ? `${__dirname}/_log.js` : `${__dirname}/../../swiss-army-knife/js/_log.js`);
 
 const Errors = require(`${__dirname}/middleware/error.js`);
 const Sockets = require(`${__dirname}/services/sockets.js`);

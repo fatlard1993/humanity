@@ -1,11 +1,15 @@
 {
 	"name": "humanity",
 	"version": "1.0.0",
-	"description": "a game",
+	"description": "",
 	"main": "app.js",
 	"scripts": {},
 	"author": "",
 	"license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fatlard1993/humanity.git"
+  },
 	"dependencies": {
 		"body-parser": "^1.18.2",
 		"cookie-parser": "^1.4.3",
