@@ -1,6 +1,6 @@
 # Humanity
 
-This is just a platform that allows for playing a version of the wonderful/terrible/hilarious/hideous game provided by these [fine folks](https://cardsagainsthumanity.com/).
+This is just a platform that allows for playing my take on the wonderful/terrible/hilarious/hideous game provided by these [fine folks](https://cardsagainsthumanity.com/).
 
 ## Prerequisites
 
@@ -10,41 +10,41 @@ This is just a platform that allows for playing a version of the wonderful/terri
 
 ## Setup
 
-/humanity$ ```./scripts/setup```
+/humanity$ ```./SETUP```
 
 
 ## Update the project and dependencies
 
-/humanity$ ```./scripts/update```
+/humanity$ ```./UPDATE```
 
 
 ## Run
 
-/humanity$ ```./scripts/start```
+/humanity$ ```./server/start```
 
 OR
 
-/humanity$ ```./scripts/start <port>```
+/humanity$ ```./server/start <port>```
 
 OR
 
-/humanity$ ```./scripts/start dbg <port>```
+/humanity$ ```./server/start dbg <port>```
 
 OR
 
-/humanity$ ```./scripts/start dbg lvl <debug_level> <port>```
+/humanity$ ```./server/start dbg lvl <debug_level> <port>```
 
 
 ## Create dist folder
 
-The dist folder contains all files required to run and can be extracted from the project by itsself and ran anywhere.
+The dist folder contains a copy of all of the required files, which can be extracted from the rest of the project and ran elsewhere.
 
 /humanity$ ```gulp dist```
 
 
 ## Run from dist
 
-All standard options are available, simply prepend any options with "dist" eg:
+All aforementioned options are available, simply prepended with "dist" eg:
 
 /dist$ ```./start dist <other_options>```
 

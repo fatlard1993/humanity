@@ -2,17 +2,12 @@ const exec = require('child_process').exec;
 
 const gulp = require('gulp');
 
-const compileSCSS = require('../swiss-army-knife/gulp/compileSCSS.js');
-const compileJS = require('../swiss-army-knife/gulp/compileJS.js');
-const compileHTML = require('../swiss-army-knife/gulp/compileHTML.js');
+const compileSCSS = require('../swiss-army-knife/gulp/compileSCSS');
+const compileJS = require('../swiss-army-knife/gulp/compileJS');
+const compileHTML = require('../swiss-army-knife/gulp/compileHTML');
+const notify = require('../swiss-army-knife/gulp/notify');
 
-const Log = require('../swiss-army-knife/js/_log.js');
-
-function notify(message){
-	Log(1)(`NOTIFICATION : ${message}`);
-
-	exec(`notify-send ${message}`);
-}
+const Log = require('../swiss-army-knife/js/_log');
 
 gulp.task('compile', ['compile-js', 'compile-css', 'compile-html']);
 
@@ -24,11 +19,9 @@ gulp.task('dev', ['compile'], function(){
 	notify('done!');
 });
 
-gulp.task('dist', ['compile'], function(){
+gulp.task('dist', function(){
 	gulp.src('server/*').pipe(gulp.dest('dist'));
 	gulp.src('server/**/*').pipe(gulp.dest('dist'));
-
-	gulp.src('scripts/start').pipe(gulp.dest('dist'));
 
 	gulp.src('client/public/js/*').pipe(gulp.dest('dist/public/js'));
 	gulp.src('client/public/css/*').pipe(gulp.dest('dist/public/css'));
