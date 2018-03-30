@@ -1,5 +1,6 @@
-const Log = require(process.env.DIST ? `${__dirname}/../_log.js` : `${__dirname}/../../../swiss-army-knife/js/_log.js`);
 const Execute = require('child_process').exec;
+
+const Log = require(process.env.DIST ? `${__dirname}/../_log` : `${__dirname}/../../../swiss-army-knife/js/_log`);
 
 var headers = {
 	'401': '401 - Unauthorized',

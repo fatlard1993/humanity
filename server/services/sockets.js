@@ -1,8 +1,9 @@
-const Log = require(process.env.DIST ? `${__dirname}/../_log.js` : `${__dirname}/../../../swiss-army-knife/js/_log.js`);
-const Cjs = require(process.env.DIST ? `${__dirname}/../_common.js` : `${__dirname}/../../../swiss-army-knife/js/_common.js`);
 const WebSocket = require('uws');
 
-const Cards = require(`${__dirname}/cards.js`);
+const Log = require(process.env.DIST ? `${__dirname}/../_log` : `${__dirname}/../../../swiss-army-knife/js/_log`);
+const Cjs = require(process.env.DIST ? `${__dirname}/../_common` : `${__dirname}/../../../swiss-army-knife/js/_common`);
+
+const Cards = require(`${__dirname}/cards`);
 
 var Sockets = {
 	games: {},
