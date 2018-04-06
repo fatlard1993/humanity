@@ -1,9 +1,9 @@
 #!/bin/bash
 
-npm i &&
-(cd ./server && npm i) &&
+npm i
+(cd ./server && npm i)
 ((cd ../swiss-army-knife && git pull) || (cd ../ && git clone https://github.com/fatlard1993/swiss-army-knife.git)) &&
-(cd ../swiss-army-knife && ./SETUP) &&
-gulp compile &&
+(cd ../swiss-army-knife && ./SETUP)
+gulp compile
 mkdir -p ./client/public &&
 (cd ./client/public && ln -sT ../../../swiss-army-knife/client/fonts fonts)
