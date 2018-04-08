@@ -50,7 +50,7 @@ function Load(){
 		},
 		start_screen: function(){
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
-			var startButton = Dom.createElem('button', { id: 'GameStartButton', textContent: 'Start' });
+			var startButton = Dom.createElem('button', { id: 'GameStartButton', textContent: 'Ready' });
 
 			var playersList = Dom.createElem('ul', { id: 'PlayersList' });
 
@@ -75,7 +75,7 @@ function Load(){
 
 			var emptySubmissionButton = Dom.createElem('button', { id: 'EmptySubmissionEntry', textContent: 'Clear' });
 
-			var trashWhiteCards = Dom.createElem('button', { id: 'TrashWhiteCards', textContent: 'Trash Whites' });
+			var trashWhiteCards = Dom.createElem('button', { id: 'TrashWhiteCards', textContent: 'Skip Turn & Trash Whites' });
 
 			var doneButton = Dom.createElem('button', { id: 'EnterSubmission', textContent: 'Submit' });
 
@@ -98,8 +98,8 @@ function Load(){
 			Dom.Content.appendChild(currentBlackHeading);
 			Dom.Content.appendChild(submissionWrapper);
 			Dom.Content.appendChild(doneButton);
-			Dom.Content.appendChild(trashWhiteCards);
 			Dom.Content.appendChild(whitesList);
+			Dom.Content.appendChild(trashWhiteCards);
 
 			drawWhitesList();
 
@@ -178,7 +178,7 @@ function Load(){
 			var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
 			var submissionNames = Object.keys(submissions), submissionCount = submissionNames.length;
 
-			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Start Over' : 'Play Again' });
+			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Join New Game' : 'Keep Playing' });
 
 			var scoresButton = Dom.createElem('button', { id: 'ScoresButton', textContent: 'Scores' });
 
@@ -186,7 +186,7 @@ function Load(){
 
 			for(x = 0; x < submissionCount; ++x){
 				var li = Dom.createElem('li', { className: 'submission_result'+ (submissions[submissionNames[x]].player === Game.winner ? ' big_winner' : (submissions[submissionNames[x]].winner ? ' winner' : '')), textContent: 'Votes: '+ submissions[submissionNames[x]].count });
-				var winnerText = '		'+ (submissions[submissionNames[x]].player === Game.winner ? 'BIG ' : '') + (submissions[submissionNames[x]].winner ? 'WINNER' : '');
+				var winnerText = '		'+ (submissions[submissionNames[x]].player === Game.winner ? 'GAME ' : '') + (submissions[submissionNames[x]].winner ? 'WINNER' : '');
 				li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + winnerText }));
 
 				submissionList[submissions[submissionNames[x]].winner ? 'insertBefore' : 'appendChild'](li, submissions[submissionNames[x]].winner && submissionList.children.length ? submissionList.children[0] : null);
@@ -214,7 +214,7 @@ function Load(){
 				scoresList.appendChild(li);
 			}
 
-			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Start Over' : 'Play Again' });
+			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Join New Game' : 'Keep Playing' });
 
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
@@ -247,11 +247,14 @@ function Load(){
 		Dom.empty(playersList);
 
 		for(x = 0; x < playerCount; ++x){
-			var playerNameText = Game.players[x];
-			if(Game.readyPlayers.includes(Game.players[x])) playerNameText += ' READY';
-			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : ''), textContent: playerNameText });
+			var playerNameText = Game.players[x], playerReady;
+			if(Game.readyPlayers.includes(Game.players[x])){
+				playerNameText += ' READY';
+				playerReady = true;
+			}
+			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : '') + (playerReady ? ' ready' : ''), textContent: playerNameText });
 
-				playersList[Game.players[x] === Player.name ? 'insertBefore' : 'appendChild'](player_li, Game.players[x] === Player.name && playersList.children.length ? playersList.children[0] : null);
+			playersList[Game.players[x] === Player.name ? 'insertBefore' : 'appendChild'](player_li, Game.players[x] === Player.name && playersList.children.length ? playersList.children[0] : null);
 		}
 	}
 
@@ -619,7 +622,10 @@ function Load(){
 			for(x = 0; x < playerCount; ++x){
 				var player_li = playersList.children[x];
 
-				if(player_li.textContent === data.name) player_li.textContent += ' READY';
+				if(player_li.textContent === data.name){
+					player_li.textContent += ' READY';
+					player_li.className += ' ready';
+				}
 			}
 		}
 

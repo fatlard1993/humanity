@@ -35,8 +35,8 @@ div#CurrentBlackHeading {
 		position: absolute;
 		font-size: 16px;
 		color: $red;
-		top: 6px;
-		right: 48px;
+		top: 10px;
+		right: 38px;
 	}
 }
 
@@ -60,6 +60,10 @@ button#EnterSubmission, button#LobbyButton, button#PlayAgainButton, button#GameS
 	width: 40%;
 	margin: 10px auto;
 	padding-bottom: 5px;
+}
+
+button#TrashWhiteCards {
+	margin-top: 60px;
 }
 
 ul#SubmissionList {
@@ -124,17 +128,6 @@ ul#WhitesList {
 	}
 }
 
-div#SubmissionEntryWrapper {
-	position: relative;
-}
-button#EmptySubmissionEntry {
-	position: absolute;
-	top: 2px;
-	right: 1%;
-	height: 25px;
-	width: 15%;
-}
-
 ul#PlayersList {
 	li {
 		text-align: left;
@@ -154,11 +147,26 @@ ul#PlayersList {
 		color: $grey-light !important;
 		border-color: $white !important;
 	}
+	li.player.ready {
+		background-color: $teal-darkest !important;
+		color: $teal-lighter !important;
+		border-color: $teal-dark !important;
+	}
+	li.player.disabled.ready {
+		background-color: $teal-light !important;
+		color: $teal-black !important;
+		border-color: $teal-lightest !important;
+	}
 }
 
 ul#WaitingOnPlayersList {
 	li {
 		text-align: center;
+	}
+	li:active {
+		background-color: $white;
+		color: $black;
+		border-color: $teal;
 	}
 }
 
@@ -168,6 +176,17 @@ ul#ScoresList {
 		white-space: pre-wrap;
 		line-height: 32px;
 	}
+}
+
+div#SubmissionEntryWrapper {
+	position: relative;
+}
+button#EmptySubmissionEntry {
+	position: absolute;
+	top: 2px;
+	right: 1%;
+	height: 25px;
+	width: 15%;
 }
 
 div#GameTimer {
