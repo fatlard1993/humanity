@@ -11,9 +11,9 @@
     "url": "git+https://github.com/fatlard1993/humanity.git"
   },
   "dependencies": {
+    "babel-preset-env": "^1.7.0",
     "cardcast-api": "^0.2.3",
     "eslint": "^4.17.0",
-    "gulp": "^3.9.1",
-    "babel-preset-env": "^1.6.1"
+    "gulp": "^3.9.1"
   }
 }
