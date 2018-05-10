@@ -6,7 +6,7 @@ This is just a platform that allows for playing my take on the; wonderful, terri
 
 1. Linux or UNIX
 2. node.js >= V6.10.1 [Check out NVM](https://github.com/creationix/nvm)
-
+3. ```npm i -g eslint gulp```
 
 ## Setup and/or update the project and dependencies
 
