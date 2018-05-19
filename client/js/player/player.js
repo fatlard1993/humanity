@@ -34,15 +34,18 @@ function Load(){
 
 			var cachedName = Dom.cookie.get('player_name');
 
-			var nameInput = Dom.createElem('input', { id: 'JoinGameName', placeholder: 'Your Name', validation: /^.{4,32}$/, value: cachedName ? cachedName : '' });
+			var nameInput = Dom.createElem('input', { type: 'text', id: 'JoinGameName', placeholder: 'Your Name', validation: /^.{4,32}$/, value: cachedName ? cachedName : '' });
 			Dom.validate(nameInput);
 
 			var joinButton = Dom.createElem('button', { id: 'JoinGameButton', textContent: 'Join' });
+
+			var viewButton = Dom.createElem('button', { id: 'ViewGameButton', textContent: 'View' });
 
 			var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
 
 			joinGameForm.appendChild(nameInput);
 			joinGameForm.appendChild(joinButton);
+			joinGameForm.appendChild(viewButton);
 			joinGameForm.appendChild(lobbyButton);
 			Dom.Content.appendChild(joinGameForm);
 
@@ -362,6 +365,13 @@ function Load(){
 			Interact.pointerTarget = null;
 
 			joinGame();
+		}
+
+		else if(evt.target.id === 'ViewGameButton'){
+			evt.preventDefault();
+			Interact.pointerTarget = null;
+
+			Dom.changeLocation('/viewer'+ window.location.search);
 		}
 
 		else if(evt.target.id === 'GameStartButton'){

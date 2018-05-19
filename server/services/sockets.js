@@ -52,7 +52,7 @@ var Sockets = {
 			socket.onmessage = function(message){
 				Log(3)(message);
 
-				var data = JSON.parse(message.data), x;
+				var data = JSON.parse(message.data), x, room;
 
 				if(data.command === 'test'){
 					Log()('socket', 'test');
@@ -67,8 +67,16 @@ var Sockets = {
 						socket.send(JSON.stringify({ command: 'challenge_accept', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 					}
 
+					else if(data.room.startsWith('viewer')){
+						room = data.room.replace(/^viewer_/, '');
+
+						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
+
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, activePlayers: Sockets.games[room].activePlayers, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
+					}
+
 					else if(data.room.startsWith('player')){
-						var room = data.room.replace(/^player_/, '');
+						room = data.room.replace(/^player_/, '');
 
 						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
 
