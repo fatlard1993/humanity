@@ -14,9 +14,10 @@ gulp.task('compile', ['compile-js', 'compile-css', 'compile-html']);
 gulp.task('default', ['compile']);
 
 gulp.task('dev', ['compile'], function(){
-	exec('curl localhost/dev || wget localhost/dev');
-
-	notify('done!');
+	gulp.watch('client/js/*.js', ['compile-js']);
+	gulp.watch('client/js/**/*.js*', ['compile-js']);
+	gulp.watch('client/scss/*.scss', ['compile-css']);
+	gulp.watch('client/html/**/*.json', ['update-html']);
 });
 
 gulp.task('dist', function(){
