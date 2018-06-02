@@ -17,7 +17,9 @@ gulp.task('dev', ['compile'], function(){
 	gulp.watch('client/js/*.js', ['compile-js']);
 	gulp.watch('client/js/**/*.js*', ['compile-js']);
 	gulp.watch('client/scss/*.scss', ['compile-css']);
-	gulp.watch('client/html/**/*.json', ['update-html']);
+  gulp.watch('client/html/**/*.json', ['update-html']);
+  gulp.watch('../swiss-army-knife/client/js/**/*.js', ['compile-js']);
+  gulp.watch('../swiss-army-knife/js/**/*.js', ['compile-js']);
 });
 
 gulp.task('dist', function(){

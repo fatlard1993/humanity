@@ -1,4 +1,4 @@
 {
-	"babel": true,
+	"babel": false,
 	"includes": []
 }
