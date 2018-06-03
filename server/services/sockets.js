@@ -86,7 +86,7 @@ var Sockets = {
 					}
 
 					else if(data.room.startsWith('viewer')){
-						room = data.room.replace(/^viewer_/, '');
+						Player.room = room = data.room.replace(/^viewer_/, '');
 
 						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
 
