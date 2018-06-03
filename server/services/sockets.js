@@ -15,25 +15,9 @@ var Sockets = {
 
 			setTimeout(function(){ socket.send(`{ "command": "challenge" }`); }, 200);
 
-			var validConnection = false, Player;
+			var validConnection = false;
 
-			function gameData(){
-				if(!Player.room || Sockets.games[Player.room]) return {};
-
-				return {
-					id: ++Sockets.games[Player.room].updateID,
-					activePlayers: Sockets.games[Player.room].activePlayers,
-					readyPlayers: Sockets.games[Player.room].readyPlayers,
-					view: Sockets.games[Player.room].state,
-					black: Sockets.games[Player.room].currentBlack,
-					whites: Sockets.games[Player.room].submissions,
-					votes: Sockets.games[Player.room].currentVotes,
-					scores: Sockets.games[Player.room].scores,
-					vetoVotes: Sockets.games[Player.room].currentBlackVetoCount
-				};
-			}
-
-			Player = {
+			var Player = {
 				disconnect: function(){
 					if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
 					if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
@@ -59,18 +43,34 @@ var Sockets = {
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
 
-					Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
-
 					Sockets.games[Player.room].checkState();
 					// Sockets[Player.name +'_disconnect_TO'] = setTimeout(function(){
 					// }, 1 * 1000);
 				}
 			};
 
+			// function gameData(){
+			// 	Log()(Player.room, Sockets.games[Player.room]);
+
+			// 	if(!Player.room || Sockets.games[Player.room]) return {};
+
+			// 	return {
+			// 		id: ++Sockets.games[Player.room].updateID,
+			// 		activePlayers: Sockets.games[Player.room].activePlayers,
+			// 		readyPlayers: Sockets.games[Player.room].readyPlayers,
+			// 		view: Sockets.games[Player.room].state,
+			// 		black: Sockets.games[Player.room].currentBlack,
+			// 		whites: Sockets.games[Player.room].submissions,
+			// 		votes: Sockets.games[Player.room].currentVotes,
+			// 		scores: Sockets.games[Player.room].scores,
+			// 		vetoVotes: Sockets.games[Player.room].currentBlackVetoCount
+			// 	};
+			// }
+
 			socket.onmessage = function(message){
 				Log(3)(message);
 
-				var data = JSON.parse(message.data), x, room;
+				var data = JSON.parse(message.data), x;
 
 				if(data.command === 'test'){
 					Log()('socket', 'test');
@@ -86,19 +86,31 @@ var Sockets = {
 					}
 
 					else if(data.room.startsWith('viewer')){
-						Player.room = room = data.room.replace(/^viewer_/, '');
+						Player.room = data.room.replace(/^viewer_/, '');
 
-						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
+						if(!Sockets.games[Player.room]) return socket.send('{ "command": "goto_lobby" }');
 
-						socket.send(JSON.stringify({ command: 'update', data: gameData() }));
+						var gameData = {
+							id: ++Sockets.games[Player.room].updateID,
+							activePlayers: Sockets.games[Player.room].activePlayers,
+							readyPlayers: Sockets.games[Player.room].readyPlayers,
+							view: Sockets.games[Player.room].state,
+							black: Sockets.games[Player.room].currentBlack,
+							whites: Sockets.games[Player.room].submissions,
+							votes: Sockets.games[Player.room].currentVotes,
+							scores: Sockets.games[Player.room].scores,
+							vetoVotes: Sockets.games[Player.room].currentBlackVetoCount
+						};
+
+						socket.send(JSON.stringify({ command: 'update', data: gameData }));
 					}
 
 					else if(data.room.startsWith('player')){
-						room = data.room.replace(/^player_/, '');
+						Player.room = data.room.replace(/^player_/, '');
 
-						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
+						if(!Sockets.games[Player.room]) return socket.send('{ "command": "goto_lobby" }');
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, activePlayers: Sockets.games[room].activePlayers, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
+						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[Player.room].players, activePlayers: Sockets.games[Player.room].activePlayers, readyPlayers: Sockets.games[Player.room].readyPlayers, gameState: Sockets.games[Player.room].state }));
 					}
 
 					return;
@@ -262,7 +274,19 @@ var Sockets = {
 							// if(waitingOnCount)
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn, activePlayers: this.activePlayers }));
 
-							Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
+							var gameData = {
+								id: ++Sockets.games[data.options.name].updateID,
+								activePlayers: Sockets.games[data.options.name].activePlayers,
+								readyPlayers: Sockets.games[data.options.name].readyPlayers,
+								view: Sockets.games[data.options.name].state,
+								black: Sockets.games[data.options.name].currentBlack,
+								whites: Sockets.games[data.options.name].submissions,
+								votes: Sockets.games[data.options.name].currentVotes,
+								scores: Sockets.games[data.options.name].scores,
+								vetoVotes: Sockets.games[data.options.name].currentBlackVetoCount
+							};
+
+							Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData }));
 						},
 						newBlack: function(){
 							var totalBlacks = this.cards.blacks.length;
@@ -459,7 +483,19 @@ var Sockets = {
 
 					Sockets.wss.broadcast(JSON.stringify(data));
 
-					Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
+					var gameData = {
+						id: ++Sockets.games[Player.room].updateID,
+						activePlayers: Sockets.games[Player.room].activePlayers,
+						readyPlayers: Sockets.games[Player.room].readyPlayers,
+						view: Sockets.games[Player.room].state,
+						black: Sockets.games[Player.room].currentBlack,
+						whites: Sockets.games[Player.room].submissions,
+						votes: Sockets.games[Player.room].currentVotes,
+						scores: Sockets.games[Player.room].scores,
+						vetoVotes: Sockets.games[Player.room].currentBlackVetoCount
+					};
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData }));
 
 					Log()('black veto', Sockets.games[Player.room].currentBlackVetoCount, Sockets.games[Player.room].players.length);
 
