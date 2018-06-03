@@ -18,6 +18,8 @@ var Sockets = {
 			var validConnection = false, Player;
 
 			function gameData(){
+				if(!Player.room || Sockets.games[Player.room]) return {};
+
 				return {
 					id: ++Sockets.games[Player.room].updateID,
 					activePlayers: Sockets.games[Player.room].activePlayers,
