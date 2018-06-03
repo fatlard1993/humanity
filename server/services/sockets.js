@@ -15,9 +15,23 @@ var Sockets = {
 
 			setTimeout(function(){ socket.send(`{ "command": "challenge" }`); }, 200);
 
-			var validConnection = false;
+			var validConnection = false, Player;
 
-			var Player = {
+			function gameData(){
+				return {
+					id: ++Sockets.games[Player.room].updateID,
+					activePlayers: Sockets.games[Player.room].activePlayers,
+					readyPlayers: Sockets.games[Player.room].readyPlayers,
+					view: Sockets.games[Player.room].state,
+					black: Sockets.games[Player.room].currentBlack,
+					whites: Sockets.games[Player.room].submissions,
+					votes: Sockets.games[Player.room].currentVotes,
+					scores: Sockets.games[Player.room].scores,
+					vetoVotes: Sockets.games[Player.room].currentBlackVetoCount
+				};
+			}
+
+			Player = {
 				disconnect: function(){
 					if(!Sockets.games[Player.room]) return Log(1)('socket', 'player left non-existent room');
 					if(!Sockets.games[Player.room].players.includes(Player.name)) return Log(1)('socket', 'player left a room they wernt in');
@@ -42,6 +56,8 @@ var Sockets = {
 					Sockets.wss.broadcast(JSON.stringify({ command: 'player_leave', room: Player.room, name: Player.name }));
 
 					Sockets.wss.broadcast(JSON.stringify({ command: 'lobby_reload', games: Sockets.games, packs: Object.keys(Cards.packs) }));
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
 
 					Sockets.games[Player.room].checkState();
 					// Sockets[Player.name +'_disconnect_TO'] = setTimeout(function(){
@@ -72,7 +88,7 @@ var Sockets = {
 
 						if(!Sockets.games[room]) return socket.send('{ "command": "goto_lobby" }');
 
-						socket.send(JSON.stringify({ command: 'challenge_accept', players: Sockets.games[room].players, activePlayers: Sockets.games[room].activePlayers, readyPlayers: Sockets.games[room].readyPlayers, gameState: Sockets.games[room].state }));
+						socket.send(JSON.stringify({ command: 'update', data: gameData() }));
 					}
 
 					else if(data.room.startsWith('player')){
@@ -105,6 +121,7 @@ var Sockets = {
 						submissions: [],
 						currentVotes: {},
 						voteCount: 0,
+						updateID: 0,
 						currentBlackVetoCount: 0,
 						checkState: function(forceChange){
 							var waitingOn = Cjs.differenceArr(this.players, this.readyPlayers), waitingOnCount = waitingOn.length, newWaitingOn = [], x;
@@ -242,6 +259,8 @@ var Sockets = {
 
 							// if(waitingOnCount)
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn, activePlayers: this.activePlayers }));
+
+							Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
 						},
 						newBlack: function(){
 							var totalBlacks = this.cards.blacks.length;
@@ -437,6 +456,8 @@ var Sockets = {
 					data.room = Player.room;
 
 					Sockets.wss.broadcast(JSON.stringify(data));
+
+					Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData() }));
 
 					Log()('black veto', Sockets.games[Player.room].currentBlackVetoCount, Sockets.games[Player.room].players.length);
 
