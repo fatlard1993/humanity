@@ -128,52 +128,40 @@ ul#WhitesList {
 	}
 }
 
-ul#PlayersList {
+ul#PlayersList, ul#WaitingOnPlayersList {
 	li {
-		text-align: left;
-	}
-	li.player {
 		cursor: pointer;
 		text-align: center;
+		color: $white;
+		border-color: $white
 	}
-	li.player:active {
-		background-color: $white;
+	li:active {
+		background-image: radial-gradient(rgba($white, 0.5), rgba($white, 0.9)) !important;
 		color: $black;
-		border-color: $teal;
+		border-color: $black;
 	}
-	li.player.marked:before {
+	li.marked:before {
 		content: "* ";
 	}
-	li.player.ready {
-		background-image: radial-gradient(rgba($grey, 0.5), rgba($grey, 0.9))
+	li.ready {
+		background-image: radial-gradient(rgba($grey, 0.5), rgba($grey, 0.9));
 	}
-	li.player.disabled {
+	li.disabled {
 		cursor: not-allowed;
 		background: $grey-dark !important;
 		color: $grey-light !important;
 		border-color: $white !important;
 	}
-	// li.player.ready {
+	// li.ready {
 	// 	background-color: $teal-darkest !important;
 	// 	color: $teal-lighter !important;
 	// 	border-color: $teal-dark !important;
 	// }
-	// li.player.disabled.ready {
+	// li.disabled.ready {
 	// 	background-color: $teal-light !important;
 	// 	color: $teal-black !important;
 	// 	border-color: $teal-lightest !important;
 	// }
-}
-
-ul#WaitingOnPlayersList {
-	li {
-		text-align: center;
-	}
-	li:active {
-		background-color: $white;
-		color: $black;
-		border-color: $teal;
-	}
 }
 
 ul#ScoresList {

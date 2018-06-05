@@ -118,9 +118,7 @@ function Load(){
 			for(x = 0; x < waitingOnPlayerCount; ++x){
 				var li = Dom.createElem('li', { textContent: Game.waitingOn[x] });
 
-				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.waitingOn[x]);
-
-				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
+				li.style.backgroundColor = Cjs.stringToColor(Game.waitingOn[x]);
 
 				waitingOnPlayersList.appendChild(li);
 			}
@@ -218,9 +216,7 @@ function Load(){
 
 				// if(scoreNames[x] === Player.name) li.className = 'selected';
 
-				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(scoreNames[x]);
-
-				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
+				li.style.backgroundColor = Cjs.stringToColor(scoreNames[x]);
 
 				scoresList[scoreNames[x] === Player.name ? 'insertBefore' : 'appendChild'](li, scoreNames[x] === Player.name && scoresList.children.length ? scoresList.children[0] : null);
 			}
@@ -265,9 +261,7 @@ function Load(){
 			}
 			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' marked' : '') + (playerReady ? ' ready' : ''), textContent: playerNameText });
 
-			var bg = player_li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.players[x]);
-
-			player_li.style.color = player_li.style.borderColor = Cjs.getContrastingColor(bg);
+			player_li.style.backgroundColor = Cjs.stringToColor(Game.players[x]);
 
 			playersList[Game.players[x] === Player.name ? 'insertBefore' : 'appendChild'](player_li, Game.players[x] === Player.name && playersList.children.length ? playersList.children[0] : null);
 		}
@@ -697,9 +691,7 @@ function Load(){
 			for(x = 0; x < waitingOnPlayerCount; ++x){
 				var li = Dom.createElem('li', { textContent: data.players[x] });
 
-				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.waitingOn[x]);
-
-				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
+				li.style.backgroundColor = Cjs.stringToColor(Game.waitingOn[x]);
 
 				waitingOnPlayersList.appendChild(li);
 			}

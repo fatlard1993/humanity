@@ -60,7 +60,7 @@ function load () {
     render () {
       return Dom.createElem('div', {
         textContent: this.name,
-        style: `background: #${this.color}; color: ${Cjs.getContrastingColor(this.color)};`
+        style: `background: #${this.color}; color: #fff;`
       });
     }
   }
