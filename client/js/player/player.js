@@ -1,4 +1,4 @@
-/* global Dom, Log, WS, Interact */
+/* global Dom, Log, WS, Interact, Cjs */
 
 var Vibrate = window.navigator.vibrate || window.navigator.webkitVibrate || window.navigator.mozVibrate || window.navigator.msVibrate;
 
@@ -118,6 +118,10 @@ function Load(){
 			for(x = 0; x < waitingOnPlayerCount; ++x){
 				var li = Dom.createElem('li', { textContent: Game.waitingOn[x] });
 
+				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.waitingOn[x]);
+
+				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
+
 				waitingOnPlayersList.appendChild(li);
 			}
 
@@ -212,9 +216,13 @@ function Load(){
 			for(x = 0; x < scoreCount; ++x){
 				var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes +'\nTotal Points:\t'+ Game.scores[scoreNames[x]].points });
 
-				if(scoreNames[x] === Player.name) li.className = 'selected';
+				// if(scoreNames[x] === Player.name) li.className = 'selected';
 
-				scoresList.appendChild(li);
+				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(scoreNames[x]);
+
+				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
+
+				scoresList[scoreNames[x] === Player.name ? 'insertBefore' : 'appendChild'](li, scoreNames[x] === Player.name && scoresList.children.length ? scoresList.children[0] : null);
 			}
 
 			var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Join New Game' : 'Keep Playing' });
@@ -255,7 +263,11 @@ function Load(){
 				playerNameText += ' READY';
 				playerReady = true;
 			}
-			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' disabled' : '') + (playerReady ? ' ready' : ''), textContent: playerNameText });
+			var player_li = Dom.createElem('li', { className: 'player'+ (Game.players[x] === Player.name ? ' marked' : '') + (playerReady ? ' ready' : ''), textContent: playerNameText });
+
+			var bg = player_li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.players[x]);
+
+			player_li.style.color = player_li.style.borderColor = Cjs.getContrastingColor(bg);
 
 			playersList[Game.players[x] === Player.name ? 'insertBefore' : 'appendChild'](player_li, Game.players[x] === Player.name && playersList.children.length ? playersList.children[0] : null);
 		}
@@ -684,6 +696,10 @@ function Load(){
 
 			for(x = 0; x < waitingOnPlayerCount; ++x){
 				var li = Dom.createElem('li', { textContent: data.players[x] });
+
+				var bg = li.style.backgroundColor = '#'+ Cjs.stringToColor(Game.waitingOn[x]);
+
+				li.style.color = li.style.borderColor = Cjs.getContrastingColor(bg);
 
 				waitingOnPlayersList.appendChild(li);
 			}

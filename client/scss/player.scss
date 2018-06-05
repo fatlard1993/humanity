@@ -141,22 +141,28 @@ ul#PlayersList {
 		color: $black;
 		border-color: $teal;
 	}
+	li.player.marked:before {
+		content: "* ";
+	}
+	li.player.ready {
+		background-image: radial-gradient(rgba($grey, 0.5), rgba($grey, 0.9))
+	}
 	li.player.disabled {
 		cursor: not-allowed;
 		background: $grey-dark !important;
 		color: $grey-light !important;
 		border-color: $white !important;
 	}
-	li.player.ready {
-		background-color: $teal-darkest !important;
-		color: $teal-lighter !important;
-		border-color: $teal-dark !important;
-	}
-	li.player.disabled.ready {
-		background-color: $teal-light !important;
-		color: $teal-black !important;
-		border-color: $teal-lightest !important;
-	}
+	// li.player.ready {
+	// 	background-color: $teal-darkest !important;
+	// 	color: $teal-lighter !important;
+	// 	border-color: $teal-dark !important;
+	// }
+	// li.player.disabled.ready {
+	// 	background-color: $teal-light !important;
+	// 	color: $teal-black !important;
+	// 	border-color: $teal-lightest !important;
+	// }
 }
 
 ul#WaitingOnPlayersList {
