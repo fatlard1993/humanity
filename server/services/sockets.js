@@ -92,6 +92,7 @@ var Sockets = {
 
 						var gameData = {
 							id: ++Sockets.games[Player.room].updateID,
+							players: Sockets.games[Player.room].players,
 							activePlayers: Sockets.games[Player.room].activePlayers,
 							readyPlayers: Sockets.games[Player.room].readyPlayers,
 							view: Sockets.games[Player.room].state,
@@ -275,15 +276,16 @@ var Sockets = {
 							Sockets.wss.broadcast(JSON.stringify({ command: 'player_waiting_on', room: this.name, players: waitingOn, activePlayers: this.activePlayers }));
 
 							var gameData = {
-								id: ++Sockets.games[data.options.name].updateID,
-								activePlayers: Sockets.games[data.options.name].activePlayers,
-								readyPlayers: Sockets.games[data.options.name].readyPlayers,
-								view: Sockets.games[data.options.name].state,
-								black: Sockets.games[data.options.name].currentBlack,
-								whites: Sockets.games[data.options.name].submissions,
-								votes: Sockets.games[data.options.name].currentVotes,
-								scores: Sockets.games[data.options.name].scores,
-								vetoVotes: Sockets.games[data.options.name].currentBlackVetoCount
+								id: ++this.updateID,
+								players: this.players,
+								activePlayers: this.activePlayers,
+								readyPlayers: this.readyPlayers,
+								view: this.state,
+								black: this.currentBlack,
+								whites: this.submissions,
+								votes: this.currentVotes,
+								scores: this.scores,
+								vetoVotes: this.currentBlackVetoCount
 							};
 
 							Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData }));
@@ -485,6 +487,7 @@ var Sockets = {
 
 					var gameData = {
 						id: ++Sockets.games[Player.room].updateID,
+						players: Sockets.games[Player.room].players,
 						activePlayers: Sockets.games[Player.room].activePlayers,
 						readyPlayers: Sockets.games[Player.room].readyPlayers,
 						view: Sockets.games[Player.room].state,

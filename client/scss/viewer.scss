@@ -1,1 +1,95 @@
 @import 'humanity_boilerplate';
+
+ul#PlayersList {
+	li {
+		cursor: pointer;
+		text-align: center;
+		color: $white;
+		border-color: $white
+	}
+	li:active {
+		background-image: radial-gradient(rgba($white, 0.5), rgba($white, 0.9)) !important;
+		color: $black;
+		border-color: $black;
+	}
+	li.marked:before {
+		content: "* ";
+	}
+	li.ready {
+		background-image: radial-gradient(rgba($grey, 0.5), rgba($grey, 0.9));
+	}
+	li.disabled {
+		cursor: not-allowed;
+		background: $grey-dark !important;
+		color: $grey-light !important;
+		border-color: $white !important;
+	}
+}
+
+button#LobbyButton {
+	display: block;
+	font-size: 30px;
+	width: 40%;
+	margin: 10px auto;
+	padding-bottom: 5px;
+}
+
+div#BigBlack {
+	font-size: 40px;
+	text-align: center;
+	margin: 10px auto;
+	width: 90%;
+	background: $black;
+	color: $white;
+	padding: 32px 10px 64px;
+	border-radius: 10px;
+	position: relative;
+
+	div#VetoBlackDisplay {
+		position: absolute;
+		font-size: 16px;
+		color: $red;
+		top: 10px;
+		right: 38px;
+	}
+}
+
+div#WhitesPile {
+	position: relative;
+
+	div {
+		position: absolute;
+		height: 150px;
+    width: 100px;
+    background-color: $white;
+    border-radius: 5px;
+		box-shadow: 2px 2px 5px $grey-dark;
+		transition: all 1s;
+    top: 80%;
+    left: 80%;
+    transform: rotate(-30deg);
+	}
+}
+
+div#WhitesList {
+	display: table;
+	margin: 0 auto;
+
+	div {
+		float: left;
+		margin: 5px;
+		height: 150px;
+    width: 100px;
+    background-color: $white;
+    border-radius: 5px;
+		box-shadow: 2px 2px 5px $grey-dark;
+		padding: 2px;
+		line-height: 1.1;
+		word-wrap: break-word;
+	}
+}
+
+div#Heading {
+	font-size: 30px;
+	text-align: center;
+}

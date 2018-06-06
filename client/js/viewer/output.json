@@ -1,4 +1,6 @@
 {
 	"babel": false,
-	"includes": []
+	"includes": [
+		"../swiss-army-knife/client/js/_view.js"
+	]
 }
