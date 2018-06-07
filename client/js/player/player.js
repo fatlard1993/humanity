@@ -254,7 +254,7 @@ function Load(){
 		Dom.empty(playersList);
 
 		for(x = 0; x < playerCount; ++x){
-			var playerNameText = Game.players[x], playerReady;
+			var playerNameText = Game.players[x], playerReady = false;
 			if(Game.readyPlayers.includes(Game.players[x])){
 				playerNameText += ' READY';
 				playerReady = true;
