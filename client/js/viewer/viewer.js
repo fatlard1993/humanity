@@ -13,10 +13,11 @@ function Load(){
 		wakelock.createRequest();
 	}
 
-	var Game, Room = Dom.location.query.get('room');
+	var Room = Dom.location.query.get('room');
+	var viewUpdate_TO;
 
 	View.views = {
-		new: function(){
+		new: function(data){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			Dom.empty(Dom.Content);
@@ -31,16 +32,16 @@ function Load(){
 			Dom.Content.appendChild(lobbyButton);
 			Dom.Content.appendChild(playersList);
 
-			drawPlayersList();
+			drawPlayersList(data);
 		},
-		entering_submissions: function(){
+		entering_submissions: function(data){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			Dom.empty(Dom.Content);
 
 			var currentHeading = Dom.createElem('div', { id: 'Heading', textContent: 'Entering Submissions' });
 
-			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: Game.black });
+			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: data.black });
 
 			var currentWhitesPile = Dom.createElem('div', { id: 'WhitesPile' });
 
@@ -50,16 +51,18 @@ function Load(){
 
 			Dom.maintenance.run();
 
-			setTimeout(drawWhitesPile, 500);
+			setTimeout(function(){
+				drawWhitesPile(data);
+			}, 500);
 		},
-		voting: function(){
+		voting: function(data){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			Dom.empty(Dom.Content);
 
 			var currentHeading = Dom.createElem('div', { id: 'Heading', textContent: 'Voting' });
 
-			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: Game.black });
+			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: data.black });
 
 			var currentWhitesList = Dom.createElem('div', { id: 'WhitesList' });
 
@@ -67,22 +70,22 @@ function Load(){
 			Dom.Content.appendChild(currentBlackCard);
 			Dom.Content.appendChild(currentWhitesList);
 
-			for(var x = 0; x < Game.whites.length; ++x){
+			for(var x = 0; x < data.whites.length; ++x){
 				var card = Dom.createElem('div', {
-					innerHTML: Game.whites[x].submission
+					innerHTML: data.whites[x].submission
 				});
 
 				currentWhitesList.appendChild(card);
 			}
 		},
-		vote_results: function(){
+		vote_results: function(data){
 			Dom.Content = Dom.Content || document.getElementById('Content');
 
 			Dom.empty(Dom.Content);
 
 			var currentHeading = Dom.createElem('div', { id: 'Heading', textContent: 'Vote Results' });
 
-			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: Game.black });
+			var currentBlackCard = Dom.createElem('div', { id: 'BigBlack', innerHTML: data.black });
 
 			var currentWhitesList = Dom.createElem('div', { id: 'WhitesList' });
 
@@ -90,48 +93,48 @@ function Load(){
 			Dom.Content.appendChild(currentBlackCard);
 			Dom.Content.appendChild(currentWhitesList);
 
-			for(var x = 0; x < Game.whites.length; ++x){
+			for(var x = 0; x < data.whites.length; ++x){
 				var card = Dom.createElem('div', {
-					className: Game.whites[x].player === Game.winner ? 'winner' : '',
-					innerHTML: Game.whites[x].submission,
-					appendChild: Dom.createElem('span', { textContent: '- '+ Game.whites[x].player })
+					className: data.votes[data.whites[x].submission] && data.votes[data.whites[x].submission].winner ? 'winner' : '',
+					innerHTML: data.whites[x].submission,
+					appendChild: Dom.createElem('span', { textContent: '- '+ data.whites[x].player })
 				});
 
-				currentWhitesList[Game.whites[x].player === Game.winner ? 'insertBefore' : 'appendChild'](card, Game.whites[x].player === Game.winner && currentWhitesList.children.length ? currentWhitesList.children[0] : null);
+				currentWhitesList[data.whites[x].player === data.winner ? 'insertBefore' : 'appendChild'](card, data.whites[x].player === data.winner && currentWhitesList.children.length ? currentWhitesList.children[0] : null);
 			}
 		}
 	};
 
-	function drawPlayersList(){
+	function drawPlayersList(data){
 		var playersList = document.getElementById('PlayersList');
 
 		if(!playersList) return;
 
 		Dom.empty(playersList);
 
-		var playerCount = Game.players.length, playerNameText, playerReady, li, x;
+		var playerCount = data.players.length, playerNameText, playerReady, li, x;
 
 		for(x = 0; x < playerCount; ++x){
-			playerNameText = Game.players[x];
+			playerNameText = data.players[x];
 			playerReady = false;
 
-			if(Game.readyPlayers.includes(Game.players[x])){
+			if(data.readyPlayers.includes(data.players[x])){
 				playerNameText += ' READY';
 				playerReady = true;
 			}
 
 			li = Dom.createElem('li', { className: 'player'+ (playerReady ? ' ready' : ''), textContent: playerNameText });
 
-			li.style.backgroundColor = Cjs.stringToColor(Game.players[x]);
+			li.style.backgroundColor = Cjs.stringToColor(data.players[x]);
 
 			playersList.appendChild(li);
 		}
 	}
 
-	function drawWhitesPile(){
+	function drawWhitesPile(data){
 		var currentWhitesPile = document.getElementById('WhitesPile');
 
-		for(var x = 0; x < Game.whites.length - (currentWhitesPile && currentWhitesPile.children ? currentWhitesPile.children.length : 0); ++x){
+		for(var x = 0; x < data.whites.length - (currentWhitesPile && currentWhitesPile.children ? currentWhitesPile.children.length : 0); ++x){
 			var card = Dom.createElem('div');
 
 			currentWhitesPile.appendChild(card);
@@ -162,22 +165,22 @@ function Load(){
 		if(command === 'update'){
 			Log()(command, data);
 
-			if(Game && Game.viewUpdate_TO) clearTimeout(Game.viewUpdate_TO);
+			if(viewUpdate_TO) clearTimeout(viewUpdate_TO);
 
 			if(!View.current) change = 'now';
 
 			else if(data.view === 'new' && data.players.length){
-				if(data.view === View.current) drawPlayersList();
+				if(data.view === View.current) drawPlayersList(data);
 
 				else change = 'now';
 			}
 
-			else if(data.view === 'entering_submissions' && View.current === data.view) drawWhitesPile();
+			else if(data.view === 'entering_submissions' && View.current === data.view) drawWhitesPile(data);
 
 			else if(data.view === 'entering_submissions') change = 'now';
 
 			else if(data.view === 'voting' && View.current === 'entering_submissions'){
-				drawWhitesPile();
+				drawWhitesPile(data);
 
 				change = 'delay';
 			}
@@ -187,16 +190,12 @@ function Load(){
 			else if(data.view === 'vote_results') change = 'now';
 
 			if(change === 'delay'){
-				Game.viewUpdate_TO = setTimeout(function(){
-					Game = data;
-
-					View.draw(Game.view);
+				viewUpdate_TO = setTimeout(function(){
+					View.draw(data.view, data);
 				}, 2000);
 			}
 			else if(change === 'now'){
-				Game = data;
-
-				View.draw(Game.view);
+				View.draw(data.view, data);
 			}
 		}
 	};
