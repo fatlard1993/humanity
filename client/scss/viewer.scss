@@ -63,7 +63,7 @@ div#WhitesPile {
     width: 100px;
     background-color: $white;
     border-radius: 5px;
-		box-shadow: 2px 2px 5px $grey-black;
+		box-shadow: 2px 2px 5px $grey-darkest;
 		transition: all 1s;
     top: 80%;
     left: 40%;
@@ -83,7 +83,7 @@ div#WhitesList {
     width: 100px;
     background-color: $white;
     border-radius: 5px;
-		box-shadow: 2px 2px 5px $grey-black;
+		box-shadow: 2px 2px 5px $grey-darkest;
 		padding: 2px;
 		line-height: 1.1;
 		word-wrap: break-word;
