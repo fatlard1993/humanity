@@ -249,6 +249,22 @@ var Sockets = {
 										if(this.options.pointGoal && this.scores[scorePlayerNames[x]].points >= this.options.pointGoal) gameWinner = scorePlayerNames[x];
 									}
 
+									var gameData = {
+										id: ++this.updateID,
+										players: this.players,
+										activePlayers: this.activePlayers,
+										readyPlayers: this.readyPlayers,
+										view: 'vote_results',
+										black: this.currentBlack,
+										whites: this.submissions,
+										votes: this.currentVotes,
+										winner: gameWinner,
+										scores: this.scores,
+										vetoVotes: this.currentBlackVetoCount
+									};
+
+									Sockets.wss.broadcast(JSON.stringify({ command: 'update', data: gameData }));
+
 									Sockets.wss.broadcast(JSON.stringify({ command: 'player_vote_results', room: this.name, votes: this.currentVotes, scores: Sockets.games[this.name].scores, gameWinner: gameWinner }));
 
 									if(gameWinner){
