@@ -1,0 +1,12 @@
+// includes _colors _common
+
+input {
+	display: block;
+	width: 75%;
+	margin: 0 auto 10px;
+	font-size: 30px;
+}
+
+li {
+	white-space: pre-wrap;
+}

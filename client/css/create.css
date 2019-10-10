@@ -1,0 +1,37 @@
+// includes _colors _common
+
+div#newGameForm {
+	width: 90%;
+	margin: 1% auto;
+
+	input {
+		display: block;
+		width: 75%;
+		margin: 0 auto 10px;
+	}
+
+	button {
+		display: block;
+		font-size: 30px;
+		width: 60%;
+		margin: 10px auto;
+		padding: 6px;
+
+		&#selectAll {
+			width: 50%;
+			font-size: 25px;
+			padding: 8px;
+		}
+	}
+}
+
+button#backButton, button#saveButton {
+	font-size: 25px;
+	margin: 10px;
+	padding: 8px;
+	width: 150px;
+}
+
+button#saveButton {
+	float: right;
+}
