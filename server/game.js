@@ -11,7 +11,7 @@ class Game extends BaseGame {
 	constructor(rootFolder, port){
 		super(rootFolder, port);
 
-		require('./router').init(rootFolder, this.httpServer);
+		(require('./router'))(rootFolder, this.httpServer);
 
 		this.cards = cards.load(rootFolder);
 
