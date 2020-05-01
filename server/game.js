@@ -1,4 +1,4 @@
-const uuid = require('uuid/v4');
+const uuid = require('uuid').v4;
 const util = require('js-util');
 const log = require('log');
 const BaseGame = require('byod-game-engine/server/game');
