@@ -2,7 +2,7 @@ const path = require('path');
 
 const log = require('log');
 
-module.exports = function(rootFolder, { app, sendPage, staticServer }){
+module.exports = function(rootFolder, { app, staticServer }){
 	app.use(staticServer(path.join(rootFolder, 'client/resources')));
 
 	app.use(function(req, res, next){
@@ -14,6 +14,6 @@ module.exports = function(rootFolder, { app, sendPage, staticServer }){
 
 		log(`[router] Load ${req.path}`, req.socket.remoteAddress);
 
-		sendPage(req.path)(req, res);
+		res.sendPage(req.path);
 	});
 };

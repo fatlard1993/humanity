@@ -26,11 +26,16 @@ yargs.describe({
 
 var args = yargs.argv;
 
-args.v = Number(args.v);
+if(args.dbg){
+	args.c = true;
+	args.v = Number(args.dbg);
+}
+
+else if(args.v) args.v = Number(args.v);
 
 //log args polyfill
 process.env.DBG = args.v;
-process.env.COLOR = args.color;
+process.env.COLOR = args.ver || args.c;
 
 const log = require('log');
 
