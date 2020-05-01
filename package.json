@@ -1,6 +1,6 @@
 {
 	"name": "humanity",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "A card game for terrible people",
 	"main": "server/index.js",
 	"scripts": {},
