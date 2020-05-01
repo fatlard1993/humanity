@@ -5,7 +5,8 @@ const BaseGame = require('byod-game-engine/server/game');
 
 const cards = require('./cards');
 const cardCast = require('./cardCast');
-const { GameRoom, LobbyRoom } = require('./rooms');
+const GameRoom = require('./gameRoom');
+const LobbyRoom = require('./lobbyRoom');
 
 class Game extends BaseGame {
 	constructor(rootFolder, port){
@@ -49,7 +50,8 @@ class Game extends BaseGame {
 
 				else if(payload.gameRoom){
 					this.name = payload.name;
-					this.roomName = payload.gameRoom;
+
+					room = this.roomName = payload.gameRoom;
 
 					if(!game.rooms[room]) return this.reply('join_room', { err: 'Game room does not exist' });
 					if(!game.rooms[room].players[this.name]) return this.reply('join_room', { err: 'Player does not exist' });
@@ -134,7 +136,7 @@ class Game extends BaseGame {
 			}
 		});
 
-		cardCast.init(this.sockets);
+		cardCast.init(this.sockets, rootFolder);
 	}
 
 	getRandomWhite(packs){

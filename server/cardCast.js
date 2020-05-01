@@ -4,10 +4,10 @@ const log = require('log');
 const fsExtended = require('fs-extended');
 const ccApi = new (require('cardcast-api')).CardcastAPI();
 
-const { rootFolder } = require('./humanity');
-
 const cardCast = {
-	init: function(socketServer){
+	init: function(socketServer, rootFolder){
+		this.rootFolder = rootFolder;
+
 		socketServer.registerEndpoints(this.socketEndpoints);
 	},
 	socketEndpoints: {
@@ -37,9 +37,9 @@ const cardCast = {
 
 					const outFile = deck.name;
 
-					fsExtended.mkdir(path.join(rootFolder, 'temp/cards'));
+					fsExtended.mkdir(path.join(cardCast.rootFolder, 'temp/cards'));
 
-					log(`Writing: ${rootFolder}/temp/cards/${outFile}.json`);
+					log(`Writing: ${cardCast.rootFolder}/temp/cards/${outFile}.json`);
 
 					var x, blackText, whiteText;
 					var blacks = deck.calls, blacksInCount = blacks.length, blacks_out = [];
@@ -63,7 +63,7 @@ const cardCast = {
 
 					log(`read ${blacksInCount} blacks & ${whitesInCount} whites : wrote ${blacks_out.length} blacks & ${whites_out.length} whites`);
 
-					fs.writeFile(path.join(rootFolder, 'temp/cards', `${outFile}.json`), JSON.stringify({ blacks: blacks_out, whites: whites_out }, ' ', 2), function(){
+					fs.writeFile(path.join(cardCast.rootFolder, 'temp/cards', `${outFile}.json`), JSON.stringify({ blacks: blacks_out, whites: whites_out }, ' ', 2), function(){
 						log(arguments);
 
 						//todo reload packs
