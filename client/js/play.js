@@ -48,7 +48,8 @@ const game = {
 		var vetoBlackButton = dom.createElem('button', { id: 'vetoBlackButton' });
 		var blackCard = dom.createElem('div', { id: 'blackCard', innerHTML: this.state.black });
 
-		if(this.state.waitingOnCount === this.state.activePlayers) dom.appendChildren(blackCard, vetoBlackDisplay, vetoBlackButton);
+		// if(this.state.waitingOnCount === this.state.activePlayers)
+		dom.appendChildren(blackCard, vetoBlackDisplay, vetoBlackButton);
 
 		var submissionWrapper = dom.createElem('div', { id: 'submissionEntryWrapper' });
 
@@ -233,13 +234,17 @@ dom.onLoad(function onLoad(){
 	socketClient.on('game_update', function(data){
 		log()('[play] game_update', data);
 
-		var reDraw = (game.state && game.state.stage === data.stage) && {submissions: 1, voting: 1 }[data.stage] ? false : true;
+		var reDraw = (game.state && game.state.stage === data.stage) && { submissions: 1, voting: 1 }[data.stage] ? false : true;
 
 		game.state = data;
 
 		if(data.stage === 'end') socketClient.ws.close();
 
 		if(reDraw) game.draw();
+
+		else if(data.stage === 'submissions' ){
+			document.getElementById('vetoBlackDisplay').textContent = `${data.vetoVotes}/${data.activePlayers}`;
+		}
 	});
 
 	dom.interact.on('pointerUp', (evt) => {
