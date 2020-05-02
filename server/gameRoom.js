@@ -40,8 +40,6 @@ class GameRoom extends Room {
 			socket: player
 		});
 
-		this.players[player.name].type = player.type;
-
 		this.sendUpdate();
 	}
 
