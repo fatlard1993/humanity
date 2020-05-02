@@ -234,11 +234,13 @@ dom.onLoad(function onLoad(){
 	socketClient.on('game_update', function(data){
 		log()('[play] game_update', data);
 
+		var reDraw = game.state && game.state.stage === data.stage ? false : true;
+
 		game.state = data;
 
 		if(data.stage === 'end') socketClient.ws.close();
 
-		game.draw();
+		if(reDraw) game.draw();
 	});
 
 	dom.interact.on('pointerUp', (evt) => {
