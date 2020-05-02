@@ -122,7 +122,7 @@ class Game extends BaseGame {
 				game.rooms[this.roomName].checkState();
 			},
 			player_nudge: function(playerName){
-				game.rooms[this.roomName].players[playerName].send('player_nudge', 100);
+				game.rooms[this.roomName].players[playerName].socket.send('player_nudge', 100);
 			},
 			client_disconnect: function(data){
 				log('[game] client_disconnect', data);
