@@ -3,7 +3,6 @@
 /* global dom log socketClient util */
 
 const game = {
-	vibrate: window.navigator.vibrate || window.navigator.webkitVibrate || window.navigator.mozVibrate || window.navigator.msVibrate,
 	playerColor: function(str){
 		var hash = 0, colour = '#', x;
 
@@ -227,14 +226,14 @@ dom.onLoad(function onLoad(){
 		if(game.state) game.draw();
 	});
 
-	socketClient.on('player_nudge', function(vibration){
-		if(game.vibrate) game.vibrate(vibration);
+	socketClient.on('player_nudge', function(vibration = 200){
+		if(navigator.vibrate) navigator.vibrate(parseInt(vibration));
 	});
 
 	socketClient.on('game_update', function(data){
 		log()('[play] game_update', data);
 
-		var reDraw = game.state && game.state.stage === data.stage ? false : true;
+		var reDraw = (game.state && game.state.stage === data.stage) && {submissions: 1, voting: 1 }[data.stage] ? false : true;
 
 		game.state = data;
 
