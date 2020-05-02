@@ -30,14 +30,9 @@ class Game extends BaseGame {
 				var room = this.roomName = payload.room;
 
 				if(room === 'lobby'){
-					this.name = uuid();
-					this.roomName = room;
+					if(!game.rooms.lobby) game.rooms.lobby = new LobbyRoom({ name: 'lobby' }, game);
 
-					if(!game.rooms[room]) game.rooms[room] = new LobbyRoom({ name: 'lobby' }, game);
-
-					game.rooms[room].addPlayer(this);
-
-					game.rooms[room].sendUpdate();
+					game.rooms.lobby.addPlayer(this);
 				}
 
 				else if(room === 'create'){
@@ -95,7 +90,7 @@ class Game extends BaseGame {
 					if(game.rooms[this.roomName].state.submissions[payload.submission]){
 						game.rooms[this.roomName].players[this.name].state = previousState;
 
-						return this.reply('player_submission', { err: 'Card has already been entered' });
+						return this.reply('player_submission', { err: 'That card has already been submitted' });
 					}
 
 					game.rooms[this.roomName].players[this.name].submission = payload.submission;

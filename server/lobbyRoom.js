@@ -1,5 +1,6 @@
 const log = require('log');
 const util = require('js-util');
+const uuid = require('uuid').v4;
 const Room = require('byod-game-engine/server/room');
 
 class LobbyRoom extends Room {
@@ -9,12 +10,8 @@ class LobbyRoom extends Room {
 		return this;
 	}
 
-	addPlayer(player){
-		super.addPlayer({
-			name: player.name,
-			state: player.state,
-			socket: player
-		});
+	addPlayer(socket){
+		super.addPlayer({ name: uuid(), socket });
 
 		this.sendUpdate();
 	}
@@ -36,8 +33,6 @@ class LobbyRoom extends Room {
 				if(room.players[room.playerNames[y]].type === 'play' && room.players[room.playerNames[y]].state !== 'inactive') ++rooms[roomNames[x]].players;
 			}
 		}
-
-		log.error('XXXXXXX');
 
 		this.state.rooms = rooms;
 
