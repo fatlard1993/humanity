@@ -57,8 +57,15 @@ div#whiteCard {
 	word-break: break-all;
 }
 
+div#gameTimer {
+	position: absolute;
+	display: none;
+}
+
 ul#playersList {
 	li {
+		word-break: break-all;
+
 		&.marked:before {
 			@extend .fa;
 
