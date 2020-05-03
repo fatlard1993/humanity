@@ -22,7 +22,7 @@ const lobby = {
 
 		log()('joining', lobby.selectedGame, lobby.rooms[lobby.selectedGame]);
 
-		lobby.nameInput = dom.createElem('input', { type: 'text', placeholder: 'Player Name', validation: /^.{4,32}$/, value: dom.storage.get('player_name') || '', validate: 0, validationWarning: 'Must be between 4 and 32 characters' });
+		lobby.nameInput = dom.createElem('input', { type: 'text', placeholder: 'Player Name', validation: /^.{3,32}$/, value: dom.storage.get('player_name') || '', validate: 0, validationWarning: 'Must be between 4 and 32 characters' });
 
 		dom.appendChildren(dom.getElemById('content'), dom.createElem('button', { className: 'leftButton', textContent: 'Back' }), dom.createElem('button', { className: 'rightButton', textContent: 'Play' }), dom.createElem('button', { className: 'rightButton', textContent: 'View' }), lobby.nameInput);
 
