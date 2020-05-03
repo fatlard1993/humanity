@@ -99,7 +99,7 @@ const cards = module.exports = {
 
 			log(`[cards] Loaded blacklist`);
 
-			fs.writeFile(`${this.rootFolder}/temp/blacklist.json`, JSON.stringify(packData), (err) => {
+			fs.writeFile(`${this.rootFolder}/temp/blacklist.json`, JSON.stringify(packData, '\t', 1), (err) => {
 				if(err) return log.error(`Error saving blacklist`, err);
 
 				log(`[cards] Saved blacklist card ${text}`);
