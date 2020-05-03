@@ -69,14 +69,16 @@ const view = {
 			li.setAttribute('data-text', whites[x]);
 		}
 	},
-	updateWhitesPile: function(){
+	updateWhitesPile: function(newSubmissions){
 		var whitesPile = document.getElementById('whitesPile');
 
 		if(!whitesPile) return;
 
-		for(var x = whitesPile.children.length, count = Object.keys(view.state.submissions).length; x < count; ++x){
-			(function(){
-				var card = dom.createElem('div', { appendTo: whitesPile });
+		log()('newSubmissions', newSubmissions);
+
+		for(var x = newSubmissions ? 0 : whitesPile.children.length, count = (newSubmissions || Object.keys(view.state.submissions)).length; x < count; ++x){
+			(function(x){
+				var card = dom.createElem('div', { textContent: newSubmissions ? newSubmissions[x] : view.state.submissions[Object.keys(view.state.submissions)[x]], appendTo: whitesPile });
 
 				setTimeout(function(){
 					card.style.top = util.rand(5, 40) +'%';
@@ -84,7 +86,7 @@ const view = {
 					card.style.transform = 'rotate('+ util.rand(-30, 70) +'deg)';
 					// dom.setTransform(card, `translate(${util.rand(5, 40)}%, ${util.rand(5, 80)}%) rotate(${util.rand(-30, 70)}deg)`);
 				}, 20);
-			})();
+			})(x);
 		}
 	},
 	whitesPileFix: function(){
@@ -129,9 +131,15 @@ dom.onLoad(function onLoad(){
 	socketClient.on('game_update', function(data){
 		log()('[view] game_update', data);
 
+		var newSubmissions = [];
+
+		if(view.state && view.state.submissions) Object.keys(data.submissions).forEach((submission) => { if(!view.state.submissions[submission]) newSubmissions.push(data.submissions[submission]); });
+
+		if(!newSubmissions.length) newSubmissions = undefined;
+
 		view.state = data;
 
-		if(document.getElementById('whitesPile') && view.state.stage === 'submissions') view.updateWhitesPile();
+		if(document.getElementById('whitesPile') && view.state.stage === 'submissions') view.updateWhitesPile(newSubmissions);
 
 		else if(!document.getElementById('whitesList') && view.state.stage === 'voting') setTimeout(() => { view.draw(); }, 2000);
 
