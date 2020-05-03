@@ -2,6 +2,16 @@
 // babel
 /* global dom log socketClient util */
 
+// todo modified card isnt used up
+
+//todo trash whites doesnt work
+
+//todo unready button
+
+//todo player customized color
+
+//todo block multiple connections from the same device
+
 const game = {
 	playerColor: function(str){
 		var hash = 0, colour = '#', x;
@@ -18,6 +28,8 @@ const game = {
 		dom.empty(dom.getElemById('content'));
 
 		dom.createElem('button', { id: 'leave', className: 'leftButton', textContent: 'Leave', appendTo: dom.getElemById('content') });
+
+		delete game.waiting;
 
 		if(this.state.stage !== 'new' && game.player.state === 'done') return this.draw_waiting();
 
@@ -100,6 +112,8 @@ const game = {
 		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'whiteCard', innerHTML: this.state.winner.submission +'<br><br>-'+ this.state.winner.player });
 	},
 	draw_waiting: function(){
+		game.waiting = true;
+
 		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'waitingHeading', textContent: 'Waiting on...' });
 
 		var playersList = dom.createElem('ul', { appendTo: dom.getElemById('content'), id: 'playersList' });
@@ -234,7 +248,7 @@ dom.onLoad(function onLoad(){
 	socketClient.on('game_update', function(data){
 		log()('[play] game_update', data);
 
-		var reDraw = (game.state && game.state.stage === data.stage) && { submissions: 1, voting: 1 }[data.stage] ? false : true;
+		var reDraw = !game.waiting || ((game.state && game.state.stage === data.stage) && { submissions: 1, voting: 1 }[data.stage]) ? false : true;
 
 		game.state = data;
 
@@ -263,7 +277,7 @@ dom.onLoad(function onLoad(){
 		else if(evt.target.id === 'playAgain'){
 			evt.preventDefault();
 
-			dom.location.change(`/play?room=${game.room}&name=${game.player.name}`);
+			dom.location.change(`/play?room=${game.room}&name=${encodeURIComponent(game.player.name)}`);
 		}
 
 		else if(evt.target.id === 'clear'){
