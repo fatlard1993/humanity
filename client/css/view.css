@@ -46,6 +46,12 @@ div#blackCard {
 	}
 }
 
+div#gameTimer {
+	position: absolute;
+	display: none;
+}
+
+
 div#whiteCard {
 	font-size: 40px;
 	text-align: center;
@@ -159,5 +165,8 @@ div#whitesPile {
 		border-radius: 5px;
 		background-color: white;
 		transition: transform 1.1s, top 1s, left 1s;
+		word-break: break-all;
+		font-size: 9px;
+		padding: 5px;
 	}
 }
