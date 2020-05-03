@@ -147,6 +147,7 @@ ul {
 
 		* {
 			pointer-events: none;
+			width: 100%;
 		}
 	}
 }
