@@ -11,7 +11,7 @@ const create = {
 		var voteTimer = dom.createElem('input', { type: 'text', placeholder: '0 :: Vote Timer 0-128 sec', validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
 		var whiteCardCount = dom.createElem('input', { type: 'text', placeholder: '7 :: Whites 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
 		// var npcCount = dom.createElem('input', { type: 'text', placeholder: '0 :: NPCs 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
-		// var winGoal = dom.createElem('input', { type: 'text', placeholder: '5 :: Win Goal 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
+		var winGoal = dom.createElem('input', { type: 'text', placeholder: '5 :: Win Goal 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
 		// var pointGoal = dom.createElem('input', { type: 'text', placeholder: '50 :: Point Goal 0-128', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
 		var lastManOut = dom.createElem('button', { className: 'option', id: 'lastManOut', textContent: 'Last Man Out' });
 		var fillInMissing = dom.createElem('button', { className: 'option', id: 'fillMissing', textContent: 'Fill In Missing' });
@@ -50,10 +50,9 @@ const create = {
 				voteTimer: voteTimer.value.length ? parseInt(voteTimer.value) : 0,
 				whiteCardCount: whiteCardCount.value.length ? parseInt(whiteCardCount.value) : 7,
 				// npcCount: npcCount.value.length ? parseInt(npcCount.value) : 0,
-				// winGoal: winGoal.value.length ? parseInt(winGoal.value) : 5,
+				winGoal: winGoal.value.length ? parseInt(winGoal.value) : 5,
 				// pointGoal: pointGoal.value.length ? parseInt(pointGoal.value) : 50,
 				npcCount: 0,
-				winGoal: 5,
 				pointGoal: 50,
 				lastManOut: this.options.lastManOut,
 				fillInMissing: this.options.fillMissing,
