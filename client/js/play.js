@@ -302,7 +302,7 @@ dom.onLoad(function onLoad(){
 		else if(evt.target.id === 'scores'){
 			evt.preventDefault();
 
-			game.draw('scores');
+			game.draw_scores();
 		}
 
 		else if(evt.target.id === 'clear'){
