@@ -20,6 +20,8 @@ class Game extends BaseGame {
 
 		this.sockets.registerEndpoints({
 			create_room: function(options){
+				//todo validation on options
+
 				game.rooms[options.name] = new GameRoom(options, game);
 
 				this.reply('create_room', true);
