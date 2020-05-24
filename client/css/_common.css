@@ -223,4 +223,6 @@ div.banner {
 	font-size: 35px;
 	font-weight: bold;
 	background-color: $red;
+	padding: 1%;
+	text-align: center;
 }

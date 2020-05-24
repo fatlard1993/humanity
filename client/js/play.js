@@ -277,9 +277,7 @@ dom.onLoad(function onLoad(){
 
 		if(reDraw) game.draw();
 
-		else if(data.stage === 'submissions'){
-			document.getElementById('vetoBlackDisplay').textContent = `${data.vetoVotes}/${data.activePlayers}`;
-		}
+		else if(data.stage === 'submissions' && document.getElementById('vetoBlackDisplay')) document.getElementById('vetoBlackDisplay').textContent = `${data.vetoVotes}/${data.activePlayers}`;
 	});
 
 	dom.interact.on('pointerUp', (evt) => {
