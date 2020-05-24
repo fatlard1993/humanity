@@ -215,28 +215,28 @@ class GameRoom extends Room {
 		else if(this.state.stage === 'voting') this.changeStage('end');
 	}
 
-	getWinners () {
+	getWinners(){
 		const { votes } = this.state;
 		let winners = {};
 		let topScore = 0;
-		for (let cardText in votes) {
-			if (votes.hasOwnProperty(cardText)) {
+
+		for(var cardText in votes){
+			if(votes.hasOwnProperty(cardText)){
 				const voteCount = votes[cardText];
-				if (voteCount > topScore) {
+
+				if(voteCount > topScore){
 					topScore = voteCount;
-					winners = {
-						[cardText]: voteCount
-					};
+					winners = { [cardText]: voteCount };
+
 					continue;
 				}
-				if (voteCount === topScore) {
-					winners[cardText] = voteCount;
-				}
+
+				if(voteCount === topScore) winners[cardText] = voteCount;
 			}
 		}
+
 		return winners;
 	}
-	
 
 	changeStage(stage){
 		if(this.state.activePlayers < 3) stage = 'new';
@@ -304,18 +304,15 @@ class GameRoom extends Room {
 			const { players } = this;
 
 			const winningCards = this.getWinners();
-			const winners = Object.keys(winningCards)
-				.map((cardText) => ({
-					player: submissions[cardText],
-					submission: cardText,
-					votes: votes[cardText]
-				}));
-			
+			const winners = Object.keys(winningCards).map((cardText) => ({
+				player: submissions[cardText],
+				submission: cardText,
+				votes: votes[cardText]
+			}));
+
 			this.state.winners = winners;
 
-			winners.forEach((winner) => {
-				++players[winner.player].score;
-			});
+			winners.forEach((winner) => { ++players[winner.player].score; });
 
 			++this.state.round;
 
