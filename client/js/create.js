@@ -20,7 +20,9 @@ const create = {
 		var packsList = dom.createElem('ul', { id: 'packsList' });
 
 		this.packItems = [];
-		this.selectedPacks = {};
+		this.selectedPacks = {
+			base: 1
+		};
 		this.selectedCount = 0;
 		this.options = {
 			editField: 1
