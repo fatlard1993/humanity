@@ -110,6 +110,7 @@ const game = {
 
 		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'blackCard', innerHTML: this.state.black });
 
+		if(this.state.gameOver) dom.createElem('div', { appendTo: dom.getElemById('content'), className: 'banner', textContent: 'Game Over' });
 		if(this.state.winners.length > 1) dom.createElem('div', { appendTo: dom.getElemById('content'), className: 'banner', textContent: 'TIE' });
 
 		this.state.winners.forEach((winner) => {
