@@ -2,6 +2,8 @@
 // babel
 /* global dom log socketClient */
 
+//todo player name default to random card
+
 const lobby = {
 	draw: function(){
 		dom.empty(dom.getElemById('content'));
