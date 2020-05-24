@@ -315,6 +315,12 @@ class GameRoom extends Room {
 
 			winners.forEach((winner) => { ++players[winner.player].score; });
 
+			winners.forEach((winner) => {
+				if(winner.score >= winGoal){
+					this.state.gameOver = true;
+				}
+			});
+
 			++this.state.round;
 
 			// var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
