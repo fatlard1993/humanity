@@ -30,7 +30,7 @@ const create = {
 
 		dom.createElem('button', { className: 'leftButton', textContent: 'Back', appendTo: dom.getElemById('content') });
 		dom.createElem('button', { className: 'rightButton', textContent: 'Done', appendTo: dom.getElemById('content') });
-		dom.createElem('button', { className: 'rightButton', textContent: 'Packs', appendTo: dom.getElemById('content') });
+		// dom.createElem('button', { className: 'rightButton', textContent: 'Packs', appendTo: dom.getElemById('content') });
 
 		var newGameForm = dom.createElem('div', { id: 'newGameForm', appendTo: dom.getElemById('content'), appendChildren: [nameInput, submissionTimer, voteTimer, whiteCardCount, winGoal, /* npcCount, pointGoal, */ lastManOut, fillInMissing, editFieldToggle, selectAllPacks, packsList] });
 
