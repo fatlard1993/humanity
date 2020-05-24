@@ -176,6 +176,7 @@ class GameRoom extends Room {
 			update.players[player.name] = {
 				name: player.name,
 				type: player.type,
+				score: player.score,
 				state: player.state
 			};
 		}
