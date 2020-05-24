@@ -106,10 +106,15 @@ const game = {
 	},
 	draw_end: function(){
 		dom.createElem('button', { appendTo: dom.getElemById('content'), id: 'playAgain', className: 'rightButton', textContent: 'Play Again' });
+		dom.createElem('button', { appendTo: dom.getElemById('content'), id: 'scores', className: 'rightButton', textContent: 'Scores' });
 
 		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'blackCard', innerHTML: this.state.black });
 
-		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'whiteCard', innerHTML: this.state.winner.submission +'<br><br>-'+ this.state.winner.player });
+		if(this.state.winners.length > 1) dom.createElem('div', { appendTo: dom.getElemById('content'), className: 'banner', textContent: 'TIE' });
+
+		this.state.winners.forEach((winner) => {
+			dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'whiteCard', innerHTML: winner.submission +'<br><br>-'+ winner.player });
+		});
 	},
 	draw_waiting: function(){
 		game.waiting = true;
@@ -123,7 +128,23 @@ const game = {
 
 			if(!this.state.players[playerName] || this.state.players[playerName].type === 'view' || { inactive: 1, done: 1 }[this.state.players[playerName].state]) continue;
 
-			var li = dom.createElem('li', { appendTo: playersList, className: `player`, textContent: playerName });
+			var li = dom.createElem('li', { appendTo: playersList, className: 'player', textContent: playerName });
+			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
+
+			colorSwatch.style.backgroundColor = this.playerColor(playerName);
+		}
+	},
+	draw_scores: function(){
+		dom.createElem('button', { appendTo: dom.getElemById('content'), id: 'playAgain', className: 'rightButton', textContent: 'Play Again' });
+
+		var scoresList = dom.createElem('ul', { appendTo: dom.getElemById('content'), id: 'scoresList' });
+
+		for(var x = 0; x < this.state.playerCount; ++x){
+			var playerName = this.state.playerNames[x];
+
+			if(!this.state.players[playerName] || this.state.players[playerName].type === 'view') continue;
+
+			var li = dom.createElem('li', { appendTo: scoresList, className: 'player', textContent: `${playerName}: ${this.state.players[playerName].score}` });
 			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
 
 			colorSwatch.style.backgroundColor = this.playerColor(playerName);
@@ -278,6 +299,12 @@ dom.onLoad(function onLoad(){
 			evt.preventDefault();
 
 			dom.location.change(`/play?room=${game.room}&name=${encodeURIComponent(game.player.name)}`);
+		}
+
+		else if(evt.target.id === 'scores'){
+			evt.preventDefault();
+
+			game.draw('scores');
 		}
 
 		else if(evt.target.id === 'clear'){
