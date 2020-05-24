@@ -29,5 +29,6 @@ li {
     right: 0px;
     position: absolute;
     padding: 5px;
+		width: unset;
 	}
 }
