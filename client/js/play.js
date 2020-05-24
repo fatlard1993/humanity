@@ -248,7 +248,7 @@ dom.onLoad(function onLoad(){
 	socketClient.on('game_update', function(data){
 		log()('[play] game_update', data);
 
-		var reDraw = !game.waiting || ((game.state && game.state.stage === data.stage) && { submissions: 1, voting: 1 }[data.stage]) ? false : true;
+		var reDraw = game.waiting || ((game.state && game.state.stage === data.stage) && { submissions: 1, voting: 1 }[data.stage]) ? false : true;
 
 		game.state = data;
 
