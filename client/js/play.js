@@ -24,16 +24,16 @@ const game = {
 
 		return colour;
 	},
-	draw: function(){
+	draw: function(view){
 		dom.empty(dom.getElemById('content'));
 
 		dom.createElem('button', { id: 'leave', className: 'leftButton', textContent: 'Leave', appendTo: dom.getElemById('content') });
 
 		delete game.waiting;
 
-		if(this.state.stage !== 'new' && game.player.state === 'done') return this.draw_waiting();
+		if(!view && (this.state.stage !== 'new' && game.player.state === 'done')) return this.draw_waiting();
 
-		this[`draw_${this.state.stage}`]();
+		this[`draw_${view || this.state.stage}`]();
 	},
 	draw_new: function(){
 		if(this.player.state !== 'done') dom.createElem('button', { id: 'ready', appendTo: dom.getElemById('content'), className: 'rightButton', textContent: 'Ready' });
@@ -149,63 +149,7 @@ const game = {
 
 			colorSwatch.style.backgroundColor = this.playerColor(playerName);
 		}
-	},
-	// vote_results: function(submissions){
-	// 	Player.ready = 0;
-	// 	Player.submission = 0;
-	// 	Player.placedVote = 0;
-
-	// 	var currentBlackHeading = Dom.createElem('div', { id: 'CurrentBlackHeading', innerHTML: Game.currentBlack });
-
-	// 	var submissionList = Dom.createElem('ul', { id: 'SubmissionList' });
-	// 	var submissionNames = Object.keys(submissions), submissionCount = submissionNames.length;
-
-	// 	var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Join New Game' : 'Keep Playing' });
-
-	// 	var scoresButton = Dom.createElem('button', { id: 'ScoresButton', textContent: 'Scores' });
-
-	// 	var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
-
-	// 	for(x = 0; x < submissionCount; ++x){
-	// 		var li = Dom.createElem('li', { className: 'submission_result'+ (submissions[submissionNames[x]].player === Game.winner ? ' big_winner' : (submissions[submissionNames[x]].winner ? ' winner' : '')), textContent: 'Votes: '+ submissions[submissionNames[x]].count });
-	// 		var winnerText = '		'+ (submissions[submissionNames[x]].player === Game.winner ? 'GAME ' : '') + (submissions[submissionNames[x]].winner ? 'WINNER' : '');
-	// 		li.appendChild(Dom.createElem('span', { innerHTML: submissionNames[x] +'<br>- '+ submissions[submissionNames[x]].player + winnerText }));
-
-	// 		submissionList[submissions[submissionNames[x]].winner ? 'insertBefore' : 'appendChild'](li, submissions[submissionNames[x]].winner && submissionList.children.length ? submissionList.children[0] : null);
-	// 	}
-
-	// 	Dom.Content.appendChild(currentBlackHeading);
-	// 	Dom.Content.appendChild(submissionList);
-	// 	Dom.Content.appendChild(scoresButton);
-	// 	Dom.Content.appendChild(playAgainButton);
-	// 	Dom.Content.appendChild(lobbyButton);
-
-	// 	if(wakelock) wakelock.cancel();
-
-	// 	screen.keepAwake = 0;
-	// },
-	// scores: function(){
-	// 	var scoresList = Dom.createElem('ul', { id: 'ScoresList' });
-	// 	var scoreNames = Object.keys(Game.scores), scoreCount = scoreNames.length;
-
-	// 	for(x = 0; x < scoreCount; ++x){
-	// 		var li = Dom.createElem('li', { textContent: 'Player:\t'+ scoreNames[x] +'\nWins:\t'+ Game.scores[scoreNames[x]].wins +'\nWinning Votes:\t'+ Game.scores[scoreNames[x]].winningVotes +'\nTotal Votes:\t'+ Game.scores[scoreNames[x]].votes +'\nTotal Points:\t'+ Game.scores[scoreNames[x]].points });
-
-	// 		// if(scoreNames[x] === Player.name) li.className = 'selected';
-
-	// 		li.style.backgroundColor = Cjs.stringToColor(scoreNames[x]);
-
-	// 		scoresList[scoreNames[x] === Player.name ? 'insertBefore' : 'appendChild'](li, scoreNames[x] === Player.name && scoresList.children.length ? scoresList.children[0] : null);
-	// 	}
-
-	// 	var playAgainButton = Dom.createElem('button', { id: 'PlayAgainButton', textContent: Game.winner ? 'Join New Game' : 'Keep Playing' });
-
-	// 	var lobbyButton = Dom.createElem('button', { id: 'LobbyButton', textContent: 'Back to Lobby' });
-
-	// 	Dom.Content.appendChild(scoresList);
-	// 	Dom.Content.appendChild(playAgainButton);
-	// 	Dom.Content.appendChild(lobbyButton);
-	// }
+	}
 };
 
 dom.onLoad(function onLoad(){
@@ -302,7 +246,7 @@ dom.onLoad(function onLoad(){
 		else if(evt.target.id === 'scores'){
 			evt.preventDefault();
 
-			game.draw_scores();
+			game.draw('scores');
 		}
 
 		else if(evt.target.id === 'clear'){
