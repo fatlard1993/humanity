@@ -256,7 +256,7 @@ dom.onLoad(function onLoad(){
 
 		if(reDraw) game.draw();
 
-		else if(data.stage === 'submissions' ){
+		else if(data.stage === 'submissions'){
 			document.getElementById('vetoBlackDisplay').textContent = `${data.vetoVotes}/${data.activePlayers}`;
 		}
 	});
