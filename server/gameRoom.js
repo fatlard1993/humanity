@@ -2,6 +2,12 @@ const log = require('log');
 const util = require('js-util');
 const Room = require('byod-game-engine/server/room');
 
+// score feature todo:
+// number of rounds
+// individual player score
+// round ties & game ties
+// game end score display
+
 class GameRoom extends Room {
 	constructor(options, game){
 		super(options, game);
@@ -18,6 +24,7 @@ class GameRoom extends Room {
 	initialize(){
 		this.state = {
 			stage: 'new',
+			round: 0,
 			votes: {}
 		};
 
@@ -278,6 +285,8 @@ class GameRoom extends Room {
 			this.state.scores = this.state.scores || {};
 			this.state.scores[winner] = this.state.scores[winner] || 0;
 			++this.state.scores[winner];
+
+			++this.state.round;
 
 			// var mostVotesOnSingleSubmission = 0, votedEntryNames = Object.keys(this.currentVotes), votedEntryCount = votedEntryNames.length;
 
