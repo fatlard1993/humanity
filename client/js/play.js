@@ -1,6 +1,6 @@
-// includes dom log socket-client js-util _common
+// includes dom log socket-client _common
 // babel
-/* global dom log socketClient util */
+/* global dom log socketClient */
 
 // todo modified card isnt used up
 
