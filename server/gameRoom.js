@@ -283,8 +283,8 @@ class GameRoom extends Room {
 
 			this.state.winner = winner;
 			this.state.scores = this.state.scores || {};
-			this.state.scores[winner] = this.state.scores[winner] || 0;
-			++this.state.scores[winner];
+			this.state.scores[winner.player] = this.state.scores[winner.player] || 0;
+			++this.state.scores[winner.player];
 
 			++this.state.round;
 
