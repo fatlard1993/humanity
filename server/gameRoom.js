@@ -25,7 +25,7 @@ class GameRoom extends Room {
 		this.state = {
 			stage: 'new',
 			round: 0,
-			votes: {}
+			votes: {},
 		};
 
 		this.drawBlack();
@@ -44,6 +44,7 @@ class GameRoom extends Room {
 			state: player.state,
 			type: player.type,
 			hand: player.type === 'play' ? this.drawWhites(this.options.whiteCardCount) : [],
+			score: 0,
 			socket: player
 		});
 
@@ -214,6 +215,29 @@ class GameRoom extends Room {
 		else if(this.state.stage === 'voting') this.changeStage('end');
 	}
 
+	getWinners () {
+		const { votes } = this.state;
+		let winners = {};
+		let topScore = 0;
+		for (let cardText in votes) {
+			if (votes.hasOwnProperty(cardText)) {
+				const voteCount = votes[cardText];
+				if (voteCount > topScore) {
+					topScore = voteCount;
+					winners = {
+						[cardText]: voteCount
+					};
+					continue;
+				}
+				if (voteCount === topScore) {
+					winners[cardText] = voteCount;
+				}
+			}
+		}
+		return winners;
+	}
+	
+
 	changeStage(stage){
 		if(this.state.activePlayers < 3) stage = 'new';
 
@@ -275,16 +299,23 @@ class GameRoom extends Room {
 		}
 
 		else if(stage === 'end'){
-			var winner = { votes: 0 }, voteEntries = Object.keys(this.state.votes), votedEntryCount = voteEntries.length;
+			const { winGoal } = this.options;
+			const { submissions, votes } = this.state;
+			const { players } = this;
 
-			for(x = 0; x < votedEntryCount; ++x){
-				if(this.state.votes[voteEntries[x]] > winner.votes) winner = { player: this.state.submissions[voteEntries[x]], submission: voteEntries[x], votes: this.state.votes[voteEntries[x]] };
-			}
+			const winningCards = this.getWinners();
+			const winners = Object.keys(winningCards)
+				.map((cardText) => ({
+					player: submissions[cardText],
+					submission: cardText,
+					votes: votes[cardText]
+				}));
+			
+			this.state.winners = winners;
 
-			this.state.winner = winner;
-			this.state.scores = this.state.scores || {};
-			this.state.scores[winner.player] = this.state.scores[winner.player] || 0;
-			++this.state.scores[winner.player];
+			winners.forEach((winner) => {
+				++players[winner.player].score;
+			});
 
 			++this.state.round;
 
