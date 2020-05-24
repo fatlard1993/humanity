@@ -217,3 +217,10 @@ button.rightButton {
 	right: 0;
 	pointer-events: none
 }
+
+div.banner {
+	width: 100%;
+	font-size: 35px;
+	font-weight: bold;
+	background-color: $red;
+}
