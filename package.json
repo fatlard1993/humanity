@@ -16,7 +16,7 @@
 	"devDependencies": {
 		"eslint-config-rules": "github:fatlard1993/eslint-config-rules#2.x.x",
 		"babel-eslint": "^10.1.0",
-		"eslint": "^7.11.0"
+		"eslint": "^7.20.0"
 	},
 	"dependencies": {
 		"byod-game-engine": "github:fatlard1993/byod-game-engine",
@@ -32,8 +32,8 @@
 		"notify": "github:fatlard1993/notify#2.x.x",
 		"performance-now": "^2.1.0",
 		"socket-client": "github:fatlard1993/socket-client#2.x.x",
-		"uuid": "^8.3.1",
+		"uuid": "^8.3.2",
 		"websocket-server": "github:fatlard1993/websocket-server#2.x.x",
-		"yargs": "^16.1.0"
+		"yargs": "^16.2.0"
 	}
 }
