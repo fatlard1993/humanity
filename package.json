@@ -2,8 +2,10 @@
 	"name": "humanity",
 	"version": "2.0.2",
 	"description": "A card game for terrible people",
-	"main": "server/index.js",
-	"scripts": {},
+	"main": "src/server/index.js",
+	"scripts": {
+		"start": "src/server/index.js"
+	},
 	"author": "fatlard1993",
 	"license": "ISC",
 	"repository": {
@@ -27,10 +29,12 @@
 		"find-root": "^1.1.0",
 		"fs-extended": "github:fatlard1993/fs-extended#2.x.x",
 		"js-util": "github:fatlard1993/js-util#2.x.x",
-		"log": "github:fatlard1993/log#2.x.x",
+		"log": "github:fatlard1993/log#3.x.x",
 		"menu": "github:fatlard1993/menu#2.x.x",
 		"notify": "github:fatlard1993/notify#2.x.x",
 		"performance-now": "^2.1.0",
+		"@fortawesome/fontawesome-free": "^5.15.2",
+		"source-sans-pro": "^3.6.0",
 		"socket-client": "github:fatlard1993/socket-client#2.x.x",
 		"uuid": "^8.3.2",
 		"websocket-server": "github:fatlard1993/websocket-server#2.x.x",

@@ -1,4 +1,4 @@
-const log = require('log');
+const log = new (require('log'))({ tag: 'humanity' });
 const util = require('js-util');
 const uuid = require('uuid').v4;
 const Room = require('byod-game-engine/server/room');
@@ -40,4 +40,4 @@ class LobbyRoom extends Room {
 	}
 }
 
-module.exports = 	LobbyRoom;
+module.exports = LobbyRoom;

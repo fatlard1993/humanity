@@ -1,6 +1,4 @@
-// includes dom log socket-client _common
-// babel
-/* global dom log socketClient */
+import { log, dom, socketClient } from '_common';
 
 //todo player name default to random card
 

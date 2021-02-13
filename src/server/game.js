@@ -1,6 +1,5 @@
-const uuid = require('uuid').v4;
 const util = require('js-util');
-const log = require('log');
+const log = new (require('log'))({ tag: 'game' });
 const BaseGame = require('byod-game-engine/server/game');
 
 const cards = require('./cards');
@@ -12,7 +11,7 @@ class Game extends BaseGame {
 	constructor(rootFolder, port){
 		super(rootFolder, port);
 
-		(require('./router'))(rootFolder, this.httpServer);
+		require('./router');
 
 		this.cards = cards.load(rootFolder);
 

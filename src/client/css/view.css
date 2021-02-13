@@ -1,5 +1,7 @@
 // includes _colors _fonts _common
 
+// includes _colors _fonts _common
+
 li.player {
 	position: relative;
 }
@@ -31,7 +33,7 @@ div#blackCard {
     background: none;
 
 		&:before {
-			@extend .fa;
+			@mixin fontAwesomeSolid;
 
 			color: $red;
 			content: "\f165";
@@ -44,11 +46,17 @@ div#blackCard {
 	}
 }
 
+div#gameTimer {
+	position: absolute;
+	display: none;
+}
+
+
 div#whiteCard {
 	font-size: 40px;
 	text-align: center;
 	margin: 10px auto;
-	width: 90%;
+	width: 50%;
 	background: $white;
 	color: $black;
 	padding: 32px 10px 64px;
@@ -57,17 +65,10 @@ div#whiteCard {
 	word-break: break-all;
 }
 
-div#gameTimer {
-	position: absolute;
-	display: none;
-}
-
 ul#playersList {
 	li {
-		word-break: break-all;
-
 		&.marked:before {
-			@extend .fa;
+			@mixin fontAwesomeSolid;
 
 			content: "\f007";
 			margin-right: 6px;
@@ -150,6 +151,22 @@ input#submissionEntry {
 	margin: 10px auto 0;
 }
 
-#submissionEntryWrapper p.validationWarning {
-	width: 60%;
+
+div#whitesPile {
+	position: relative;
+	overflow: hidden;
+
+	div {
+		position: absolute;
+		top: 150%;
+		left: 50%;
+		width: 60px;
+		height: 90px;
+		border-radius: 5px;
+		background-color: white;
+		transition: transform 1.1s, top 1s, left 1s;
+		word-break: break-all;
+		font-size: 9px;
+		padding: 5px;
+	}
 }

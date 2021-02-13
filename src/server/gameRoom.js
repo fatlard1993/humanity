@@ -1,4 +1,4 @@
-const log = require('log');
+const log = new (require('log'))({ tag: 'humanity' });
 const util = require('js-util');
 const Room = require('byod-game-engine/server/room');
 

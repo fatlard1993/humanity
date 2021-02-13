@@ -1,6 +1,4 @@
-// includes dom log socket-client _common
-// babel
-/* global dom log socketClient */
+import { log, dom, socketClient, playerColor } from '_common';
 
 // todo modified card isnt used up
 
@@ -13,17 +11,6 @@
 //todo block multiple connections from the same device
 
 const game = {
-	playerColor: function(str){
-		var hash = 0, colour = '#', x;
-
-		for(x = 0; x < str.length; ++x) hash = str.charCodeAt(x) + ((hash << 5) - hash);
-
-		hash *= 100;
-
-		for(x = 0; x < 3; ++x) colour += `00${((hash >> (x * 8)) & 0xFF).toString(16)}`.substr(-2);
-
-		return colour;
-	},
 	draw: function(view){
 		dom.empty(dom.getElemById('content'));
 
@@ -48,7 +35,7 @@ const game = {
 			var li = dom.createElem('li', { className: `player${isLocalPlayer ? ' marked' : ''}${this.state.players[playerName].state === 'done' ? ' ready' : ''}`, textContent: playerName });
 			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
 
-			colorSwatch.style.backgroundColor = this.playerColor(playerName);
+			colorSwatch.style.backgroundColor = playerColor(playerName);
 
 			playersList[isLocalPlayer ? 'insertBefore' : 'appendChild'](li, isLocalPlayer && playersList.children.length ? playersList.children[0] : null);
 		}
@@ -132,7 +119,7 @@ const game = {
 			var li = dom.createElem('li', { appendTo: playersList, className: 'player', textContent: playerName });
 			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
 
-			colorSwatch.style.backgroundColor = this.playerColor(playerName);
+			colorSwatch.style.backgroundColor = playerColor(playerName);
 		}
 	},
 	draw_scores: function(){
@@ -148,7 +135,7 @@ const game = {
 			var li = dom.createElem('li', { appendTo: scoresList, className: 'player', textContent: `${playerName}: ${this.state.players[playerName].score}` });
 			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
 
-			colorSwatch.style.backgroundColor = this.playerColor(playerName);
+			colorSwatch.style.backgroundColor = playerColor(playerName);
 		}
 	}
 };

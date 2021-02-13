@@ -1,6 +1,5 @@
-// includes dom log socket-client js-util _common
-// babel
-/* global dom log socketClient util */
+import { log, dom, socketClient } from '_common';
+import util from 'js-util';
 
 const create = {
 	draw: function draw(){

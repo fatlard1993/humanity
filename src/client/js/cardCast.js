@@ -1,6 +1,8 @@
-// includes dom log socket-client
-// babel
-/* global dom log socketClient */
+import Log from 'log';
+import dom from 'dom';
+import socketClient from 'socket-client';
+
+const log = new Log({ verbosity: parseInt(dom.storage.get('logVerbosity') || 0) });
 
 const cardCast = {
 	packs: [],

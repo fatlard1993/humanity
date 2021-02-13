@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const log = require('log');
+const log = new (require('log'))({ tag: 'cardCast' });
 const fsExtended = require('fs-extended');
 const ccApi = new (require('cardcast-api')).CardcastAPI();
 

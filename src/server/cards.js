@@ -1,24 +1,24 @@
 const fs = require('fs');
 const path = require('path');
 
-const log = require('log');
+const log = new (require('log'))({ tag: 'cards' });
 const fsExtended = require('fs-extended');
 
 const cards = module.exports = {
 	blacklist: {},
 	load: function(rootFolder, cb){
 		this.rootFolder = rootFolder;
-		this.path = `${rootFolder}/etc/cards/`;
+		this.path = `${rootFolder}/src/cards/`;
 		this.tempPath = `${rootFolder}/temp/cards/`;
 		this.packs = {};
 
 		fsExtended.browse(this.path, (data) => {
-			log(`[cards] Importing ${data.files.length} packs from ${this.path}`);
+			log(`Importing ${data.files.length} packs from ${this.path}`);
 
 			var files = data.files;
 
 			fsExtended.browse(this.tempPath, (data) => {
-				log(`[cards] Importing ${data.files.length} packs from ${this.path}`);
+				log(`Importing ${data.files.length} packs from ${this.path}`);
 
 				files = files.concat(data.files);
 
@@ -28,14 +28,14 @@ const cards = module.exports = {
 					}
 
 					catch(err){
-						return log.error(`[cards] Error parsing pack ${file}`, err);
+						return log.error(`Error parsing pack ${file}`, err);
 					}
 
 					var packName = file.replace(new RegExp(this.tempPath +'|'+ this.path), '').replace('.json', '');
 
 					this.packs[packName] = packData;
 
-					log(`[cards] Loaded "${packName}"`);
+					log(`Loaded "${packName}"`);
 				});
 
 				if(cb) cb(this.packs);
@@ -55,7 +55,7 @@ const cards = module.exports = {
 		return output;
 	},
 	recordCustom: function(text){
-		log('[cards] Record custom: ', text);
+		log('Record custom: ', text);
 
 		fs.readFile(`${this.rootFolder}/temp/cards/custom.json`, (err, data) => {
 			var packData;
@@ -68,19 +68,19 @@ const cards = module.exports = {
 
 			this.packs.custom = packData;
 
-			log(`[cards] Loaded custom`);
+			log(`Loaded custom`);
 
 			fsExtended.mkdir(path.join(this.rootFolder, 'temp/cards'));
 
 			fs.writeFile(`${this.rootFolder}/temp/cards/custom.json`, JSON.stringify(packData), (err) => {
 				if(err) return log.error(`Error saving custom`, err);
 
-				log(`[cards] Saved custom card ${text}`);
+				log(`Saved custom card ${text}`);
 			});
 		});
 	},
 	recordBlacklist: function(text){
-		log('[cards] Record blacklist: ', text);
+		log('Record blacklist: ', text);
 
 		fs.readFile(`${this.rootFolder}/temp/blacklist.json`, (err, data) => {
 			var packData;
@@ -89,7 +89,7 @@ const cards = module.exports = {
 
 			catch(e){ packData = {}; }
 
-			if(packData[text]) return log(`[cards] "${text}" is already blacklisted`);
+			if(packData[text]) return log(`"${text}" is already blacklisted`);
 
 			packData[text] = true;
 
@@ -97,12 +97,12 @@ const cards = module.exports = {
 
 			fsExtended.mkdir(path.join(this.rootFolder, 'temp'));
 
-			log(`[cards] Loaded blacklist`);
+			log(`Loaded blacklist`);
 
 			fs.writeFile(`${this.rootFolder}/temp/blacklist.json`, JSON.stringify(packData, '\t', 1), (err) => {
 				if(err) return log.error(`Error saving blacklist`, err);
 
-				log(`[cards] Saved blacklist card ${text}`);
+				log(`Saved blacklist card ${text}`);
 			});
 		});
 	}
