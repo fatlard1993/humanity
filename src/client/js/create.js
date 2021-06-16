@@ -11,15 +11,15 @@ const create = {
 		winGoal: 5,
 		npcCount: 0,
 	},
-	draw: function(){
+	draw: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
-			onPointerPress: () => dom.location.change('/lobby')
+			onPointerPress: () => dom.location.change('/lobby'),
 		});
 
 		const save = dom.createElem('button', {
 			textContent: 'Create',
-			onPointerPress: () => this.save()
+			onPointerPress: () => this.save(),
 		});
 
 		const name = dom.createElem('input', {
@@ -34,7 +34,7 @@ const create = {
 
 		const randomize = dom.createElem('button', {
 			className: 'iconAction randomize',
-			onPointerPress: () => socketClient.reply('get_random_white')
+			onPointerPress: () => socketClient.reply('get_random_white'),
 		});
 
 		const clear = dom.createElem('button', {
@@ -43,7 +43,7 @@ const create = {
 				name.value = '';
 
 				dom.validate(name);
-			}
+			},
 		});
 
 		const submissionTimer = dom.createElem('input', {
@@ -94,21 +94,21 @@ const create = {
 			className: 'big_center',
 			id: 'lastManOut',
 			textContent: 'Last Man Out',
-			onPointerPress: () => lastManOut.classList[lastManOut.classList.contains('selected') ? 'remove' : 'add']('selected')
+			onPointerPress: () => lastManOut.classList[lastManOut.classList.contains('selected') ? 'remove' : 'add']('selected'),
 		});
 
 		const fillMissing = dom.createElem('button', {
 			className: 'big_center',
 			id: 'fillMissing',
 			textContent: 'Fill In Missing',
-			onPointerPress: () => fillMissing.classList[fillMissing.classList.contains('selected') ? 'remove' : 'add']('selected')
+			onPointerPress: () => fillMissing.classList[fillMissing.classList.contains('selected') ? 'remove' : 'add']('selected'),
 		});
 
 		const editField = dom.createElem('button', {
 			className: 'big_center selected',
 			id: 'editField',
 			textContent: 'Edit Field',
-			onPointerPress: () => editField.classList[editField.classList.contains('selected') ? 'remove' : 'add']('selected')
+			onPointerPress: () => editField.classList[editField.classList.contains('selected') ? 'remove' : 'add']('selected'),
 		});
 
 		const packList = dom.createElem('ul', { id: 'packList' });
@@ -122,15 +122,15 @@ const create = {
 
 				selectAll.textContent = `${select ? 'Des' : 'S'}elect All Packs`;
 
-				Array.from(packList.children).forEach((pack) => {
+				Array.from(packList.children).forEach(pack => {
 					const isSelected = pack.classList.contains('selected');
 
-					if(select !== isSelected) pack.classList[select ? 'add' : 'remove']('selected');
-				})
-			}
+					if (select !== isSelected) pack.classList[select ? 'add' : 'remove']('selected');
+				});
+			},
 		});
 
-		this.packNames.forEach((name) => {
+		this.packNames.forEach(name => {
 			const pack = dom.createElem('li', {
 				className: `pack ${name === 'base' ? ' selected' : ''}`,
 				textContent: name,
@@ -141,7 +141,7 @@ const create = {
 					const select = packList.querySelectorAll('.selected').length < packList.querySelectorAll(':not(.selected)').length;
 
 					selectAll.textContent = `${select ? 'S' : 'Des'}elect All Packs`;
-				}
+				},
 			});
 		});
 
@@ -160,11 +160,11 @@ const create = {
 				dom.createElem('div', { className: 'separator' }),
 				selectAll,
 				packList,
-			]
+			],
 		});
 
 		this.save = () => {
-			if(validateForm()) return;
+			if (validateForm()) return;
 
 			const options = {
 				name: name.value,
@@ -192,27 +192,26 @@ const create = {
 
 		// var pointGoal = dom.createElem('input', { type: 'text', placeholder: '50 :: Point Goal 0-128', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
 	},
-	selectPack: function(packItem, selectBool){
-		if(typeof selectBool === 'undefined') selectBool = !this.selectedPacks[packItem.textContent];
+	selectPack: function (packItem, selectBool) {
+		if (typeof selectBool === 'undefined') selectBool = !this.selectedPacks[packItem.textContent];
 
 		log()(`[create] ${selectBool ? 'S' : 'Uns'}elect pack "${packItem.textContent}"`);
 
-		if(selectBool) this.selectedPacks[packItem.textContent] = 1;
-
+		if (selectBool) this.selectedPacks[packItem.textContent] = 1;
 		else delete this.selectedPacks[packItem.textContent];
 
 		this.selectedCount = Object.keys(this.selectedPacks).length;
 
 		packItem.classList[selectBool ? 'add' : 'remove']('selected');
-	}
+	},
 };
 
-dom.onLoad(function onLoad(){
-	socketClient.on('open', function(){
+dom.onLoad(function onLoad() {
+	socketClient.on('open', function () {
 		socketClient.reply('join_room', { room: 'create' });
 	});
 
-	socketClient.on('create_data', function(data){
+	socketClient.on('create_data', function (data) {
 		log()('[create] create_data', data);
 
 		create.packs = data.packs;
@@ -222,10 +221,10 @@ dom.onLoad(function onLoad(){
 		create.draw();
 	});
 
-	socketClient.on('random_white', function(data){
+	socketClient.on('random_white', function (data) {
 		log()('[create] random_white', data);
 
-		if(dom.getElemById('nameInput')){
+		if (dom.getElemById('nameInput')) {
 			dom.getElemById('nameInput').value = data;
 
 			dom.validate(dom.getElemById('nameInput'));
@@ -236,12 +235,12 @@ dom.onLoad(function onLoad(){
 		create.randomName = data;
 	});
 
-	socketClient.on('create_room', function(){
+	socketClient.on('create_room', function () {
 		dom.location.change('/lobby');
 	});
 
-	dom.interact.on('keyUp', function(evt){
-		if(evt.keyPressed === 'ENTER'){
+	dom.interact.on('keyUp', function (evt) {
+		if (evt.keyPressed === 'ENTER') {
 			evt.preventDefault();
 
 			create.save();

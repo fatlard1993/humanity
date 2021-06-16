@@ -10,12 +10,12 @@ const { nanoid } = require('nanoid');
 // game end score display
 
 class GameRoom extends Room {
-	constructor(options, game){
+	constructor(options, game) {
 		super(options, game);
 
 		this.id = nanoid(7);
 
-		if(!options.packs.length) options.packs = ['base'];
+		if (!options.packs.length) options.packs = ['base'];
 
 		this.cards = game.cards.get(this.options.packs);
 
@@ -24,7 +24,7 @@ class GameRoom extends Room {
 		return this;
 	}
 
-	initialize(){
+	initialize() {
 		this.state = {
 			stage: 'new',
 			round: 0,
@@ -33,15 +33,15 @@ class GameRoom extends Room {
 
 		this.drawBlack();
 
-		for(var player, x = this.playerNames.length - 1; x >= 0; --x){
+		for (var player, x = this.playerNames.length - 1; x >= 0; --x) {
 			player = this.players[this.playerNames[x]];
 
-			if(player.submission) delete this.players[this.playerNames[x]].submission;
-			if(player.vote) delete this.players[this.playerNames[x]].vote;
+			if (player.submission) delete this.players[this.playerNames[x]].submission;
+			if (player.vote) delete this.players[this.playerNames[x]].vote;
 		}
 	}
 
-	addPlayer(player){
+	addPlayer(player) {
 		super.addPlayer({
 			name: player.name,
 			id: nanoid(7),
@@ -49,24 +49,24 @@ class GameRoom extends Room {
 			type: player.type,
 			hand: player.type === 'play' ? this.drawWhites(this.options.handSize) : [],
 			score: 0,
-			socket: player
+			socket: player,
 		});
 
 		this.sendUpdate();
 
-		if(this.game.rooms.lobby) this.game.rooms.lobby.sendUpdate();
+		if (this.game.rooms.lobby) this.game.rooms.lobby.sendUpdate();
 	}
 
-	removePlayer(player){
+	removePlayer(player) {
 		super.removePlayer(player);
 
 		this.sendUpdate();
 	}
 
-	drawBlack(){
+	drawBlack() {
 		var totalBlacks = this.cards.blacks.length;
 
-		if(!totalBlacks){
+		if (!totalBlacks) {
 			this.cards.blacks = this.game.cards.get(this.options.packs).blacks;
 
 			totalBlacks = this.cards.blacks.length;
@@ -74,7 +74,7 @@ class GameRoom extends Room {
 
 		var randBlack = util.randInt(0, totalBlacks);
 
-		if(this.game.cards.blacklist[this.cards.blacks[randBlack]]){
+		if (this.game.cards.blacklist[this.cards.blacks[randBlack]]) {
 			this.cards.blacks.splice(randBlack, 1);
 
 			return this.drawBlack();
@@ -85,11 +85,11 @@ class GameRoom extends Room {
 		this.cards.blacks.splice(randBlack, 1);
 	}
 
-	drawWhites(count){
-		if(count === 1){
+	drawWhites(count) {
+		if (count === 1) {
 			var totalWhites = this.cards.whites.length;
 
-			if(!totalWhites){
+			if (!totalWhites) {
 				this.cards.whites = this.game.cards.get(this.options.packs).whites;
 
 				totalWhites = this.cards.whites.length;
@@ -105,21 +105,21 @@ class GameRoom extends Room {
 			return newWhite;
 		}
 
-		for(var x = 0, cards = []; x < count; ++x) cards.push(this.drawWhites(1));
+		for (var x = 0, cards = []; x < count; ++x) cards.push(this.drawWhites(1));
 
 		log('cards', cards);
 
 		return cards;
 	}
 
-	newNpcName(){
+	newNpcName() {
 		var totalWhites = this.cards.whites.length;
 		var totalBlacks = this.cards.blacks.length;
 		var x, name;
 
-		for(x = 0; x < totalWhites; ++x){
-			if(/^[^\s]+$/.test(this.cards.whites[x])){
-				name =	this.cards.whites[x];
+		for (x = 0; x < totalWhites; ++x) {
+			if (/^[^\s]+$/.test(this.cards.whites[x])) {
+				name = this.cards.whites[x];
 
 				this.cards.whites.splice(x, 1);
 
@@ -127,10 +127,10 @@ class GameRoom extends Room {
 			}
 		}
 
-		if(name) return name;
+		if (name) return name;
 
-		for(x = 0; x < totalBlacks; ++x){
-			if(/^[^\s]+$/.test(this.cards.blacks[x])){
+		for (x = 0; x < totalBlacks; ++x) {
+			if (/^[^\s]+$/.test(this.cards.blacks[x])) {
 				name = this.cards.blacks[x];
 
 				this.cards.blacks.splice(x, 1);
@@ -140,18 +140,18 @@ class GameRoom extends Room {
 		return name || 'NPC';
 	}
 
-	updateWaitingOn(){
-		for(var player, waitingOn = [], x = this.playerNames.length - 1; x >= 0; --x){
+	updateWaitingOn() {
+		for (var player, waitingOn = [], x = this.playerNames.length - 1; x >= 0; --x) {
 			player = this.players[this.playerNames[x]];
 
-			if(player.type === 'play' && !{ inactive: 1, done: 1 }[player.state]) waitingOn.push(player.name);
+			if (player.type === 'play' && !{ inactive: 1, done: 1 }[player.state]) waitingOn.push(player.name);
 		}
 
 		this.state.waitingOnCount = waitingOn.length;
 		this.state.waitingOn = this.state.waitingOnCount && waitingOn;
 	}
 
-	sendUpdate(){
+	sendUpdate() {
 		var update = Object.assign({}, this.state, {
 			playerNames: this.playerNames,
 			playerCount: this.playerCount,
@@ -159,21 +159,21 @@ class GameRoom extends Room {
 			votes: {},
 			players: {},
 			activePlayers: 0,
-			vetoVotes: 0
+			vetoVotes: 0,
 		});
 
-		for(var player, x = this.playerCount - 1; x >= 0; --x){
+		for (var player, x = this.playerCount - 1; x >= 0; --x) {
 			player = this.players[this.playerNames[x]];
 
-			if(player.type === 'view') continue;
+			if (player.type === 'view') continue;
 
-			if(player.state === 'veto') ++update.vetoVotes;
+			if (player.state === 'veto') ++update.vetoVotes;
 
-			if(player.state !== 'inactive') ++update.activePlayers;
+			if (player.state !== 'inactive') ++update.activePlayers;
 
-			if(player.submission) update.submissions[player.submission] = player.id;
+			if (player.submission) update.submissions[player.submission] = player.id;
 
-			if(player.vote){
+			if (player.vote) {
 				update.votes[player.vote] = update.votes[player.vote] || 0;
 
 				++update.votes[player.vote];
@@ -184,11 +184,11 @@ class GameRoom extends Room {
 				id: player.id,
 				type: player.type,
 				score: player.score,
-				state: player.state
+				state: player.state,
 			};
 		}
 
-		if(update.vetoVotes && update.vetoVotes === update.activePlayers){
+		if (update.vetoVotes && update.vetoVotes === update.activePlayers) {
 			this.drawBlack();
 
 			log(`Vetoed "${this.state.black}"`);
@@ -207,120 +207,111 @@ class GameRoom extends Room {
 		this.broadcast('game_update', update);
 	}
 
-	checkState(){
+	checkState() {
 		this.updateWaitingOn();
 
-		if(this.state.waitingOnCount){// !(this.options.lastManOut && { submissions: 1, voting: 1 }[this.state.stage] && this.state.waitingOnCount - 1 <= 0)
+		if (this.state.waitingOnCount) {
+			// !(this.options.lastManOut && { submissions: 1, voting: 1 }[this.state.stage] && this.state.waitingOnCount - 1 <= 0)
 			log('[GameRoom] Waiting on', this.state.waitingOn);
 
 			this.sendUpdate();
-		}
-
-		else if(this.state.stage === 'new' && this.state.activePlayers > 2) this.changeStage('submissions');
-
-		else if(this.state.stage === 'submissions') this.changeStage('voting');
-
-		else if(this.state.stage === 'voting') this.changeStage('end');
+		} else if (this.state.stage === 'new' && this.state.activePlayers > 2) this.changeStage('submissions');
+		else if (this.state.stage === 'submissions') this.changeStage('voting');
+		else if (this.state.stage === 'voting') this.changeStage('end');
 	}
 
-	getWinners(){
+	getWinners() {
 		const { votes } = this.state;
 		let winners = {};
 		let topScore = 0;
 
-		Object.keys(votes).forEach((card) => {
+		Object.keys(votes).forEach(card => {
 			const voteCount = votes[card];
 
-			if(voteCount > topScore){
+			if (voteCount > topScore) {
 				topScore = voteCount;
 				winners = { [card]: voteCount };
 
 				return;
 			}
 
-			if(voteCount === topScore) winners[card] = voteCount;
+			if (voteCount === topScore) winners[card] = voteCount;
 		});
 
 		return winners;
 	}
 
-	changeStage(stage){
-		if(this.state.activePlayers < 3) stage = 'new';
+	changeStage(stage) {
+		if (this.state.activePlayers < 3) stage = 'new';
 
 		this.state.stage = stage;
 
-		for(var player, x = this.playerCount - 1; x >= 0; --x){
-			if(this.players[this.playerNames[x]].state !== 'inactive') this.players[this.playerNames[x]].state = stage;
+		for (var player, x = this.playerCount - 1; x >= 0; --x) {
+			if (this.players[this.playerNames[x]].state !== 'inactive') this.players[this.playerNames[x]].state = stage;
 
 			player = this.players[this.playerNames[x]];
 
 			player.socket.reply('player_update', {
 				state: player.state,
-				hand: player.hand
+				hand: player.hand,
 			});
 		}
 
-		if(stage === 'new'){
+		if (stage === 'new') {
 			this.initialize();
-		}
-
-		else if(stage === 'submissions'){
-			if(this.options.npcCount){
-				for(x = 0; x < this.options.npcCount; ++x){
+		} else if (stage === 'submissions') {
+			if (this.options.npcCount) {
+				for (x = 0; x < this.options.npcCount; ++x) {
 					this.submissions.push({ player: this.newNpcName(), submission: this.drawWhites(1) });
 				}
 			}
-			if(this.options.fillInMissing && this.state.waitingOnCount){
-				for(x = 0; x < this.state.waitingOnCount; ++x){
+			if (this.options.fillInMissing && this.state.waitingOnCount) {
+				for (x = 0; x < this.state.waitingOnCount; ++x) {
 					this.submissions.push({ player: this.newNpcName(), submission: this.drawWhites(1) });
 				}
 			}
 
-			if(this.options.submissionTimer){
+			if (this.options.submissionTimer) {
 				log('Enabling submission timer for: ', this.options.submissionTimer);
 
 				setTimeout(() => {
-					if(this.state.stage === 'submissions') this.changeStage('voting');
+					if (this.state.stage === 'submissions') this.changeStage('voting');
 				}, (this.options.submissionTimer + 5) * 1000);
 			}
-		}
-
-		else if(stage === 'voting'){
+		} else if (stage === 'voting') {
 			var npcSubmissions = 0;
 
-			if(this.options.npcCount) npcSubmissions += this.options.npcCount;
+			if (this.options.npcCount) npcSubmissions += this.options.npcCount;
 
-			if(this.options.fillInMissing && this.state.waitingOn) npcSubmissions += this.state.waitingOnCount;
+			if (this.options.fillInMissing && this.state.waitingOn) npcSubmissions += this.state.waitingOnCount;
 
-			for(x = 0; x < npcSubmissions; ++x) this.submissions.push({ player: this.newNpcName(), submission: this.drawWhites(1) });
+			for (x = 0; x < npcSubmissions; ++x) this.submissions.push({ player: this.newNpcName(), submission: this.drawWhites(1) });
 
-			if(this.options.voteTimer){
+			if (this.options.voteTimer) {
 				log('Enabling vote timer for: ', this.options.voteTimer);
 
 				setTimeout(() => {
-					if(this.state.stage === 'voting') this.changeStage('end');
+					if (this.state.stage === 'voting') this.changeStage('end');
 				}, (this.options.voteTimer + 5) * 1000);
 			}
-		}
-
-		else if(stage === 'end'){
+		} else if (stage === 'end') {
 			const { winGoal } = this.options;
 			const { submissions, votes } = this.state;
 			// const { players } = this;
 
 			const winningCards = this.getWinners();
-			const winners = Object.keys(winningCards).map((cardText) => ({
+			const winners = Object.keys(winningCards).map(cardText => ({
 				player: submissions[cardText],
 				submission: cardText,
-				votes: votes[cardText]
+				votes: votes[cardText],
 			}));
 
 			this.state.winners = winners;
 
 			// winners.forEach((winner) => { ++players[winner.player].score; });
 
-			winners.forEach((winner) => {
-				if(winner.score >= winGoal){
+			winners.forEach(winner => {
+				if (winner.score >= winGoal) {
 					this.state.gameOver = true;
 				}
 			});

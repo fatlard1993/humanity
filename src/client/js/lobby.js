@@ -3,7 +3,7 @@ import { log, dom, socketClient, humanity } from '_humanity';
 const { init, setContent } = humanity;
 
 const lobby = {
-	draw: function(){
+	draw: function () {
 		const refresh = dom.createElem('button', { textContent: 'Refresh', onPointerPress: () => window.location.reload() });
 		const newGame = dom.createElem('button', { id: 'newGame', textContent: 'New Game', onPointerPress: () => dom.location.change('/create') });
 
@@ -12,10 +12,9 @@ const lobby = {
 		const roomList = dom.createElem('ul');
 		const roomIDs = Object.keys(this.rooms);
 
-		if(!roomIDs.length) {
+		if (!roomIDs.length) {
 			dom.createElem('li', { className: 'noGames', textContent: 'No Game Rooms Available', appendTo: roomList, onPointerPress: () => dom.location.change('/create') });
-		}
-		else{
+		} else {
 			roomIDs.forEach(id => {
 				const room = lobby.rooms[id];
 				const playerCount = dom.createElem('span', { textContent: room.players });
@@ -25,18 +24,18 @@ const lobby = {
 		}
 
 		setContent(roomList);
-	}
+	},
 };
 
-dom.onLoad(function onLoad(){
-	socketClient.on('open', function(){
+dom.onLoad(function onLoad() {
+	socketClient.on('open', function () {
 		socketClient.reply('join_room', { room: 'lobby' });
 	});
 
-	socketClient.on('state', function(data){
+	socketClient.on('state', function (data) {
 		log()('[lobby] state', data);
 
-		if(data.rooms){
+		if (data.rooms) {
 			lobby.rooms = data.rooms;
 
 			lobby.draw();

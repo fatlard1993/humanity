@@ -12,7 +12,7 @@ const { options } = argi.parse({
 		type: 'number',
 		defaultValue: 8793,
 		alias: 'p',
-	}
+	},
 });
 
 const log = new (require('log'))({ tag: 'humanity', defaults: { verbosity: options.verbosity, color: true } });

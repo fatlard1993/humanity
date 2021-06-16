@@ -2,32 +2,32 @@ const uuid = require('uuid').v4;
 const Room = require('byod-game-engine/server/room');
 
 class LobbyRoom extends Room {
-	constructor(options, game){
+	constructor(options, game) {
 		super(options, game);
 
 		return this;
 	}
 
-	addPlayer(socket){
+	addPlayer(socket) {
 		super.addPlayer({ name: uuid(), socket });
 
 		this.sendUpdate();
 	}
 
-	sendUpdate(){
+	sendUpdate() {
 		const rooms = {};
 
 		Object.keys(this.game.rooms).forEach(id => {
 			const { name, options, players, playerNames } = this.game.rooms[id];
 			const room = { id, name, options, players: 0 };
 
-			if(name === 'lobby') return;
+			if (name === 'lobby') return;
 
-			playerNames.forEach((name) => {
-				if(players[name].type === 'play' && players[name].state !== 'inactive'){
+			playerNames.forEach(name => {
+				if (players[name].type === 'play' && players[name].state !== 'inactive') {
 					++room.players;
 				}
-			})
+			});
 
 			rooms[id] = room;
 		});

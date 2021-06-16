@@ -6,43 +6,39 @@ const { init, setPageTitle, setHeaderButtons, setContent, validateForm } = human
 
 const join = {
 	roomID: window.location.pathname.split('/')[2],
-	draw_play_or_view: function(){
+	draw_play_or_view: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
-			onPointerPress: () => dom.location.change('/lobby')
+			onPointerPress: () => dom.location.change('/lobby'),
 		});
 
 		const play = dom.createElem('button', {
 			textContent: 'Play',
 			className: 'big_center',
-			onPointerPress: join.draw_join
+			onPointerPress: join.draw_join,
 		});
 
 		const view = dom.createElem('button', {
 			textContent: 'View',
 			className: 'big_center',
-			onPointerPress: function(){
+			onPointerPress: function () {
 				socketClient.reply('player_register', { roomID: join.roomID, action: 'view' });
-			}
+			},
 		});
 
 		setHeaderButtons(back);
 
-		setContent(
-			play,
-			dom.createElem('div', { className: 'big_center', textContent: 'OR' }),
-			view
-		);
+		setContent(play, dom.createElem('div', { className: 'big_center', textContent: 'OR' }), view);
 	},
-	draw_join: function(){
+	draw_join: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
-			onPointerPress: join.draw_play_or_view
+			onPointerPress: join.draw_play_or_view,
 		});
 
 		const play = dom.createElem('button', {
 			textContent: 'Play',
-			onPointerPress: join.register
+			onPointerPress: join.register,
 		});
 
 		const name = dom.createElem('input', {
@@ -57,7 +53,7 @@ const join = {
 
 		const randomize = dom.createElem('button', {
 			className: 'iconAction randomize',
-			onPointerPress: () => socketClient.reply('get_random_white')
+			onPointerPress: () => socketClient.reply('get_random_white'),
 		});
 
 		const clear = dom.createElem('button', {
@@ -68,14 +64,12 @@ const join = {
 				dom.storage.set('player_name', '');
 
 				dom.validate(name);
-			}
+			},
 		});
 
 		const formContainer = dom.createElem('div', {
 			id: 'form',
-			appendChildren: [
-				dom.createElem('label', { textContent: 'Name', appendChildren: [name, randomize, clear] }),
-			]
+			appendChildren: [dom.createElem('label', { textContent: 'Name', appendChildren: [name, randomize, clear] })],
 		});
 
 		setHeaderButtons(back, play);
@@ -83,22 +77,22 @@ const join = {
 
 		name.focus();
 	},
-	register: function(){
-		if(validateForm()) return;
+	register: function () {
+		if (validateForm()) return;
 
 		socketClient.reply('player_register', { roomID: join.roomID, action: 'play', name: dom.getElemById('nameInput').value });
-	}
+	},
 };
 
-dom.onLoad(function onLoad(){
-	socketClient.on('open', function(){
+dom.onLoad(function onLoad() {
+	socketClient.on('open', function () {
 		socketClient.reply('join_room', { room: 'join', id: join.roomID });
 	});
 
-	socketClient.on('join_data', function(data){
+	socketClient.on('join_data', function (data) {
 		log()('[join] join_data', data);
 
-		if(!data || data.error) return dom.location.change('/lobby');
+		if (!data || data.error) return dom.location.change('/lobby');
 
 		join.room = data;
 
@@ -107,10 +101,10 @@ dom.onLoad(function onLoad(){
 		join.draw_play_or_view();
 	});
 
-	socketClient.on('random_white', function(data){
+	socketClient.on('random_white', function (data) {
 		log()('[join] random_white', data);
 
-		if(dom.getElemById('nameInput')){
+		if (dom.getElemById('nameInput')) {
 			dom.getElemById('nameInput').value = data;
 
 			dom.validate(dom.getElemById('nameInput'));
@@ -121,8 +115,8 @@ dom.onLoad(function onLoad(){
 		join.randomName = data;
 	});
 
-	socketClient.on('player_register', function(payload){
-		if(payload.error){
+	socketClient.on('player_register', function (payload) {
+		if (payload.error) {
 			dom.remove(document.getElementsByClassName('validationWarning'));
 
 			dom.createElem('p', { className: 'validationWarning', textContent: payload.error, appendTo: dom.getElemById('nameInput') });
@@ -135,11 +129,11 @@ dom.onLoad(function onLoad(){
 
 		dom.storage.set('player_name', payload.name);
 
-		dom.location.change(`/${payload.action}/${payload.roomID}${payload.action === 'play' ? '/'+ payload.playerID : ''}`);
+		dom.location.change(`/${payload.action}/${payload.roomID}${payload.action === 'play' ? '/' + payload.playerID : ''}`);
 	});
 
-	dom.interact.on('keyUp', (evt) => {
-		if(evt.keyPressed === 'ENTER'){
+	dom.interact.on('keyUp', evt => {
+		if (evt.keyPressed === 'ENTER') {
 			evt.preventDefault();
 
 			join.register();

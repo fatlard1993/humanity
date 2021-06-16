@@ -9,91 +9,85 @@ const game = {
 	player: {
 		id: window.location.pathname.split('/')[3],
 	},
-	draw: function(view){
+	draw: function (view) {
 		delete this.waiting;
 
-		if(!view && (this.state.stage !== 'new' && this.player.state === 'done')) view = 'waiting';
+		if (!view && this.state.stage !== 'new' && this.player.state === 'done') view = 'waiting';
 
 		this.drawHeaderButtons(view || this.state.stage);
 		this[`draw_${view || this.state.stage}`]();
 	},
-	drawHeaderButtons: function(view) {
+	drawHeaderButtons: function (view) {
 		let right;
 		const left = dom.createElem('button', {
 			textContent: 'Leave',
-			onPointerPress: () => dom.location.change('/lobby')
+			onPointerPress: () => dom.location.change('/lobby'),
 		});
 
-		if(view === 'new'){
+		if (view === 'new') {
 			right = dom.createElem('button', {
 				textContent: `${this.player.state === 'done' ? 'UN-' : ''}Ready`,
-				onPointerPress: () => socketClient.reply('player_update', { state: this.player.state === 'done' ? 'joined' : 'done' })
+				onPointerPress: () => socketClient.reply('player_update', { state: this.player.state === 'done' ? 'joined' : 'done' }),
 			});
-		}
-
-		else if(view === 'submissions') {
+		} else if (view === 'submissions') {
 			right = dom.createElem('button', {
 				textContent: 'Submit',
 				onPointerPress: () => {
-					if(this.room.options.editField){
-						if(validateForm()) return;
+					if (this.room.options.editField) {
+						if (validateForm()) return;
 
 						socketClient.reply('player_update', { state: 'done', submission: dom.getElemById('submission').value });
-					}
-
-					else socketClient.reply('player_update', { state: 'done', submission: this.selectedCard });
-				}
+					} else socketClient.reply('player_update', { state: 'done', submission: this.selectedCard });
+				},
 			});
-		}
-
-		else if(view === 'voting') {
+		} else if (view === 'voting') {
 			right = dom.createElem('button', {
 				textContent: 'Confirm Vote',
 				onPointerPress: () => {
 					socketClient.reply('player_update', { state: 'done', vote: this.player.vote });
-				}
+				},
 			});
-		}
-
-		else if({end: 1, scores: 1}[view]) {
+		} else if ({ end: 1, scores: 1 }[view]) {
 			right = dom.createElem('button', {
 				textContent: 'Play Again',
-				onPointerPress: () => dom.location.change(`/play/${this.room.id}/${this.player.id}`)
+				onPointerPress: () => dom.location.change(`/play/${this.room.id}/${this.player.id}`),
 			});
 		}
 
 		setHeaderButtons(left, right);
 	},
 	draw_new: () => game.draw_waiting(),
-	draw_waiting: function(){
+	draw_waiting: function () {
 		this.waiting = true;
 
 		setPageTitle('Waiting...');
 
 		const playersList = dom.createElem('ul', {
 			id: 'playersList',
-			appendChildren: util.cleanArr(this.state.playerNames.map((name) => {
-				const player = this.state.players[name];
-				const isThisPlayer = player.id === this.player.id;
+			appendChildren: util.cleanArr(
+				this.state.playerNames.map(name => {
+					const player = this.state.players[name];
+					const isThisPlayer = player.id === this.player.id;
 
-				if(!player || player.type === 'view' || player.state === 'inactive') return;
+					if (!player || player.type === 'view' || player.state === 'inactive') return;
 
-				return dom.createElem('li', {
-					className: `player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
-					innerHTML: name,
-					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
-					onPointerPress: function() {
-						if(isThisPlayer || player.state === 'done') return;
+					return dom.createElem('li', {
+						className: `player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+						innerHTML: name,
+						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
+						onPointerPress: function () {
+							if (isThisPlayer || player.state === 'done') return;
 
-						socketClient.reply('player_nudge', { name });
-					}
-				});
-			}))
+							socketClient.reply('player_nudge', { name });
+						},
+					});
+				}),
+			),
 		});
 
 		setContent(playersList);
 	},
-	draw_submissions: function(){
+	draw_submissions: function () {
 		const submission = dom.createElem('input', {
 			id: 'submission',
 			type: 'text',
@@ -109,7 +103,7 @@ const game = {
 				submission.value = '';
 
 				dom.validate(submission);
-			}
+			},
 		});
 
 		const vetoBlackDisplay = dom.createElem('div', {
@@ -134,20 +128,20 @@ const game = {
 		// 	},
 		// });
 
-		this.player.hand.forEach((card) => {
+		this.player.hand.forEach(card => {
 			dom.createElem('li', {
 				appendTo: hand,
 				innerHTML: card,
 				onPointerPress: ({ target }) => {
 					const isSelected = target.classList.contains('selected');
 
-					if(!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
+					if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
 
 					this.selectedCard = card;
 
 					target.classList[isSelected ? 'remove' : 'add']('selected');
 
-					if(this.room.options.editField){
+					if (this.room.options.editField) {
 						submission.value = card;
 
 						dom.validate(submission);
@@ -163,23 +157,23 @@ const game = {
 				dom.createElem('div', {
 					id: 'blackCard',
 					innerHTML: this.state.black,
-					appendChildren: Object.keys(this.state.submissions).length ? [] : [vetoBlackDisplay, vetoBlackButton]
+					appendChildren: Object.keys(this.state.submissions).length ? [] : [vetoBlackDisplay, vetoBlackButton],
 				}),
 				this.room.options.editField && dom.createElem('label', { textContent: 'Submission', appendChildren: [submission, clear] }),
 				hand,
 				// trashHand,
-			])
+			]),
 		});
 
 		setPageTitle('Collecting Submissions');
 
 		setContent(submissionForm);
 
-		if(this.room.options.editField) submission.focus();
+		if (this.room.options.editField) submission.focus();
 	},
-	update_submissions: function() {
-		if(Object.keys(this.state.submissions).length) {
-			if(dom.getElemById('vetoBlackDisplay')) {
+	update_submissions: function () {
+		if (Object.keys(this.state.submissions).length) {
+			if (dom.getElemById('vetoBlackDisplay')) {
 				dom.remove([dom.getElemById('vetoBlackButton'), dom.getElemById('vetoBlackDisplay')]);
 			}
 
@@ -188,10 +182,10 @@ const game = {
 
 		dom.getElemById('vetoBlackDisplay').textContent = `${this.state.vetoVotes}/${this.state.activePlayers}`;
 	},
-	draw_voting: function(){
+	draw_voting: function () {
 		const fragment = document.createDocumentFragment();
 
-		if(this.room.options.voteTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
+		if (this.room.options.voteTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
 
 		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
 
@@ -205,21 +199,21 @@ const game = {
 					onPointerPress: ({ target }) => {
 						const isSelected = target.classList.contains('selected');
 
-						if(!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
+						if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
 
 						this.player.vote = card;
 
 						target.classList[isSelected ? 'remove' : 'add']('selected');
-					}
+					},
 				});
-			})
+			}),
 		});
 
 		setPageTitle('Collecting Votes');
 
 		setContent(fragment);
 	},
-	draw_end: function(){
+	draw_end: function () {
 		socketClient.ws.close();
 
 		const fragment = document.createDocumentFragment();
@@ -228,35 +222,39 @@ const game = {
 
 		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
 
-		if(this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
+		if (this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
 
-		this.state.winners.forEach((winner) => {
-			dom.createElem('div', { appendTo: fragment, className: 'whiteCard', innerHTML: winner.submission +'<br><br>-'+ Object.keys(this.state.players).find(name => this.state.players[name].id === winner.player) });
+		this.state.winners.forEach(winner => {
+			dom.createElem('div', {
+				appendTo: fragment,
+				className: 'whiteCard',
+				innerHTML: winner.submission + '<br><br>-' + Object.keys(this.state.players).find(name => this.state.players[name].id === winner.player),
+			});
 		});
 
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'playersList',
-			appendChildren: this.state.playerNames.map((name) => {
+			appendChildren: this.state.playerNames.map(name => {
 				const player = this.state.players[name];
 				const isThisPlayer = name === this.player.name;
 
-				if(!player || player.type === 'view' || player.state === 'inactive') return;
+				if (!player || player.type === 'view' || player.state === 'inactive') return;
 
 				return dom.createElem('li', {
 					className: `player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
 					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
 					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 				});
-			})
+			}),
 		});
 
 		setContent(fragment);
-	}
+	},
 };
 
-dom.onLoad(function onLoad(){
-	if(!game.room.id || !game.player.id){
+dom.onLoad(function onLoad() {
+	if (!game.room.id || !game.player.id) {
 		log()(`[play] Missing player or room id: player=${game.player.id} room=${game.room.id} ... Returning to lobby`);
 
 		return dom.location.change('/lobby');
@@ -264,12 +262,12 @@ dom.onLoad(function onLoad(){
 
 	log()(`[play] Game room: ${game.room.id}`);
 
-	socketClient.on('open', function(){
+	socketClient.on('open', function () {
 		socketClient.reply('join_room', { room: 'play', gameRoom: game.room.id, player: game.player.id });
 	});
 
-	socketClient.on('join_room', function(payload){
-		if(payload.error){
+	socketClient.on('join_room', function (payload) {
+		if (payload.error) {
 			log()(`[play] Error joining room ... Returning to lobby`, payload);
 
 			return dom.location.change('/lobby');
@@ -278,8 +276,8 @@ dom.onLoad(function onLoad(){
 		game.room.options = payload.options;
 	});
 
-	socketClient.on('player_submission', function(payload){
-		if(payload.error && game.room.options.editField){
+	socketClient.on('player_submission', function (payload) {
+		if (payload.error && game.room.options.editField) {
 			dom.remove(document.getElementsByClassName('validationWarning'));
 
 			dom.createElem('p', { className: 'validationWarning', textContent: payload.error, appendTo: dom.getElemById('submission').parentElement });
@@ -289,22 +287,22 @@ dom.onLoad(function onLoad(){
 		}
 	});
 
-	socketClient.on('player_update', function(payload){
-		if(payload.id && payload.id !== game.player.id) return;
+	socketClient.on('player_update', function (payload) {
+		if (payload.id && payload.id !== game.player.id) return;
 
 		log()('[play] player_update', payload);
 
 		game.player.state = payload.state;
-		if(payload.hand) game.player.hand = payload.hand;
+		if (payload.hand) game.player.hand = payload.hand;
 
-		if(game.state) game.draw();
+		if (game.state) game.draw();
 	});
 
-	socketClient.on('player_nudge', function(vibration = 200){
-		if(navigator.vibrate) navigator.vibrate(parseInt(vibration));
+	socketClient.on('player_nudge', function (vibration = 200) {
+		if (navigator.vibrate) navigator.vibrate(parseInt(vibration));
 	});
 
-	socketClient.on('game_update', function(data){
+	socketClient.on('game_update', function (data) {
 		log()('[play] game_update', data);
 
 		// const currentStage = game.state?.stage;
