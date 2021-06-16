@@ -1,5 +1,3 @@
-const log = new (require('log'))({ tag: 'humanity' });
-const util = require('js-util');
 const uuid = require('uuid').v4;
 const Room = require('byod-game-engine/server/room');
 
@@ -17,22 +15,22 @@ class LobbyRoom extends Room {
 	}
 
 	sendUpdate(){
-		var x = 0, room, rooms = {}, roomNames = Object.keys(this.game.rooms), count = roomNames.length;
+		const rooms = {};
 
-		for(; x < count; ++x){
-			if(roomNames[x] === 'lobby') continue;
+		Object.keys(this.game.rooms).forEach(id => {
+			const { name, options, players, playerNames } = this.game.rooms[id];
+			const room = { id, name, options, players: 0 };
 
-			room = this.game.rooms[roomNames[x]];
+			if(name === 'lobby') return;
 
-			rooms[roomNames[x]] = {
-				players: 0,
-				options: room.options
-			};
+			playerNames.forEach((name) => {
+				if(players[name].type === 'play' && players[name].state !== 'inactive'){
+					++room.players;
+				}
+			})
 
-			for(var y = 0, yCount = room.playerNames.length; y < yCount; ++y){
-				if(room.players[room.playerNames[y]].type === 'play' && room.players[room.playerNames[y]].state !== 'inactive') ++rooms[roomNames[x]].players;
-			}
-		}
+			rooms[id] = room;
+		});
 
 		this.state.rooms = rooms;
 

@@ -12,15 +12,10 @@ const { options } = argi.parse({
 		type: 'number',
 		defaultValue: 8793,
 		alias: 'p',
-	},
-	simulate: {
-		type: 'boolean',
-		description: 'See what would happen, without making any changes',
-		alias: 's',
 	}
 });
 
-const log = new (require('log'))({ tag: 'htpc-remote', defaults: { verbosity: options.verbosity, color: true } });
+const log = new (require('log'))({ tag: 'humanity', defaults: { verbosity: options.verbosity, color: true } });
 
 log(1)('Options', options);
 

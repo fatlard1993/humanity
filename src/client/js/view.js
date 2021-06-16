@@ -1,72 +1,100 @@
-import { log, dom, socketClient, playerColor } from '_common';
+import { log, dom, socketClient, humanity } from '_humanity';
+
 import util from 'js-util';
 
-const view = {
-	draw: function(){
-		dom.empty(dom.getElemById('content'));
+const { init, setPageTitle, setContent, setHeaderButtons } = humanity;
 
-		dom.createElem('button', { id: 'leave', className: 'leftButton', textContent: 'Leave', appendTo: dom.getElemById('content') });
+const view = {
+	room: {
+		id: window.location.pathname.split('/')[2],
+	},
+	draw: function(){
+		const leave = dom.createElem('button', {
+			textContent: 'Leave',
+			onPointerPress: () => dom.location.change('/lobby')
+		});
+
+		setHeaderButtons(leave);
 
 		this[`draw_${this.state.stage}`]();
 	},
-	draw_new: function(){
-		var playersList = dom.createElem('ul', { appendTo: dom.getElemById('content'), id: 'playersList' });
+	draw_new: () => view.draw_waiting(),
+	draw_voting: () => view.draw_waiting(),
+	draw_waiting: function(){
+		this.waiting = true;
 
-		for(var x = 0; x < this.state.playerCount; ++x){
-			var playerName = this.state.playerNames[x];
+		setPageTitle('Waiting...');
 
-			if(!this.state.players[playerName] || this.state.players[playerName].type === 'view' || this.state.players[playerName].state === 'inactive') continue;
+		const playersList = dom.createElem('ul', {
+			id: 'playersList',
+			appendChildren: util.cleanArr(this.state.playerNames.map((name) => {
+				const player = this.state.players[name];
+				const isThisPlayer = player.id === this.player.id;
 
-			var li = dom.createElem('li', { className: `player${this.state.players[playerName].state === 'done' ? ' ready' : ''}`, textContent: playerName });
-			var colorSwatch = dom.createElem('span', { className: 'colorSwatch', appendTo: li });
+				if(!player || player.type === 'view' || player.state === 'inactive') return;
 
-			colorSwatch.style.backgroundColor = playerColor(playerName);
+				return dom.createElem('li', {
+					className: `player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+					innerHTML: name,
+					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
+					onPointerPress: function() {
+						if(isThisPlayer || player.state === 'done') return;
 
-			playersList.appendChild(li);
-		}
+						socketClient.reply('player_nudge', { name });
+					}
+				});
+			}))
+		});
+
+		setContent(playersList);
 	},
 	draw_submissions: function(){
 		if(document.getElementById('whitesPile')) return;
 
-		if(this.options.submissionTimer) dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'gameTimer' });
+		const fragment = document.createDocumentFragment();
 
-		dom.createElem('div', { id: 'blackCard', innerHTML: this.state.black, appendTo: dom.getElemById('content') });
-		dom.createElem('div', { id: 'whitesPile', appendTo: dom.getElemById('content') });
+		if(this.options.submissionTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
+
+		dom.createElem('div', { id: 'blackCard', innerHTML: this.state.black, appendTo: fragment });
+		dom.createElem('div', { id: 'whitesPile', appendTo: fragment });
 
 		dom.maintenance.run();
 
 		view.updateWhitesPile();
-	},
-	draw_voting: function(){
-		if(this.options.voteTimer) dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'gameTimer' });
 
-		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'blackCard', innerHTML: this.state.black });
-
-		var whitesList = dom.createElem('ul', { appendTo: dom.getElemById('content'), id: 'whitesList' });
-
-		var whites = Object.keys(this.state.submissions), whiteCount = whites.length;
-
-		for(var x = 0; x < whiteCount; ++x){
-			var li = dom.createElem('li', { appendTo: whitesList, innerHTML: whites[x] });
-
-			li.setAttribute('data-text', whites[x]);
-		}
+		setContent(fragment)
 	},
 	draw_end: function(){
-		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'blackCard', innerHTML: this.state.black });
+		const fragment = document.createDocumentFragment();
 
-		//todo show ties
-		dom.createElem('div', { appendTo: dom.getElemById('content'), id: 'whiteCard', innerHTML: this.state.winner.submission +'<br><br>-'+ this.state.winner.player });
+		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
 
-		var whitesList = dom.createElem('ul', { appendTo: dom.getElemById('content'), id: 'whitesList' });
+		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
 
-		var whites = Object.keys(this.state.submissions), whiteCount = whites.length;
+		if(this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
 
-		for(var x = 0; x < whiteCount; ++x){
-			var li = dom.createElem('li', { appendTo: whitesList, innerHTML: whites[x] });
+		this.state.winners.forEach((winner) => {
+			dom.createElem('div', { appendTo: fragment, className: 'whiteCard', innerHTML: winner.submission +'<br><br>-'+ Object.keys(this.state.players).find(name => this.state.players[name].id === winner.player) });
+		});
 
-			li.setAttribute('data-text', whites[x]);
-		}
+		dom.createElem('ul', {
+			appendTo: fragment,
+			id: 'playersList',
+			appendChildren: this.state.playerNames.map((name) => {
+				const player = this.state.players[name];
+				const isThisPlayer = name === this.player.name;
+
+				if(!player || player.type === 'view' || player.state === 'inactive') return;
+
+				return dom.createElem('li', {
+					className: `player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
+					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
+				});
+			})
+		});
+
+		setContent(fragment);
 	},
 	updateWhitesPile: function(newSubmissions){
 		var whitesPile = document.getElementById('whitesPile');
@@ -98,25 +126,26 @@ const view = {
 };
 
 dom.onLoad(function onLoad(){
-	view.room = dom.location.query.get('room') || dom.storage.get('room');
-	view.name = dom.location.query.get('name') || dom.storage.get('player_name');
+	if(!view.room.id){
+		log()(`[play] Missing room id: room=${view.room.id} ... Returning to lobby`);
 
-	history.replaceState({}, document.title, '/view');
+		return dom.location.change('/lobby');
+	}
+
+	log()(`[view] View room: ${view.room.id}`);
 
 	socketClient.on('open', function(){
-		socketClient.reply('join_room', { room: 'view', name: view.name, gameRoom: view.room });
+		socketClient.reply('join_room', { room: 'view', gameRoom: view.room.id });
 	});
 
 	socketClient.on('join_room', function(payload){
-		if(payload.err){
+		if(payload.error){
 			log()(`[view] Error joining room ... Returning to lobby`, view.room, payload);
 
 			return dom.location.change('/lobby');
 		}
 
-		dom.storage.set('room', view.room);
-
-		view.options = payload.options;
+		view.room.options = payload.options;
 	});
 
 	socketClient.on('player_submission', function(payload){
@@ -145,21 +174,7 @@ dom.onLoad(function onLoad(){
 		else view.draw();
 	});
 
-	dom.interact.on('pointerUp', (evt) => {
-		if(evt.target.id === 'leave'){
-			evt.preventDefault();
-
-			dom.location.change('/lobby');
-		}
-
-		log()(evt);
-	});
-
 	dom.maintenance.init([view.whitesPileFix]);
 
-	dom.mobile.detect();
-
-	socketClient.init();
-
-	dom.setTitle('[humanity] View');
+	init('View');
 });

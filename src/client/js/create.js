@@ -1,67 +1,196 @@
-import { log, dom, socketClient } from '_common';
+import { log, dom, socketClient, humanity } from '_humanity';
 import util from 'js-util';
 
+const { init, setHeaderButtons, setContent, validateForm } = humanity;
+
 const create = {
-	draw: function draw(){
-		dom.empty(dom.getElemById('content'));
+	defaults: {
+		submissionTimer: 0,
+		voteTimer: 0,
+		handSize: 7,
+		winGoal: 5,
+		npcCount: 0,
+	},
+	draw: function(){
+		const back = dom.createElem('button', {
+			textContent: 'Back',
+			onPointerPress: () => dom.location.change('/lobby')
+		});
 
-		var nameInput = dom.createElem('input', { type: 'text', placeholder: create.name +' :: Room Name', validation: /^.{4,32}$|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be between 4 and 32 characters' });
-		var submissionTimer = dom.createElem('input', { type: 'text', placeholder: '0 :: Submission Timer 0-128 sec', validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
-		var voteTimer = dom.createElem('input', { type: 'text', placeholder: '0 :: Vote Timer 0-128 sec', validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
-		var whiteCardCount = dom.createElem('input', { type: 'text', placeholder: '7 :: Whites 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
-		var winGoal = dom.createElem('input', { type: 'text', placeholder: '5 :: Win Goal 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
-		// var npcCount = dom.createElem('input', { type: 'text', placeholder: '0 :: NPCs 0-10', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 10' });
-		// var pointGoal = dom.createElem('input', { type: 'text', placeholder: '50 :: Point Goal 0-128', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
-		var lastManOut = dom.createElem('button', { className: 'option', id: 'lastManOut', textContent: 'Last Man Out' });
-		var fillInMissing = dom.createElem('button', { className: 'option', id: 'fillMissing', textContent: 'Fill In Missing' });
-		var editFieldToggle = dom.createElem('button', { className: 'option selected', id: 'editField', textContent: 'Edit Field' });
-		var selectAllPacks = dom.createElem('button', { id: 'selectAll', textContent: 'Select All Packs' });
-		var packsList = dom.createElem('ul', { id: 'packsList' });
+		const save = dom.createElem('button', {
+			textContent: 'Create',
+			onPointerPress: () => this.save()
+		});
 
-		this.packItems = [];
-		this.selectedPacks = {
-			base: 1
-		};
-		this.selectedCount = 0;
-		this.options = {
-			editField: 1
-		};
+		const name = dom.createElem('input', {
+			type: 'text',
+			id: 'nameInput',
+			validation: /^.{3,128}$/,
+			value: this.randomName || '',
+			onblur: validateForm,
+			validationWarning: 'Must be between 3 and 128 characters',
+			validate: 0,
+		});
 
-		for(var x = 0; x < this.packCount; ++x) this.packItems.push(dom.createElem('li', { className: 'pack'+ (this.packNames[x] === 'base' ? ' selected' : ''), textContent: this.packNames[x], appendTo: packsList }));
+		const randomize = dom.createElem('button', {
+			className: 'iconAction randomize',
+			onPointerPress: () => socketClient.reply('get_random_white')
+		});
 
-		dom.createElem('button', { className: 'leftButton', textContent: 'Back', appendTo: dom.getElemById('content') });
-		dom.createElem('button', { className: 'rightButton', textContent: 'Done', appendTo: dom.getElemById('content') });
-		// dom.createElem('button', { className: 'rightButton', textContent: 'Packs', appendTo: dom.getElemById('content') });
+		const clear = dom.createElem('button', {
+			className: 'iconAction clear',
+			onPointerPress: () => {
+				name.value = '';
 
-		var newGameForm = dom.createElem('div', { id: 'newGameForm', appendTo: dom.getElemById('content'), appendChildren: [nameInput, submissionTimer, voteTimer, whiteCardCount, winGoal, /* npcCount, pointGoal, */ lastManOut, fillInMissing, editFieldToggle, selectAllPacks, packsList] });
+				dom.validate(name);
+			}
+		});
 
-		nameInput.focus();
+		const submissionTimer = dom.createElem('input', {
+			type: 'text',
+			onblur: validateForm,
+			validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
+			placeholder: this.defaults.submissionTimer,
+			validationWarning: 'Must be a number between 0 and 128',
+			validate: 0,
+		});
+
+		const voteTimer = dom.createElem('input', {
+			type: 'text',
+			onblur: validateForm,
+			validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
+			placeholder: this.defaults.voteTimer,
+			validationWarning: 'Must be a number between 0 and 128',
+			validate: 0,
+		});
+
+		const handSize = dom.createElem('input', {
+			type: 'text',
+			onblur: validateForm,
+			validation: /(^([0-9]|10)$)|(^(?![\s\S]))/,
+			placeholder: this.defaults.handSize,
+			validationWarning: 'Must be a number between 0 and 10',
+			validate: 0,
+		});
+
+		const winGoal = dom.createElem('input', {
+			type: 'text',
+			validation: /(^([0-9]|10)$)|(^(?![\s\S]))/,
+			placeholder: this.defaults.winGoal,
+			validationWarning: 'Must be a number between 0 and 10',
+			validate: 0,
+		});
+
+		const npcCount = dom.createElem('input', {
+			type: 'text',
+			onblur: validateForm,
+			validation: /(^([0-9]|10)$)|(^(?![\s\S]))/,
+			placeholder: this.defaults.npcCount,
+			validationWarning: 'Must be a number between 0 and 10',
+			validate: 0,
+		});
+
+		const lastManOut = dom.createElem('button', {
+			className: 'big_center',
+			id: 'lastManOut',
+			textContent: 'Last Man Out',
+			onPointerPress: () => lastManOut.classList[lastManOut.classList.contains('selected') ? 'remove' : 'add']('selected')
+		});
+
+		const fillMissing = dom.createElem('button', {
+			className: 'big_center',
+			id: 'fillMissing',
+			textContent: 'Fill In Missing',
+			onPointerPress: () => fillMissing.classList[fillMissing.classList.contains('selected') ? 'remove' : 'add']('selected')
+		});
+
+		const editField = dom.createElem('button', {
+			className: 'big_center selected',
+			id: 'editField',
+			textContent: 'Edit Field',
+			onPointerPress: () => editField.classList[editField.classList.contains('selected') ? 'remove' : 'add']('selected')
+		});
+
+		const packList = dom.createElem('ul', { id: 'packList' });
+
+		const selectAll = dom.createElem('button', {
+			className: 'big_center',
+			id: 'selectAll',
+			textContent: 'Select All Packs',
+			onPointerPress: () => {
+				const select = packList.querySelectorAll('.selected').length < packList.querySelectorAll(':not(.selected)').length;
+
+				selectAll.textContent = `${select ? 'Des' : 'S'}elect All Packs`;
+
+				Array.from(packList.children).forEach((pack) => {
+					const isSelected = pack.classList.contains('selected');
+
+					if(select !== isSelected) pack.classList[select ? 'add' : 'remove']('selected');
+				})
+			}
+		});
+
+		this.packNames.forEach((name) => {
+			const pack = dom.createElem('li', {
+				className: `pack ${name === 'base' ? ' selected' : ''}`,
+				textContent: name,
+				appendTo: packList,
+				onPointerPress: () => {
+					pack.classList[pack.classList.contains('selected') ? 'remove' : 'add']('selected');
+
+					const select = packList.querySelectorAll('.selected').length < packList.querySelectorAll(':not(.selected)').length;
+
+					selectAll.textContent = `${select ? 'S' : 'Des'}elect All Packs`;
+				}
+			});
+		});
+
+		const formContainer = dom.createElem('div', {
+			id: 'form',
+			appendChildren: [
+				dom.createElem('label', { textContent: 'Name', appendChildren: [name, randomize, clear] }),
+				dom.createElem('label', { textContent: 'Submission Timer', appendChildren: [submissionTimer] }),
+				dom.createElem('label', { textContent: 'Vote Timer', appendChildren: [voteTimer] }),
+				dom.createElem('label', { textContent: 'Hand Size', appendChildren: [handSize] }),
+				dom.createElem('label', { textContent: 'Blacks To Win', appendChildren: [winGoal] }),
+				dom.createElem('label', { textContent: 'NPC Count', appendChildren: [npcCount] }),
+				lastManOut,
+				fillMissing,
+				editField,
+				dom.createElem('div', { className: 'separator' }),
+				selectAll,
+				packList,
+			]
+		});
 
 		this.save = () => {
-			var warnings = dom.showValidationWarnings(newGameForm);
+			if(validateForm()) return;
 
-			if(warnings) return;
-
-			var options = {
-				name: nameInput.value.length ? nameInput.value : create.name,
-				packs: Object.keys(this.selectedPacks),
-				submissionTimer: submissionTimer.value.length ? parseInt(submissionTimer.value) : 0,
-				voteTimer: voteTimer.value.length ? parseInt(voteTimer.value) : 0,
-				whiteCardCount: whiteCardCount.value.length ? parseInt(whiteCardCount.value) : 7,
-				winGoal: winGoal.value.length ? parseInt(winGoal.value) : 5,
-				// npcCount: npcCount.value.length ? parseInt(npcCount.value) : 0,
+			const options = {
+				name: name.value,
+				packs: Array.from(packList.querySelectorAll('.selected')).map(elem => elem.textContent),
+				submissionTimer: submissionTimer.value.length ? parseInt(submissionTimer.value) : this.defaults.submissionTimer,
+				voteTimer: voteTimer.value.length ? parseInt(voteTimer.value) : this.defaults.voteTimer,
+				handSize: handSize.value.length ? parseInt(handSize.value) : this.defaults.handSize,
+				winGoal: winGoal.value.length ? parseInt(winGoal.value) : this.defaults.winGoal,
+				npcCount: npcCount.value.length ? parseInt(npcCount.value) : this.defaults.npcCount,
+				lastManOut: lastManOut.classList.contains('selected'),
+				fillInMissing: fillMissing.classList.contains('selected'),
+				editField: editField.classList.contains('selected'),
 				// pointGoal: pointGoal.value.length ? parseInt(pointGoal.value) : 50,
-				npcCount: 0,
-				pointGoal: 50,
-				lastManOut: this.options.lastManOut,
-				fillInMissing: this.options.fillMissing,
-				editField: this.options.editField
 			};
 
 			log()('[create] Create game', options);
 
 			socketClient.reply('create_room', options);
 		};
+
+		setHeaderButtons(back, save);
+		setContent(formContainer);
+
+		name.focus();
+
+		// var pointGoal = dom.createElem('input', { type: 'text', placeholder: '50 :: Point Goal 0-128', validation: /(^([0-9]|10)$)|(^(?![\s\S]))/, validate: 0, validationWarning: 'Must be a number between 0 and 128' });
 	},
 	selectPack: function(packItem, selectBool){
 		if(typeof selectBool === 'undefined') selectBool = !this.selectedPacks[packItem.textContent];
@@ -84,14 +213,27 @@ dom.onLoad(function onLoad(){
 	});
 
 	socketClient.on('create_data', function(data){
-		log()('[lobby] create_data', data);
+		log()('[create] create_data', data);
 
-		create.name = data.name;
 		create.packs = data.packs;
 		create.packNames = util.sortArrAlphaNumeric(Object.keys(data.packs));
 		create.packCount = create.packNames.length;
 
 		create.draw();
+	});
+
+	socketClient.on('random_white', function(data){
+		log()('[create] random_white', data);
+
+		if(dom.getElemById('nameInput')){
+			dom.getElemById('nameInput').value = data;
+
+			dom.validate(dom.getElemById('nameInput'));
+
+			setTimeout(validateForm, 100);
+		}
+
+		create.randomName = data;
 	});
 
 	socketClient.on('create_room', function(){
@@ -106,70 +248,5 @@ dom.onLoad(function onLoad(){
 		}
 	});
 
-	dom.interact.on('pointerUp', (evt) => {
-		var selectBool, updateSelectAll;
-
-		if(evt.target.id === 'selectAll'){
-			evt.preventDefault();
-
-			updateSelectAll = true;
-			selectBool = create.selectedCount < create.packCount / 2;
-
-			for(var x = 0; x < create.packCount; ++x) create.selectPack(create.packItems[x], selectBool);
-		}
-
-		else if(evt.target.textContent === 'Packs'){
-			evt.preventDefault();
-
-			dom.location.change('/cardCast');
-		}
-
-		else if(evt.target.classList.contains('pack')){
-			evt.preventDefault();
-
-			updateSelectAll = true;
-
-			create.selectPack(evt.target);
-		}
-
-		else if(evt.target.classList.contains('option')){
-			evt.preventDefault();
-
-			selectBool = !create.options[evt.target.id];
-
-			log()('[create] Toggle option', evt.target.textContent);
-
-			if(selectBool) create.options[evt.target.id] = 1;
-
-			else delete create.options[evt.target.id];
-
-			evt.target.classList[selectBool ? 'add' : 'remove']('selected');
-		}
-
-		else if(evt.target.textContent === 'Back'){
-			evt.preventDefault();
-
-			dom.location.change('/lobby');
-		}
-
-		else if(evt.target.textContent === 'Done'){
-			evt.preventDefault();
-
-			create.save();
-		}
-
-		if(updateSelectAll) document.getElementById('selectAll').textContent = `${create.selectedCount < create.packCount / 2 ? 'S' : 'Uns'}elect All Packs`;
-	});
-
-	dom.mobile.detect();
-
-	socketClient.init();
-
-	dom.setTitle('[humanity] Create');
-
-	dom.maintenance.init([
-		function heightFix(){
-			dom.getElemById('content').style.height = dom.availableHeight +'px';
-		}
-	]);
+	init('Create');
 });

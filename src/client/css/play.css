@@ -44,7 +44,7 @@ div#blackCard {
 	}
 }
 
-div#whiteCard {
+div.whiteCard {
 	font-size: 40px;
 	text-align: center;
 	margin: 10px auto;
@@ -72,9 +72,21 @@ ul#playersList {
 			content: "\f007";
 			margin-right: 6px;
 		}
+
 		&.ready {
 			background-color: $grey-darker;
-			color: $teal;
+			color: $green;
+			border-color: $green !important;
+			border-style: solid;
+		}
+
+		img {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 34px;
+			height: 34px;
+			pointer-events: none
 		}
 	}
 }
@@ -93,9 +105,15 @@ ul#whitesList  {
 		box-shadow: 1px -1px 4px $black;
 		border: none;
 
-		&:hover, &.selected {
+		&:hover {
 			background: $grey-lighter;
 			color: $grey-darker;
+			padding-bottom: 25px;
+			margin-top: -10px;
+		}
+		&.selected {
+			background: $green;
+			color: $black;
 			padding-bottom: 25px;
 			margin-top: -10px;
 		}

@@ -1,6 +1,7 @@
 const log = new (require('log'))({ tag: 'humanity' });
 const util = require('js-util');
 const Room = require('byod-game-engine/server/room');
+const { nanoid } = require('nanoid');
 
 // score feature todo:
 // number of rounds
@@ -11,6 +12,8 @@ const Room = require('byod-game-engine/server/room');
 class GameRoom extends Room {
 	constructor(options, game){
 		super(options, game);
+
+		this.id = nanoid(7);
 
 		if(!options.packs.length) options.packs = ['base'];
 
@@ -41,14 +44,17 @@ class GameRoom extends Room {
 	addPlayer(player){
 		super.addPlayer({
 			name: player.name,
+			id: nanoid(7),
 			state: player.state,
 			type: player.type,
-			hand: player.type === 'play' ? this.drawWhites(this.options.whiteCardCount) : [],
+			hand: player.type === 'play' ? this.drawWhites(this.options.handSize) : [],
 			score: 0,
 			socket: player
 		});
 
 		this.sendUpdate();
+
+		if(this.game.rooms.lobby) this.game.rooms.lobby.sendUpdate();
 	}
 
 	removePlayer(player){
@@ -165,7 +171,7 @@ class GameRoom extends Room {
 
 			if(player.state !== 'inactive') ++update.activePlayers;
 
-			if(player.submission) update.submissions[player.submission] = player.name;
+			if(player.submission) update.submissions[player.submission] = player.id;
 
 			if(player.vote){
 				update.votes[player.vote] = update.votes[player.vote] || 0;
@@ -175,6 +181,7 @@ class GameRoom extends Room {
 
 			update.players[player.name] = {
 				name: player.name,
+				id: player.id,
 				type: player.type,
 				score: player.score,
 				state: player.state
@@ -221,20 +228,18 @@ class GameRoom extends Room {
 		let winners = {};
 		let topScore = 0;
 
-		for(var cardText in votes){
-			if(votes.hasOwnProperty(cardText)){
-				const voteCount = votes[cardText];
+		Object.keys(votes).forEach((card) => {
+			const voteCount = votes[card];
 
-				if(voteCount > topScore){
-					topScore = voteCount;
-					winners = { [cardText]: voteCount };
+			if(voteCount > topScore){
+				topScore = voteCount;
+				winners = { [card]: voteCount };
 
-					continue;
-				}
-
-				if(voteCount === topScore) winners[cardText] = voteCount;
+				return;
 			}
-		}
+
+			if(voteCount === topScore) winners[card] = voteCount;
+		});
 
 		return winners;
 	}
@@ -249,8 +254,7 @@ class GameRoom extends Room {
 
 			player = this.players[this.playerNames[x]];
 
-			this.broadcast('player_update', {
-				name: player.name,
+			player.socket.reply('player_update', {
 				state: player.state,
 				hand: player.hand
 			});
@@ -302,7 +306,7 @@ class GameRoom extends Room {
 		else if(stage === 'end'){
 			const { winGoal } = this.options;
 			const { submissions, votes } = this.state;
-			const { players } = this;
+			// const { players } = this;
 
 			const winningCards = this.getWinners();
 			const winners = Object.keys(winningCards).map((cardText) => ({
@@ -313,7 +317,7 @@ class GameRoom extends Room {
 
 			this.state.winners = winners;
 
-			winners.forEach((winner) => { ++players[winner.player].score; });
+			// winners.forEach((winner) => { ++players[winner.player].score; });
 
 			winners.forEach((winner) => {
 				if(winner.score >= winGoal){

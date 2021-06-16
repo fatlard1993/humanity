@@ -4,18 +4,17 @@
 	"description": "A card game for terrible people",
 	"main": "src/server/index.js",
 	"scripts": {
-		"start": "src/server/index.js"
+		"start": "src/server/index.js",
+		"lint": "eslint"
 	},
 	"author": "fatlard1993",
-	"license": "ISC",
+	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/fatlard1993/humanity.git"
 	},
-	"devDependencies": {
-		"eslint": "^7.20.0"
-	},
 	"dependencies": {
+		"@fortawesome/fontawesome-free": "^5.15.3",
 		"byod-game-engine": "github:fatlard1993/byod-game-engine",
 		"cardcast-api": "^0.2.3",
 		"config-manager": "github:fatlard1993/config-manager#2.x.x",
@@ -26,13 +25,22 @@
 		"js-util": "github:fatlard1993/js-util#2.x.x",
 		"log": "github:fatlard1993/log#3.x.x",
 		"menu": "github:fatlard1993/menu#2.x.x",
+		"nanoid": "^3.1.23",
 		"notify": "github:fatlard1993/notify#2.x.x",
 		"performance-now": "^2.1.0",
-		"@fortawesome/fontawesome-free": "^5.15.2",
-		"source-sans-pro": "^3.6.0",
 		"socket-client": "github:fatlard1993/socket-client#2.x.x",
+		"source-sans-pro": "^3.6.0",
 		"uuid": "^8.3.2",
-		"websocket-server": "github:fatlard1993/websocket-server#2.x.x",
-		"yargs": "^16.2.0"
+		"websocket-server": "github:fatlard1993/websocket-server#2.x.x"
+	},
+	"devDependencies": {
+		"eslint": "^7.27.0",
+		"eslint-config-prettier": "^8.3.0",
+		"husky": "^6.0.0",
+		"lint-staged": "^11.0.0",
+		"prettier": "2.3.0"
+	},
+	"lint-staged": {
+		"**/*": "prettier --write --ignore-unknown"
 	}
 }
