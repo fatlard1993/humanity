@@ -138,6 +138,12 @@ dom.onLoad(function onLoad() {
 
 			join.register();
 		}
+
+		else if (evt.keyPressed === 'ESCAPE') {
+			evt.preventDefault();
+
+			dom.location.change('/lobby');
+		}
 	});
 
 	init('Lobby', `Joining Game:\n"${join.roomID}"`);

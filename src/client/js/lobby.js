@@ -42,5 +42,19 @@ dom.onLoad(function onLoad() {
 		}
 	});
 
+	dom.interact.on('keyUp', function (evt) {
+		if (evt.keyPressed === 'ENTER') {
+			evt.preventDefault();
+
+			dom.location.change('/create');
+		}
+
+		else if (evt.keyPressed === 'ESCAPE') {
+			evt.preventDefault();
+
+			window.location.reload();
+		}
+	});
+
 	init('Lobby');
 });

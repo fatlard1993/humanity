@@ -14,8 +14,10 @@ const game = {
 
 		if (!view && this.state.stage !== 'new' && this.player.state === 'done') view = 'waiting';
 
-		this.drawHeaderButtons(view || this.state.stage);
-		this[`draw_${view || this.state.stage}`]();
+		this.view = view || this.state.stage;
+
+		this.drawHeaderButtons(this.view);
+		this[`draw_${this.view}`]();
 	},
 	drawHeaderButtons: function (view) {
 		let right;
@@ -67,7 +69,7 @@ const game = {
 			appendChildren: util.cleanArr(
 				this.state.playerNames.map(name => {
 					const player = this.state.players[name];
-					const isThisPlayer = player.id === this.player.id;
+					const isThisPlayer = player && player.id === this.player.id;
 
 					if (!player || player.type === 'view' || player.state === 'inactive') return;
 
@@ -313,6 +315,30 @@ dom.onLoad(function onLoad() {
 		// if(game.waiting || !game.state || currentStage !== data.stage || !this[`update_${data.stage}`])
 
 		// else if(this[`update_${data.stage}`]) this[`update_${data.stage}`]();
+	});
+
+	dom.interact.on('keyUp', evt => {
+		if (evt.keyPressed === 'ENTER') {
+			evt.preventDefault();
+
+			if (game.view === 'new') {
+				socketClient.reply('player_update', { state: game.player.state === 'done' ? 'joined' : 'done' });
+			} else if (game.view === 'submissions') {
+				if (game.room.options.editField) {
+					if (validateForm()) return;
+
+					socketClient.reply('player_update', { state: 'done', submission: dom.getElemById('submission').value });
+				} else socketClient.reply('player_update', { state: 'done', submission: game.selectedCard });
+			} else if (game.view === 'voting') {
+				socketClient.reply('player_update', { state: 'done', vote: game.player.vote });
+			} else if ({ end: 1, scores: 1 }[game.view]) {
+				dom.location.change(`/play/${game.room.id}/${game.player.id}`);
+			}
+		} else if (evt.keyPressed === 'ESCAPE') {
+			evt.preventDefault();
+
+			dom.location.change('/lobby');
+		}
 	});
 
 	init('Play');

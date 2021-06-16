@@ -30,16 +30,15 @@ const view = {
 			appendChildren: util.cleanArr(
 				this.state.playerNames.map(name => {
 					const player = this.state.players[name];
-					const isThisPlayer = player.id === this.player.id;
 
 					if (!player || player.type === 'view' || player.state === 'inactive') return;
 
 					return dom.createElem('li', {
-						className: `player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+						className: `player${player.state === 'done' ? ' ready' : ''}`,
 						innerHTML: name,
 						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 						onPointerPress: function () {
-							if (isThisPlayer || player.state === 'done') return;
+							if (player.state === 'done') return;
 
 							socketClient.reply('player_nudge', { name });
 						},
@@ -182,6 +181,14 @@ dom.onLoad(function onLoad() {
 				view.draw();
 			}, 2000);
 		else view.draw();
+	});
+
+	dom.interact.on('keyUp', evt => {
+		if (evt.keyPressed === 'ESCAPE') {
+			evt.preventDefault();
+
+			dom.location.change('/lobby');
+		}
 	});
 
 	dom.maintenance.init([view.whitesPileFix]);

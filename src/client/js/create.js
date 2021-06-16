@@ -245,6 +245,12 @@ dom.onLoad(function onLoad() {
 
 			create.save();
 		}
+
+		else if (evt.keyPressed === 'ESCAPE') {
+			evt.preventDefault();
+
+			dom.location.change('/lobby');
+		}
 	});
 
 	init('Create');
