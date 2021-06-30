@@ -110,6 +110,12 @@ button {
 		color: $black;
 		border-color: $grey-darker;
 	}
+	&:disabled {
+		cursor: not-allowed;
+		background-color: $grey;
+		color: $grey-light;
+		border-color: $grey;
+	}
 }
 
 ul {

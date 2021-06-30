@@ -33,6 +33,8 @@ const game = {
 			});
 		} else if (view === 'submissions') {
 			right = dom.createElem('button', {
+				id: 'submissionButton',
+				disabled: true,
 				textContent: 'Submit',
 				onPointerPress: () => {
 					if (this.room.options.editField) {
@@ -44,7 +46,9 @@ const game = {
 			});
 		} else if (view === 'voting') {
 			right = dom.createElem('button', {
+				id: 'voteButton',
 				textContent: 'Confirm Vote',
+				disabled: true,
 				onPointerPress: () => {
 					socketClient.reply('player_update', { state: 'done', vote: this.player.vote });
 				},
@@ -99,12 +103,20 @@ const game = {
 			validate: 0,
 		});
 
+		game.updateSubmissionButton = () => {
+			dom.getElemById('submissionButton')[`${submission.classList.contains('invalid') ? 'set' : 'remove'}Attribute`]('disabled', true);
+		};
+
 		const clear = dom.createElem('button', {
 			className: 'iconAction clear',
 			onPointerPress: () => {
 				submission.value = '';
 
+				Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
+
 				dom.validate(submission);
+
+				game.updateSubmissionButton();
 			},
 		});
 
@@ -137,7 +149,7 @@ const game = {
 				onPointerPress: ({ target }) => {
 					const isSelected = target.classList.contains('selected');
 
-					if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
+					if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li.selected')).forEach(elem => elem.classList.remove('selected'));
 
 					this.selectedCard = card;
 
@@ -147,6 +159,8 @@ const game = {
 						submission.value = card;
 
 						dom.validate(submission);
+
+						game.updateSubmissionButton();
 					}
 				},
 			});
@@ -187,6 +201,10 @@ const game = {
 	draw_voting: function () {
 		const fragment = document.createDocumentFragment();
 
+		game.updateVoteButton = () => {
+			dom.getElemById('voteButton')[`${document.querySelector('ul#whitesList li.selected') ? 'remove' : 'set'}Attribute`]('disabled', true);
+		};
+
 		if (this.room.options.voteTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
 
 		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
@@ -201,11 +219,13 @@ const game = {
 					onPointerPress: ({ target }) => {
 						const isSelected = target.classList.contains('selected');
 
-						if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li')).forEach(elem => elem.classList.remove('selected'));
+						if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li.selected')).forEach(elem => elem.classList.remove('selected'));
 
 						this.player.vote = card;
 
 						target.classList[isSelected ? 'remove' : 'add']('selected');
+
+						game.updateVoteButton();
 					},
 				});
 			}),
@@ -237,7 +257,7 @@ const game = {
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'playersList',
-			appendChildren: this.state.playerNames.map(name => {
+			appendChildren: dom.cleanArr(this.state.playerNames.map(name => {
 				const player = this.state.players[name];
 				const isThisPlayer = name === this.player.name;
 
@@ -248,7 +268,7 @@ const game = {
 					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
 					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 				});
-			}),
+			})),
 		});
 
 		setContent(fragment);

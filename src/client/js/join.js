@@ -37,9 +37,12 @@ const join = {
 		});
 
 		const play = dom.createElem('button', {
+			id: 'playButton',
 			textContent: 'Play',
-			onPointerPress: join.register,
+			onPointerPress: join.register
 		});
+
+		join.updatePlayButton = () => play[`${name.classList.contains('invalid') ? 'set' : 'remove'}Attribute`]('disabled', true);
 
 		const name = dom.createElem('input', {
 			type: 'text',
@@ -49,6 +52,7 @@ const join = {
 			validation: /^.{3,32}$/,
 			validationWarning: 'Must be between 3 and 32 characters',
 			validate: 0,
+			onKeyUp: () => requestAnimationFrame(join.updatePlayButton)
 		});
 
 		const randomize = dom.createElem('button', {
@@ -64,6 +68,8 @@ const join = {
 				dom.storage.set('player_name', '');
 
 				dom.validate(name);
+
+				join.updatePlayButton();
 			},
 		});
 
@@ -76,6 +82,8 @@ const join = {
 		setContent(formContainer);
 
 		name.focus();
+
+		join.updatePlayButton();
 	},
 	register: function () {
 		if (validateForm()) return;
@@ -109,6 +117,8 @@ dom.onLoad(function onLoad() {
 
 			dom.validate(dom.getElemById('nameInput'));
 
+			join.updatePlayButton();
+
 			setTimeout(validateForm, 100);
 		}
 
@@ -119,10 +129,12 @@ dom.onLoad(function onLoad() {
 		if (payload.error) {
 			dom.remove(document.getElementsByClassName('validationWarning'));
 
-			dom.createElem('p', { className: 'validationWarning', textContent: payload.error, appendTo: dom.getElemById('nameInput') });
+			dom.createElem('p', { className: 'validationWarning', textContent: payload.error, appendTo: dom.getElemById('nameInput').parentElement });
 
 			dom.getElemById('nameInput').classList.remove('validated');
 			dom.getElemById('nameInput').classList.add('invalid');
+
+			join.updatePlayButton();
 
 			return;
 		}
