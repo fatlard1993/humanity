@@ -219,6 +219,8 @@ const game = {
 					className: `playerHTML ${this.state.submissions[card] === this.player.id ? 'disabled' : ''}`,
 					innerHTML: card,
 					onPointerPress: ({ target }) => {
+						if (target.classList.contains('disabled')) return;
+
 						const isSelected = target.classList.contains('selected');
 
 						if (!isSelected) Array.from(document.querySelectorAll('ul#whitesList li.selected')).forEach(elem => elem.classList.remove('selected'));
@@ -244,10 +246,6 @@ const game = {
 
 		dom.createElem('div', { className: 'playerHTML', appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
 
-		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
-
-		if (this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
-
 		this.state.winners.forEach(winner => {
 			dom.createElem('div', {
 				appendTo: fragment,
@@ -256,10 +254,14 @@ const game = {
 			});
 		});
 
+		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
+
+		if (this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
+
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'playersList',
-			appendChildren: dom.cleanArr(
+			appendChildren: util.cleanArr(
 				this.state.playerNames.map(name => {
 					const player = this.state.players[name];
 					const isThisPlayer = name === this.player.name;
@@ -274,6 +276,8 @@ const game = {
 				}),
 			),
 		});
+
+		setPageTitle('');
 
 		setContent(fragment);
 	},
