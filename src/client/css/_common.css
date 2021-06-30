@@ -1,10 +1,33 @@
 // includes _colors _fonts dom
 
-html, body, div, span, button,
-h1, h2, h3, h4, h5, h6, p, pre,
-a, img, small, strong, b, u, i,
-ol, ul, li, label, canvas,
-input, textarea, select {
+html,
+body,
+div,
+span,
+button,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+pre,
+a,
+img,
+small,
+strong,
+b,
+u,
+i,
+ol,
+ul,
+li,
+label,
+canvas,
+input,
+textarea,
+select {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -13,13 +36,15 @@ input, textarea, select {
 	vertical-align: baseline;
 }
 
-input[type="checkbox"], input[type="radio"] {
+input[type='checkbox'],
+input[type='radio'] {
 	cursor: pointer;
 	position: relative;
 	top: 2px;
 }
 
-ol, ul {
+ol,
+ul {
 	list-style: none;
 	padding: 0;
 }
@@ -29,8 +54,8 @@ select {
 	text-transform: none;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 	height: auto;
@@ -44,7 +69,7 @@ html {
 	background-color: $teal-darkest;
 
 	* {
-		font-family: "Source Sans Pro", sans-serif;
+		font-family: 'Source Sans Pro', sans-serif;
 		touch-action: manipulation;
 		-webkit-text-size-adjust: none;
 	}
@@ -72,7 +97,10 @@ body {
 	margin: 0;
 }
 
-input[type="text"], input[type="password"], input[type="number"], select {
+input[type='text'],
+input[type='password'],
+input[type='number'],
+select {
 	background: $black;
 	color: $grey-light;
 	border: 2px inset rgba(66, 66, 66, 0.6);
@@ -80,7 +108,10 @@ input[type="text"], input[type="password"], input[type="number"], select {
 	text-indent: 2px;
 	font-size: 20px;
 }
-input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, select:focus {
+input[type='text']:focus,
+input[type='password']:focus,
+input[type='number']:focus,
+select:focus {
 	outline: none;
 	color: $white;
 	background-color: $black !important;
@@ -139,7 +170,8 @@ ul {
 			color: $white;
 			border-color: grey-darker;
 		}
-		&:active, &.active {
+		&:active,
+		&.active {
 			border-style: inset;
 			background-color: $grey;
 			color: $black;
@@ -224,13 +256,13 @@ div.banner {
 div#header {
 	h1#title {
 		text-align: center;
-    font-size: 3em;
-    font-weight: 600;
+		font-size: 3em;
+		font-weight: 600;
 		line-height: 1.5;
 		color: $black;
 		min-height: 72px;
 		width: calc(100% - 340px);
-    margin: 0 auto;
+		margin: 0 auto;
 		white-space: pre-wrap;
 		word-break: break-word;
 	}
@@ -238,7 +270,7 @@ div#header {
 	button {
 		display: inline-block;
 		position: absolute;
-    top: 10px;
+		top: 10px;
 		font-size: 1.5rem;
 		padding: 8px;
 		width: 150px;
@@ -316,7 +348,7 @@ div#form {
 
 			&.randomize {
 				&:before {
-					content: "\f074";
+					content: '\f074';
 				}
 
 				right: 36px;
@@ -324,7 +356,7 @@ div#form {
 
 			&.clear {
 				&:before {
-					content: "\f00d";
+					content: '\f00d';
 				}
 
 				right: 3px;
@@ -334,7 +366,26 @@ div#form {
 }
 
 .playerHTML {
-	div, span, h1, h2, h3, h4, h5, h6, p, pre, a, img, small, strong, b, u, ol, ul, li, label {
+	div,
+	span,
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6,
+	p,
+	pre,
+	a,
+	img,
+	small,
+	strong,
+	b,
+	u,
+	ol,
+	ul,
+	li,
+	label {
 		font-size: 20px;
 	}
 

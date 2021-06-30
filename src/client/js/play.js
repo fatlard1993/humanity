@@ -259,18 +259,20 @@ const game = {
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'playersList',
-			appendChildren: dom.cleanArr(this.state.playerNames.map(name => {
-				const player = this.state.players[name];
-				const isThisPlayer = name === this.player.name;
+			appendChildren: dom.cleanArr(
+				this.state.playerNames.map(name => {
+					const player = this.state.players[name];
+					const isThisPlayer = name === this.player.name;
 
-				if (!player || player.type === 'view' || player.state === 'inactive') return;
+					if (!player || player.type === 'view' || player.state === 'inactive') return;
 
-				return dom.createElem('li', {
-					className: `playerHTML player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
-					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
-					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
-				});
-			})),
+					return dom.createElem('li', {
+						className: `playerHTML player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+						innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
+						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
+					});
+				}),
+			),
 		});
 
 		setContent(fragment);

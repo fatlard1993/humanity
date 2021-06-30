@@ -244,9 +244,7 @@ dom.onLoad(function onLoad() {
 			evt.preventDefault();
 
 			create.save();
-		}
-
-		else if (evt.keyPressed === 'ESCAPE') {
+		} else if (evt.keyPressed === 'ESCAPE') {
 			evt.preventDefault();
 
 			dom.location.change('/lobby');

@@ -39,7 +39,7 @@ const join = {
 		const play = dom.createElem('button', {
 			id: 'playButton',
 			textContent: 'Play',
-			onPointerPress: join.register
+			onPointerPress: join.register,
 		});
 
 		join.updatePlayButton = () => play[`${name.classList.contains('invalid') ? 'set' : 'remove'}Attribute`]('disabled', true);
@@ -52,7 +52,7 @@ const join = {
 			validation: /^.{3,32}$/,
 			validationWarning: 'Must be between 3 and 32 characters',
 			validate: 0,
-			onKeyUp: () => requestAnimationFrame(join.updatePlayButton)
+			onKeyUp: () => requestAnimationFrame(join.updatePlayButton),
 		});
 
 		const randomize = dom.createElem('button', {
@@ -149,9 +149,7 @@ dom.onLoad(function onLoad() {
 			evt.preventDefault();
 
 			join.register();
-		}
-
-		else if (evt.keyPressed === 'ESCAPE') {
+		} else if (evt.keyPressed === 'ESCAPE') {
 			evt.preventDefault();
 
 			dom.location.change('/lobby');

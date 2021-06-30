@@ -19,7 +19,14 @@ const lobby = {
 				const room = lobby.rooms[id];
 				const playerCount = dom.createElem('span', { className: 'playerCount', textContent: room.players });
 
-				dom.createElem('li', { className: 'playerHTML', data: { name: room.name }, innerHTML: room.name, appendChild: playerCount, appendTo: roomList, onPointerPress: () => dom.location.change(`/join/${id}`) });
+				dom.createElem('li', {
+					className: 'playerHTML',
+					data: { name: room.name },
+					innerHTML: room.name,
+					appendChild: playerCount,
+					appendTo: roomList,
+					onPointerPress: () => dom.location.change(`/join/${id}`),
+				});
 			});
 		}
 
@@ -47,9 +54,7 @@ dom.onLoad(function onLoad() {
 			evt.preventDefault();
 
 			dom.location.change('/create');
-		}
-
-		else if (evt.keyPressed === 'ESCAPE') {
+		} else if (evt.keyPressed === 'ESCAPE') {
 			evt.preventDefault();
 
 			window.location.reload();

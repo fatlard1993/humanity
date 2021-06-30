@@ -1,5 +1,5 @@
 {
-	"blacks":[
+	"blacks": [
 		"<b>Absurd</b><br/><small>ridiculous, senseless, foolish</small>",
 		"<b>Addictive</b><br/><small>obsessive, consuming, captivating</small>",
 		"<b>Adorable</b><br/><small>lovable, charming, delightful</small>",
@@ -250,7 +250,7 @@
 		"<b>Worldly</b><br/><small>experienced, sophisticated, materialistic</small>",
 		"<b>Zany</b><br/><small>crazy, funny, wacky</small>"
 	],
-	"whites":[
+	"whites": [
 		"<b>A Bad Haircut</b><br/><small>The perfect start to a bad hair day.</small>",
 		"<b>A Bull Fight</b><br/><small>Also known as \"la fiesta brava\" (the brave festival). A whole lot of bull..</small>",
 		"<b>A Car Crash</b><br/><small>\"Hey, it was an accident!\"</small>",
