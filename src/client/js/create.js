@@ -46,23 +46,23 @@ const create = {
 			},
 		});
 
-		const submissionTimer = dom.createElem('input', {
-			type: 'text',
-			onblur: validateForm,
-			validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
-			placeholder: this.defaults.submissionTimer,
-			validationWarning: 'Must be a number between 0 and 128',
-			validate: 0,
-		});
+		// const submissionTimer = dom.createElem('input', {
+		// 	type: 'text',
+		// 	onblur: validateForm,
+		// 	validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
+		// 	placeholder: this.defaults.submissionTimer,
+		// 	validationWarning: 'Must be a number between 0 and 128',
+		// 	validate: 0,
+		// });
 
-		const voteTimer = dom.createElem('input', {
-			type: 'text',
-			onblur: validateForm,
-			validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
-			placeholder: this.defaults.voteTimer,
-			validationWarning: 'Must be a number between 0 and 128',
-			validate: 0,
-		});
+		// const voteTimer = dom.createElem('input', {
+		// 	type: 'text',
+		// 	onblur: validateForm,
+		// 	validation: /(^([0-9]{1,2}|1[01][0-9]|12[0-8])$)|(^(?![\s\S]))/,
+		// 	placeholder: this.defaults.voteTimer,
+		// 	validationWarning: 'Must be a number between 0 and 128',
+		// 	validate: 0,
+		// });
 
 		const handSize = dom.createElem('input', {
 			type: 'text',
@@ -81,35 +81,35 @@ const create = {
 			validate: 0,
 		});
 
-		const npcCount = dom.createElem('input', {
-			type: 'text',
-			onblur: validateForm,
-			validation: /(^([0-9]|10)$)|(^(?![\s\S]))/,
-			placeholder: this.defaults.npcCount,
-			validationWarning: 'Must be a number between 0 and 10',
-			validate: 0,
-		});
+		// const npcCount = dom.createElem('input', {
+		// 	type: 'text',
+		// 	onblur: validateForm,
+		// 	validation: /(^([0-9]|10)$)|(^(?![\s\S]))/,
+		// 	placeholder: this.defaults.npcCount,
+		// 	validationWarning: 'Must be a number between 0 and 10',
+		// 	validate: 0,
+		// });
 
-		const lastManOut = dom.createElem('button', {
-			className: 'big_center',
-			id: 'lastManOut',
-			textContent: 'Last Man Out',
-			onPointerPress: () => lastManOut.classList[lastManOut.classList.contains('selected') ? 'remove' : 'add']('selected'),
-		});
+		// const lastManOut = dom.createElem('button', {
+		// 	className: 'big_center',
+		// 	id: 'lastManOut',
+		// 	textContent: 'Last Man Out',
+		// 	onPointerPress: () => lastManOut.classList[lastManOut.classList.contains('selected') ? 'remove' : 'add']('selected'),
+		// });
 
-		const fillMissing = dom.createElem('button', {
-			className: 'big_center',
-			id: 'fillMissing',
-			textContent: 'Fill In Missing',
-			onPointerPress: () => fillMissing.classList[fillMissing.classList.contains('selected') ? 'remove' : 'add']('selected'),
-		});
+		// const fillMissing = dom.createElem('button', {
+		// 	className: 'big_center',
+		// 	id: 'fillMissing',
+		// 	textContent: 'Fill In Missing',
+		// 	onPointerPress: () => fillMissing.classList[fillMissing.classList.contains('selected') ? 'remove' : 'add']('selected'),
+		// });
 
-		const editField = dom.createElem('button', {
-			className: 'big_center selected',
-			id: 'editField',
-			textContent: 'Edit Field',
-			onPointerPress: () => editField.classList[editField.classList.contains('selected') ? 'remove' : 'add']('selected'),
-		});
+		// const editField = dom.createElem('button', {
+		// 	className: 'big_center selected',
+		// 	id: 'editField',
+		// 	textContent: 'Edit Field',
+		// 	onPointerPress: () => editField.classList[editField.classList.contains('selected') ? 'remove' : 'add']('selected'),
+		// });
 
 		const packList = dom.createElem('ul', { id: 'packList' });
 
@@ -149,14 +149,14 @@ const create = {
 			id: 'form',
 			appendChildren: [
 				dom.createElem('label', { textContent: 'Name', appendChildren: [name, randomize, clear] }),
-				dom.createElem('label', { textContent: 'Submission Timer', appendChildren: [submissionTimer] }),
-				dom.createElem('label', { textContent: 'Vote Timer', appendChildren: [voteTimer] }),
+				// dom.createElem('label', { textContent: 'Submission Timer', appendChildren: [submissionTimer] }),
+				// dom.createElem('label', { textContent: 'Vote Timer', appendChildren: [voteTimer] }),
 				dom.createElem('label', { textContent: 'Hand Size', appendChildren: [handSize] }),
 				dom.createElem('label', { textContent: 'Blacks To Win', appendChildren: [winGoal] }),
-				dom.createElem('label', { textContent: 'NPC Count', appendChildren: [npcCount] }),
-				lastManOut,
-				fillMissing,
-				editField,
+				// dom.createElem('label', { textContent: 'NPC Count', appendChildren: [npcCount] }),
+				// lastManOut,
+				// fillMissing,
+				// editField,
 				dom.createElem('div', { className: 'separator' }),
 				selectAll,
 				packList,
@@ -169,14 +169,15 @@ const create = {
 			const options = {
 				name: name.value,
 				packs: Array.from(packList.querySelectorAll('.selected')).map(elem => elem.textContent),
-				submissionTimer: submissionTimer.value.length ? parseInt(submissionTimer.value) : this.defaults.submissionTimer,
-				voteTimer: voteTimer.value.length ? parseInt(voteTimer.value) : this.defaults.voteTimer,
+				// submissionTimer: submissionTimer.value.length ? parseInt(submissionTimer.value) : this.defaults.submissionTimer,
+				// voteTimer: voteTimer.value.length ? parseInt(voteTimer.value) : this.defaults.voteTimer,
 				handSize: handSize.value.length ? parseInt(handSize.value) : this.defaults.handSize,
 				winGoal: winGoal.value.length ? parseInt(winGoal.value) : this.defaults.winGoal,
-				npcCount: npcCount.value.length ? parseInt(npcCount.value) : this.defaults.npcCount,
-				lastManOut: lastManOut.classList.contains('selected'),
-				fillInMissing: fillMissing.classList.contains('selected'),
-				editField: editField.classList.contains('selected'),
+				// npcCount: npcCount.value.length ? parseInt(npcCount.value) : this.defaults.npcCount,
+				// lastManOut: lastManOut.classList.contains('selected'),
+				// fillInMissing: fillMissing.classList.contains('selected'),
+				// editField: editField.classList.contains('selected'),
+				editField: true,
 				// pointGoal: pointGoal.value.length ? parseInt(pointGoal.value) : 50,
 			};
 
