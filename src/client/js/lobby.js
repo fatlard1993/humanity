@@ -17,9 +17,9 @@ const lobby = {
 		} else {
 			roomIDs.forEach(id => {
 				const room = lobby.rooms[id];
-				const playerCount = dom.createElem('span', { textContent: room.players });
+				const playerCount = dom.createElem('span', { className: 'playerCount', textContent: room.players });
 
-				dom.createElem('li', { data: { name: room.name }, innerHTML: room.name, appendChild: playerCount, appendTo: roomList, onPointerPress: () => dom.location.change(`/join/${id}`) });
+				dom.createElem('li', { className: 'playerHTML', data: { name: room.name }, innerHTML: room.name, appendChild: playerCount, appendTo: roomList, onPointerPress: () => dom.location.change(`/join/${id}`) });
 			});
 		}
 

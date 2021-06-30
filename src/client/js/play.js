@@ -78,7 +78,7 @@ const game = {
 					if (!player || player.type === 'view' || player.state === 'inactive') return;
 
 					return dom.createElem('li', {
-						className: `player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+						className: `playerHTML player${isThisPlayer ? '   disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
 						innerHTML: name,
 						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 						onPointerPress: function () {
@@ -146,6 +146,7 @@ const game = {
 			dom.createElem('li', {
 				appendTo: hand,
 				innerHTML: card,
+				className: 'playerHTML',
 				onPointerPress: ({ target }) => {
 					const isSelected = target.classList.contains('selected');
 
@@ -173,6 +174,7 @@ const game = {
 				dom.createElem('div', {
 					id: 'blackCard',
 					innerHTML: this.state.black,
+					className: 'playerHTML',
 					appendChildren: Object.keys(this.state.submissions).length ? [] : [vetoBlackDisplay, vetoBlackButton],
 				}),
 				this.room.options.editField && dom.createElem('label', { textContent: 'Submission', appendChildren: [submission, clear] }),
@@ -207,14 +209,14 @@ const game = {
 
 		if (this.room.options.voteTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
 
-		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
+		dom.createElem('div', { className: 'playerHTML', appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
 
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'whitesList',
 			appendChildren: Object.keys(this.state.submissions).map(card => {
 				return dom.createElem('li', {
-					className: this.state.submissions[card] === this.player.id ? 'disabled' : '',
+					className: `playerHTML ${this.state.submissions[card] === this.player.id ? 'disabled' : ''}`,
 					innerHTML: card,
 					onPointerPress: ({ target }) => {
 						const isSelected = target.classList.contains('selected');
@@ -240,7 +242,7 @@ const game = {
 
 		const fragment = document.createDocumentFragment();
 
-		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
+		dom.createElem('div', { className: 'playerHTML', appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
 
 		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
 
@@ -249,7 +251,7 @@ const game = {
 		this.state.winners.forEach(winner => {
 			dom.createElem('div', {
 				appendTo: fragment,
-				className: 'whiteCard',
+				className: 'playerHTML whiteCard',
 				innerHTML: winner.submission + '<br><br>-' + Object.keys(this.state.players).find(name => this.state.players[name].id === winner.player),
 			});
 		});
@@ -264,7 +266,7 @@ const game = {
 				if (!player || player.type === 'view' || player.state === 'inactive') return;
 
 				return dom.createElem('li', {
-					className: `player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
+					className: `playerHTML player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
 					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
 					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 				});

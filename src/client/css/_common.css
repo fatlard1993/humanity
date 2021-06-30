@@ -332,3 +332,26 @@ div#form {
 		}
 	}
 }
+
+.playerHTML {
+	div, span, h1, h2, h3, h4, h5, h6, p, pre, a, img, small, strong, b, u, ol, ul, li, label {
+		font-size: 20px;
+	}
+
+	b {
+		font-weight: 600;
+	}
+
+	small {
+		font-size: 16px;
+	}
+
+	strong {
+		font-weight: bold;
+	}
+
+	i:not(.fa):not(.fas):not(.far):not(.fal):not(.fad):not(.fab) {
+		font-style: italic;
+		font-size: 20px;
+	}
+}

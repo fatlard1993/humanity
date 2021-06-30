@@ -24,7 +24,7 @@ div#content {
 			font-size: 30px;
 		}
 
-		span {
+		span.playerCount {
 			font-size: inherit;
 			top: 0px;
 			right: 0px;
