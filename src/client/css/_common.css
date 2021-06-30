@@ -153,41 +153,41 @@ ul {
 	width: 70%;
 	margin: 1% auto;
 	list-style: none;
+}
 
-	li {
-		font-size: 20px;
-		padding: 7px;
-		background-color: $grey-darker;
-		color: $grey-lighter;
-		margin: 3px;
-		border: 2px solid $grey-darkest;
-		border-radius: 2px;
-		cursor: pointer;
+li {
+	font-size: 20px;
+	padding: 7px;
+	background-color: $grey-darker;
+	color: $grey-lighter;
+	margin: 3px;
+	border: 2px solid $grey-darkest;
+	border-radius: 2px;
+	cursor: pointer;
 
-		&.selected {
-			border-style: normal;
-			background-color: $black;
-			color: $white;
-			border-color: grey-darker;
-		}
-		&:active,
-		&.active {
-			border-style: inset;
-			background-color: $grey;
-			color: $black;
-			border-color: $grey;
-		}
-		&.disabled {
-			cursor: not-allowed;
-			background-color: $grey-dark !important;
-			color: $grey-light !important;
-			border-color: $white !important;
-		}
+	&.selected {
+		border-style: normal;
+		background-color: $black;
+		color: $white;
+		border-color: grey-darker;
+	}
+	&:active,
+	&.active {
+		border-style: inset;
+		background-color: $grey;
+		color: $black;
+		border-color: $grey;
+	}
+	&.disabled {
+		cursor: not-allowed;
+		background-color: $grey-dark;
+		color: $grey-light;
+		border-color: $white;
+	}
 
-		* {
-			pointer-events: none;
-			width: 100%;
-		}
+	* {
+		pointer-events: none;
+		width: 100%;
 	}
 }
 
@@ -386,7 +386,7 @@ div#form {
 	ul,
 	li,
 	label {
-		font-size: 20px;
+		font-size: 1em;
 	}
 
 	b {
@@ -394,7 +394,7 @@ div#form {
 	}
 
 	small {
-		font-size: 16px;
+		font-size: 0.8em;
 	}
 
 	strong {
@@ -403,6 +403,6 @@ div#form {
 
 	i:not(.fa):not(.fas):not(.far):not(.fal):not(.fad):not(.fab) {
 		font-style: italic;
-		font-size: 20px;
+		font-size: 1em;
 	}
 }
