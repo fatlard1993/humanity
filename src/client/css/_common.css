@@ -245,8 +245,7 @@ p.validationWarning {
 }
 
 div.banner {
-	width: 100%;
-	font-size: 35px;
+	font-size: 3em;
 	font-weight: bold;
 	background-color: $red;
 	padding: 1%;
