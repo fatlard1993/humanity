@@ -7,7 +7,7 @@ module.exports = {
 		sourceType: 'module',
 		ecmaVersion: 2020,
 	},
-	extends: ['eslint:recommended', 'prettier'],
+	extends: ['eslint:recommended', 'plugin:prettier/recommended'],
 	rules: {
 		'no-async-promise-executor': 'off',
 	},
