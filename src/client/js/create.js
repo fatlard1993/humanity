@@ -12,6 +12,9 @@ const create = {
 		npcCount: 0,
 	},
 	draw: function () {
+		const { randomName, packs } = this.state;
+		const packNames = util.sortArrAlphaNumeric(packs);
+
 		const back = dom.createElem('button', {
 			textContent: 'Back',
 			onPointerPress: () => dom.location.change('/lobby'),
@@ -26,7 +29,7 @@ const create = {
 			type: 'text',
 			id: 'nameInput',
 			validation: /^.{3,128}$/,
-			value: this.randomName || '',
+			value: randomName || '',
 			onblur: validateForm,
 			validationWarning: 'Must be between 3 and 128 characters',
 			validate: 0,
@@ -130,7 +133,7 @@ const create = {
 			},
 		});
 
-		this.packNames.forEach(name => {
+		packNames.forEach(name => {
 			const pack = dom.createElem('li', {
 				className: `pack ${name === 'base' ? ' selected' : ''}`,
 				textContent: name,
@@ -183,7 +186,7 @@ const create = {
 
 			log()('[create] Create game', options);
 
-			socketClient.reply('create_room', options);
+			socketClient.reply('create', options);
 		};
 
 		setHeaderButtons(back, save);
@@ -209,15 +212,13 @@ const create = {
 
 dom.onLoad(function onLoad() {
 	socketClient.on('open', function () {
-		socketClient.reply('join_room', { room: 'create' });
+		socketClient.reply('join', { room: 'create' });
 	});
 
-	socketClient.on('create_data', function (data) {
-		log()('[create] create_data', data);
+	socketClient.on('state', function (state) {
+		log()('[create] state', state);
 
-		create.packs = data.packs;
-		create.packNames = util.sortArrAlphaNumeric(Object.keys(data.packs));
-		create.packCount = create.packNames.length;
+		create.state = { ...create.state, ...state };
 
 		create.draw();
 	});
@@ -236,7 +237,9 @@ dom.onLoad(function onLoad() {
 		create.randomName = data;
 	});
 
-	socketClient.on('create_room', function () {
+	socketClient.on('create', function (payload) {
+		log()('Created game room', payload);
+
 		dom.location.change('/lobby');
 	});
 

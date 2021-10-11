@@ -1,112 +1,107 @@
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 
-const log = new (require('log'))({ tag: 'cards' });
+const util = require('js-util');
 const fsExtended = require('fs-extended');
+const log = new (require('log'))({ tag: 'cards' });
 
-const cards = (module.exports = {
-	blacklist: {},
-	load: function (rootFolder, cb) {
-		this.rootFolder = rootFolder;
-		this.path = `${rootFolder}/src/cards/`;
-		this.tempPath = `${rootFolder}/temp/cards/`;
-		this.packs = {};
+const cards = {
+	packs: {},
+	async init() {
+		cards.load(path.join(__dirname, '../..', 'src/cards'));
+	},
+	async load(folder) {
+		log('Loading card packs');
 
-		fsExtended.browse(this.path, data => {
-			log(`Importing ${data.files.length} packs from ${this.path}`);
+		fsExtended.browse(folder, ({ files }) => {
+			log(1)(`Importing ${files.length} packs from ${folder}`);
 
-			var files = data.files;
+			files.forEach(file => {
+				try {
+					if (!file.endsWith('.json')) return;
 
-			fsExtended.browse(this.tempPath, data => {
-				log(`Importing ${data.files.length} packs from ${this.path}`);
+					log(1)(`Loading "${file}"`);
 
-				files = files.concat(data.files);
+					const packName = file.replace(`${folder}/`, '').replace('.json', '');
+					const packData = JSON.parse(fsExtended.catSync(file));
 
-				files.forEach(file => {
-					try {
-						var packData = JSON.parse(fsExtended.catSync(file));
-					} catch (err) {
-						return log.error(`Error parsing pack ${file}`, err);
+					if (!(packData?.whites?.length || packData?.blacks?.length)) {
+						log.warn(`Invalid pack "${packName}"`);
+
+						return;
 					}
 
-					var packName = file.replace(new RegExp(this.tempPath + '|' + this.path), '').replace('.json', '');
+					log(1)(`Loaded "${packName}"`);
 
-					this.packs[packName] = packData;
-
-					log(`Loaded "${packName}"`);
-				});
-
-				if (cb) cb(this.packs);
+					cards.packs[packName] = packData;
+				} catch (err) {
+					log.error(`Error parsing pack ${file}`, err);
+				}
 			});
+
+			log(`Loaded ${Object.keys(cards.packs).length} packs`);
+		});
+	},
+	getPacks(packNames) {
+		const blacks = new Set();
+		const whites = new Set();
+
+		packNames.forEach(packName => {
+			const pack = cards.packs[packName];
+
+			if (pack.blacks) pack.blacks.forEach(blacks.add, blacks);
+			if (pack.whites) pack.whites.forEach(whites.add, whites);
 		});
 
-		return this;
+		return { blacks, whites };
 	},
-	get: function (packNames) {
-		var packCount = packNames.length,
-			output = { blacks: [], whites: [] };
+	getRandomWhite(packNames) {
+		const packName = util.randFromArr(packNames || Object.keys(cards.packs));
 
-		for (var x = 0; x < packCount; ++x) {
-			output.blacks = output.blacks.concat(this.packs[packNames[x]].blacks);
-			output.whites = output.whites.concat(this.packs[packNames[x]].whites);
-		}
+		if (!cards.packs[packName]) return;
 
-		return output;
+		return util.randFromArr(cards.packs[packName].whites);
 	},
-	recordCustom: function (text) {
+	stringifyPack(pack) {
+		return JSON.stringify({
+			blacks: Array.from(pack.blacks),
+			whites: Array.from(pack.whites),
+		});
+	},
+	async savePack(packName, pack) {
+		if (pack) cards.packs[packName] = pack;
+		else pack = cards.packs[packName];
+
+		log(`Save pack "${packName}"`, pack);
+
+		return new Promise(resolve => {
+			fs.writeFile(path.join(__dirname, '../..', 'src/cards', `${packName}.json`), cards.stringifyPack(pack), err => {
+				if (err) return log.error(`Error saving ${packName}`, err);
+
+				log(`Saved ${packName}`);
+
+				resolve();
+			});
+		});
+	},
+	recordCustom(text) {
 		log('Record custom: ', text);
 
-		fs.readFile(`${this.rootFolder}/temp/cards/custom.json`, (err, data) => {
-			var packData;
+		const pack = cards.packs.custom || { blacks: new Set(), whites: new Set() };
 
-			try {
-				packData = JSON.parse(data);
-			} catch (e) {
-				packData = { blacks: [], whites: [] };
+		pack.whites.add(text);
+
+		cards.savePack('custom', pack);
+	},
+	async remove(packNames, type, text) {
+		packNames.forEach(async packName => {
+			if (cards.packs[packName][type].has(text)) {
+				cards.packs[packName][type].remove(text);
+
+				await cards.savePack(packName);
 			}
-
-			packData.whites.push(text);
-
-			this.packs.custom = packData;
-
-			log(`Loaded custom`);
-
-			fsExtended.mkdir(path.join(this.rootFolder, 'temp/cards'));
-
-			fs.writeFile(`${this.rootFolder}/temp/cards/custom.json`, JSON.stringify(packData), err => {
-				if (err) return log.error(`Error saving custom`, err);
-
-				log(`Saved custom card ${text}`);
-			});
 		});
 	},
-	recordBlacklist: function (text) {
-		log('Record blacklist: ', text);
+};
 
-		fs.readFile(`${this.rootFolder}/temp/blacklist.json`, (err, data) => {
-			var packData;
-
-			try {
-				packData = JSON.parse(data);
-			} catch (e) {
-				packData = {};
-			}
-
-			if (packData[text]) return log(`"${text}" is already blacklisted`);
-
-			packData[text] = true;
-
-			cards.blackList = packData;
-
-			fsExtended.mkdir(path.join(this.rootFolder, 'temp'));
-
-			log(`Loaded blacklist`);
-
-			fs.writeFile(`${this.rootFolder}/temp/blacklist.json`, JSON.stringify(packData, '\t', 1), err => {
-				if (err) return log.error(`Error saving blacklist`, err);
-
-				log(`Saved blacklist card ${text}`);
-			});
-		});
-	},
-});
+module.exports = cards;

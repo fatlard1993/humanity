@@ -10,13 +10,16 @@ const { options } = argi.parse({
 	},
 	port: {
 		type: 'number',
-		defaultValue: 8793,
+		defaultValue: 8034,
 		alias: 'p',
 	},
 });
 
-const log = new (require('log'))({ tag: 'humanity', defaults: { verbosity: options.verbosity, color: true } });
+const log = new (require('log'))({
+	tag: 'humanity',
+	defaults: { verbosity: options.verbosity, color: true, colorMap: { humanity: '\x1b[36m', game: '\x1b[36m', lobby: '\x1b[36m', cards: '\x1b[36m', sockets: '\x1b[36m', room: '\x1b[36m' } },
+});
 
 log(1)('Options', options);
 
-require('./humanity').init(options);
+require('./server').init(options);

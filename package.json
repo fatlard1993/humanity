@@ -15,7 +15,6 @@
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^5.15.3",
-		"byod-game-engine": "github:fatlard1993/byod-game-engine",
 		"cardcast-api": "^0.2.3",
 		"config-manager": "github:fatlard1993/config-manager#2.x.x",
 		"dialog": "github:fatlard1993/dialog#2.x.x",
@@ -30,6 +29,7 @@
 		"performance-now": "^2.1.0",
 		"socket-client": "github:fatlard1993/socket-client#2.x.x",
 		"source-sans-pro": "^3.6.0",
+		"http-server": "github:fatlard1993/http-server#4.x.x",
 		"websocket-server": "github:fatlard1993/websocket-server#2.x.x"
 	},
 	"devDependencies": {

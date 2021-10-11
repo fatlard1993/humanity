@@ -1,15 +1,18 @@
-const path = require('path');
-
-const Game = require('./game');
+const log = new (require('log'))({ tag: 'humanity' });
 
 const humanity = {
-	rootPath: function () {
-		return path.join(__dirname, '../..', ...arguments);
+	rooms: {},
+	init() {
+		humanity.rooms.lobby = new (require('./lobby'))();
 	},
-	init: function (options) {
-		this.options = options;
+	createRoom(options) {
+		log(1)('Create new game room', options);
 
-		this.game = new Game(this.rootPath(), options.port);
+		const gameRoom = new (require('./game'))(options);
+
+		humanity.rooms[gameRoom.id] = gameRoom;
+
+		log('Created game room', gameRoom.id);
 	},
 };
 

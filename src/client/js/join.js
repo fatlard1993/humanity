@@ -2,10 +2,8 @@ import { log, dom, socketClient, humanity } from '_humanity';
 
 const { init, setPageTitle, setHeaderButtons, setContent, validateForm } = humanity;
 
-// todo support full html room name
-
 const join = {
-	roomID: window.location.pathname.split('/')[2],
+	roomId: window.location.pathname.split('/')[2],
 	draw_play_or_view: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
@@ -22,7 +20,7 @@ const join = {
 			textContent: 'View',
 			className: 'big_center',
 			onPointerPress: function () {
-				socketClient.reply('player_register', { roomID: join.roomID, action: 'view' });
+				socketClient.reply('register', { roomId: join.roomId, action: 'view' });
 			},
 		});
 
@@ -88,23 +86,27 @@ const join = {
 	register: function () {
 		if (validateForm()) return;
 
-		socketClient.reply('player_register', { roomID: join.roomID, action: 'play', name: dom.getElemById('nameInput').value });
+		socketClient.reply('register', { roomId: join.roomId, name: dom.getElemById('nameInput').value, type: 'play' });
 	},
 };
 
 dom.onLoad(function onLoad() {
 	socketClient.on('open', function () {
-		socketClient.reply('join_room', { room: 'join', id: join.roomID });
+		socketClient.reply('join', { room: 'join', roomId: join.roomId });
+
+		join.timeout = setTimeout(() => dom.location.change('/lobby'), 1000);
 	});
 
-	socketClient.on('join_data', function (data) {
-		log()('[join] join_data', data);
+	socketClient.on('state', function (state) {
+		log()('[join] state', state);
 
-		if (!data || data.error) return dom.location.change('/lobby');
+		clearTimeout(join.timeout);
 
-		join.room = data;
+		if (!state || state.error) return dom.location.change('/lobby');
 
-		setPageTitle(`Joining Game:\n${join.room.name}`);
+		join.state = { ...join.state, ...state };
+
+		setPageTitle(`Joining Game:\n${join.state.room.name}`);
 
 		join.draw_play_or_view();
 	});
@@ -125,7 +127,7 @@ dom.onLoad(function onLoad() {
 		join.randomName = data;
 	});
 
-	socketClient.on('player_register', function (payload) {
+	socketClient.on('register', function (payload) {
 		if (payload.error) {
 			dom.remove(document.getElementsByClassName('validationWarning'));
 
@@ -141,7 +143,7 @@ dom.onLoad(function onLoad() {
 
 		dom.storage.set('player_name', payload.name);
 
-		dom.location.change(`/${payload.action}/${payload.roomID}${payload.action === 'play' ? '/' + payload.playerID : ''}`);
+		dom.location.change(`/${payload.type}/${join.roomId}${payload.type === 'play' ? `/${payload.id}` : ''}`);
 	});
 
 	dom.interact.on('keyUp', evt => {
@@ -156,5 +158,5 @@ dom.onLoad(function onLoad() {
 		}
 	});
 
-	init('Lobby', `Joining Game:\n"${join.roomID}"`);
+	init('Lobby', `Joining Game:\n"${join.roomId}"`);
 });

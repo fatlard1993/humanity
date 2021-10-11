@@ -16,31 +16,31 @@ const view = {
 
 		setHeaderButtons(leave);
 
-		this[`draw_${this.state.stage}`]();
+		view[`draw_${view.state.stage}`]();
 	},
 	draw_new: () => view.draw_waiting(),
 	draw_voting: () => view.draw_waiting(),
 	draw_waiting: function () {
-		this.waiting = true;
+		view.waiting = true;
 
 		setPageTitle('Waiting...');
 
 		const playersList = dom.createElem('ul', {
 			id: 'playersList',
 			appendChildren: util.cleanArr(
-				this.state.playerNames.map(name => {
-					const player = this.state.players[name];
+				view.state.playerIds.map(id => {
+					const player = view.state.players[id];
 
-					if (!player || player.type === 'view' || player.state === 'inactive') return;
+					if (!player || player.type === 'view' || player.state.status === 'inactive') return;
 
 					return dom.createElem('li', {
-						className: `player${player.state === 'done' ? ' ready' : ''}`,
-						innerHTML: name,
+						className: `player${player.state.status === 'done' ? ' ready' : ''}`,
+						innerHTML: player.name,
 						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
 						onPointerPress: function () {
-							if (player.state === 'done') return;
+							if (player.state.status === 'done') return;
 
-							socketClient.reply('player_nudge', { name });
+							socketClient.reply('player_nudge', { id });
 						},
 					});
 				}),
@@ -54,9 +54,9 @@ const view = {
 
 		const fragment = document.createDocumentFragment();
 
-		if (this.options.submissionTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
+		if (view.options.submissionTimer) dom.createElem('div', { appendTo: fragment, id: 'gameTimer' });
 
-		dom.createElem('div', { id: 'blackCard', innerHTML: this.state.black, appendTo: fragment });
+		dom.createElem('div', { id: 'blackCard', innerHTML: view.state.black, appendTo: fragment });
 		dom.createElem('div', { id: 'whitesPile', appendTo: fragment });
 
 		dom.maintenance.run();
@@ -68,33 +68,33 @@ const view = {
 	draw_end: function () {
 		const fragment = document.createDocumentFragment();
 
-		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: this.state.black });
+		dom.createElem('div', { appendTo: fragment, id: 'blackCard', innerHTML: view.state.black });
 
-		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${this.state.gameOver ? 'Game' : 'Round'} Over` });
+		dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: `${view.state.gameOver ? 'Game' : 'Round'} Over` });
 
-		if (this.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
+		if (view.state.winners.length > 1) dom.createElem('div', { appendTo: fragment, className: 'banner', textContent: 'TIE' });
 
-		this.state.winners.forEach(winner => {
+		view.state.winners.forEach(winner => {
 			dom.createElem('div', {
 				appendTo: fragment,
 				className: 'whiteCard',
-				innerHTML: winner.submission + '<br><br>-' + Object.keys(this.state.players).find(name => this.state.players[name].id === winner.player),
+				innerHTML: winner.submission + '<br><br>-' + Object.keys(view.state.players).find(name => view.state.players[name].id === winner.player),
 			});
 		});
 
 		dom.createElem('ul', {
 			appendTo: fragment,
 			id: 'playersList',
-			appendChildren: this.state.playerNames.map(name => {
-				const player = this.state.players[name];
-				const isThisPlayer = name === this.player.name;
+			appendChildren: view.state.playerIds.map(id => {
+				const player = view.state.players[id];
+				const isThisPlayer = player.name === view.player.name;
 
-				if (!player || player.type === 'view' || player.state === 'inactive') return;
+				if (!player || player.type === 'view' || player.state.status === 'inactive') return;
 
 				return dom.createElem('li', {
-					className: `player${isThisPlayer ? ' marked disabled' : ''}${player.state === 'done' ? ' ready' : ''}`,
-					innerHTML: `${name}<br/><br/><p>Score: ${player.score}</p>`,
-					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${player.id}.svg` }),
+					className: `player${isThisPlayer ? ' marked disabled' : ''}${player.state.status === 'done' ? ' ready' : ''}`,
+					innerHTML: `${player.name}<br/><br/><p>Score: ${player.state.score}</p>`,
+					appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${id}.svg` }),
 				});
 			}),
 		});
