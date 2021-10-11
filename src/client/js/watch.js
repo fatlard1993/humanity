@@ -88,9 +88,15 @@ const game = {
 
 		if (!whitesPile) return;
 
-		const submissionIds = Object.keys(game.state.submissions)
-			.filter(submission => !game.localState.shownSubmissionIds.includes(game.state.submissions[submission]))
-			.map(submission => game.state.submissions[submission]);
+		const { state, localState } = game;
+
+		const blackCard = document.getElementById('blackCard');
+
+		blackCard.innerHTML = state.black;
+
+		const submissionIds = Object.keys(state.submissions)
+			.filter(submission => !localState.shownSubmissionIds.includes(state.submissions[submission]))
+			.map(submission => state.submissions[submission]);
 
 		log()('update_submissions', submissionIds);
 
