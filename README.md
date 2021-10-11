@@ -53,7 +53,6 @@ Template:
 
   - it seems to lag an update ot maybe a timing issue on when the update is sent?
 
-- view game is broken
 - submission length should be a game option
 - edit field should be a text area
 - trash whites doesnt work

@@ -19,7 +19,7 @@ const sockets = {
 				this.reply('random_white', cards.getRandomWhite());
 			},
 			join: function ({ room, roomId, playerId }) {
-				log(`Player joining room: ${room} ${roomId || ''} ${playerId || ''}`);
+				log('Player joining room: ', { room, roomId, playerId });
 
 				const { rooms } = humanity;
 
@@ -38,7 +38,7 @@ const sockets = {
 				}
 			},
 			register: function ({ name, roomId, type }) {
-				log(`Player "${name}" registering for room: ${roomId}`);
+				log(`Player "${name}" registering for "${type}" in room: ${roomId}`);
 
 				const { rooms } = humanity;
 

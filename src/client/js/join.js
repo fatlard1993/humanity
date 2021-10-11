@@ -4,7 +4,7 @@ const { init, setPageTitle, setHeaderButtons, setContent, validateForm } = human
 
 const join = {
 	roomId: window.location.pathname.split('/')[2],
-	draw_play_or_view: function () {
+	draw_play_or_watch: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
 			onPointerPress: () => dom.location.change('/lobby'),
@@ -16,22 +16,22 @@ const join = {
 			onPointerPress: join.draw_join,
 		});
 
-		const view = dom.createElem('button', {
-			textContent: 'View',
+		const watch = dom.createElem('button', {
+			textContent: 'Watch',
 			className: 'big_center',
 			onPointerPress: function () {
-				socketClient.reply('register', { roomId: join.roomId, action: 'view' });
+				socketClient.reply('register', { roomId: join.roomId, type: 'watch' });
 			},
 		});
 
 		setHeaderButtons(back);
 
-		setContent(play, dom.createElem('div', { className: 'big_center', textContent: 'OR' }), view);
+		setContent(play, dom.createElem('div', { className: 'big_center', textContent: 'OR' }), watch);
 	},
 	draw_join: function () {
 		const back = dom.createElem('button', {
 			textContent: 'Back',
-			onPointerPress: join.draw_play_or_view,
+			onPointerPress: join.draw_play_or_watch,
 		});
 
 		const play = dom.createElem('button', {
@@ -102,13 +102,13 @@ dom.onLoad(function onLoad() {
 
 		clearTimeout(join.timeout);
 
-		if (!state || state.error) return dom.location.change('/lobby');
+		if (!state || !state.room?.name || state.error) return dom.location.change('/lobby');
 
 		join.state = { ...join.state, ...state };
 
 		setPageTitle(`Joining Game:\n${join.state.room.name}`);
 
-		join.draw_play_or_view();
+		join.draw_play_or_watch();
 	});
 
 	socketClient.on('random_white', function (data) {
@@ -141,9 +141,9 @@ dom.onLoad(function onLoad() {
 			return;
 		}
 
-		dom.storage.set('player_name', payload.name);
+		if (payload.name) dom.storage.set('player_name', payload.name);
 
-		dom.location.change(`/${payload.type}/${join.roomId}${payload.type === 'play' ? `/${payload.id}` : ''}`);
+		dom.location.change(`/${payload.type}/${join.roomId}/${payload.id}`);
 	});
 
 	dom.interact.on('keyUp', evt => {

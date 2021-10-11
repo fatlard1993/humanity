@@ -10,9 +10,7 @@ const game = {
 	player: {
 		id: window.location.pathname.split('/')[3],
 	},
-	draw: function (view) {
-		delete game.waiting;
-
+	draw: view => {
 		const { state, player } = game;
 
 		if (!view && state.stage !== 'new' && player.state.status === 'done') view = 'waiting';
@@ -22,7 +20,7 @@ const game = {
 		game.drawHeaderButtons(game.view);
 		game[`draw_${game.view}`]();
 	},
-	drawHeaderButtons: function (view) {
+	drawHeaderButtons: view => {
 		let right;
 		const left = dom.createElem('button', {
 			textContent: 'Leave',
@@ -75,9 +73,7 @@ const game = {
 		setHeaderButtons(left, right);
 	},
 	draw_new: () => game.draw_waiting(),
-	draw_waiting: function () {
-		game.waiting = true;
-
+	draw_waiting: () => {
 		setPageTitle('Waiting...');
 
 		const {
@@ -90,15 +86,16 @@ const game = {
 			appendChildren: util.cleanArr(
 				state.playerIds.map(id => {
 					const player = state.players[id];
-					const isThisPlayer = player?.id === playerId;
 
-					if (!player || player.type === 'view' || player.state.status === 'inactive') return;
+					if (!player || player.type === 'watch' || player.state.status === 'inactive') return;
+
+					const isThisPlayer = player?.id === playerId;
 
 					return dom.createElem('li', {
 						className: `playerHTML player${isThisPlayer ? '   disabled' : ''}${player.state.status === 'done' ? ' ready' : ''}`,
 						innerHTML: player.name,
 						appendChild: dom.createElem('img', { src: `https://avatars.dicebear.com/api/human/${id}.svg` }),
-						onPointerPress: function () {
+						onPointerPress: () => {
 							if (isThisPlayer || player.state.status === 'done') return;
 
 							socketClient.reply('player_nudge', { id });
@@ -110,7 +107,7 @@ const game = {
 
 		setContent(playersList);
 	},
-	draw_submissions: function () {
+	draw_submissions: () => {
 		const {
 			room: { id: roomId, options },
 			player: { id: playerId, state: playerState },
@@ -212,7 +209,7 @@ const game = {
 
 		if (options.editField) submission.focus();
 	},
-	update_submissions: function () {
+	update_submissions: () => {
 		const { state } = game;
 
 		if (Object.keys(state.submissions).length) {
@@ -225,7 +222,7 @@ const game = {
 
 		dom.getElemById('vetoBlackDisplay').textContent = `${state.vetoVotes}/${state.activePlayers}`;
 	},
-	draw_voting: function () {
+	draw_voting: () => {
 		const {
 			state,
 			room: { options },
@@ -270,10 +267,10 @@ const game = {
 
 		setContent(fragment);
 	},
-	draw_end: function () {
+	draw_end: () => {
 		socketClient.ws.close();
 
-		const { state, player: thisPlayer } = game;
+		const { state } = game;
 
 		const fragment = document.createDocumentFragment();
 
@@ -297,9 +294,10 @@ const game = {
 			appendChildren: util.cleanArr(
 				state.playerIds.map(id => {
 					const player = state.players[id];
-					const isThisPlayer = player.name === thisPlayer.name;
 
-					if (!player || player.type === 'view' || player.state.status === 'inactive') return;
+					if (!player || player.type === 'watch' || player.state.status === 'inactive') return;
+
+					const isThisPlayer = player.name === game.player.name;
 
 					return dom.createElem('li', {
 						className: `playerHTML player${isThisPlayer ? ' marked disabled' : ''}${player.state.status === 'done' ? ' ready' : ''}`,
@@ -316,30 +314,42 @@ const game = {
 	},
 };
 
-dom.onLoad(function onLoad() {
-	if (!game.room.id || !game.player.id) {
-		log()(`[play] Missing player or room id: player=${game.player.id} room=${game.room.id} ... Returning to lobby`);
+dom.onLoad(() => {
+	const {
+		room: { id: roomId },
+		player: { id: playerId },
+		localState: { vote },
+	} = game;
 
-		// return dom.location.change('/lobby');
+	if (roomId && !game.player.id) {
+		log()(`[play] Missing player id ... Returning to room ${roomId}`);
+
+		return dom.location.change(`/join/${roomId}`);
 	}
 
-	log()(`[play] Game room: ${game.room.id}`);
+	if (!roomId || !game.player.id) {
+		log()(`[play] Missing player or room id: player=${game.player.id} room=${roomId} ... Returning to lobby`);
 
-	socketClient.on('open', function () {
-		socketClient.reply('join', { room: 'game', roomId: game.room.id, playerId: game.player.id });
+		return dom.location.change('/lobby');
+	}
+
+	log()(`[play] Game room: ${roomId}`);
+
+	socketClient.on('open', () => {
+		socketClient.reply('join', { room: 'game', roomId, playerId: game.player.id });
 	});
 
-	socketClient.on('join', function (payload) {
+	socketClient.on('join', payload => {
 		if (payload.error) {
-			log()(`[play] Error joining room ... Returning to lobby`, payload);
+			log()(`[play] Error joining room ... Returning to room ${roomId}`, payload);
 
-			return dom.location.change('/lobby');
+			return dom.location.change(`/join/${roomId}`);
 		}
 
 		game.room.options = payload.options;
 	});
 
-	socketClient.on('player_submission', function (payload) {
+	socketClient.on('player_submission', payload => {
 		if (payload.error && game.room.options.editField) {
 			dom.remove(document.getElementsByClassName('validationWarning'));
 
@@ -350,7 +360,7 @@ dom.onLoad(function onLoad() {
 		}
 	});
 
-	socketClient.on('player_update', function (payload) {
+	socketClient.on('player_update', payload => {
 		if (payload.id && payload.id !== game.player.id) return;
 
 		log()('[play] player_update', payload);
@@ -360,11 +370,11 @@ dom.onLoad(function onLoad() {
 		if (game.state) game.draw();
 	});
 
-	socketClient.on('player_nudge', function (vibration = 200) {
+	socketClient.on('player_nudge', (vibration = 200) => {
 		if (navigator.vibrate) navigator.vibrate(parseInt(vibration));
 	});
 
-	socketClient.on('game_update', function (data) {
+	socketClient.on('game_update', data => {
 		log()('[play] game_update', data);
 
 		// const currentStage = game.state?.stage;
@@ -372,16 +382,10 @@ dom.onLoad(function onLoad() {
 		game.state = data;
 
 		game.draw();
-		// if(game.waiting || !game.state || currentStage !== data.stage || !game[`update_${data.stage}`])
+		// if(!game.state || currentStage !== data.stage || !game[`update_${data.stage}`])
 
 		// else if(game[`update_${data.stage}`]) game[`update_${data.stage}`]();
 	});
-
-	const {
-		room: { id: roomId },
-		player: { id: playerId },
-		localState: { vote },
-	} = game;
 
 	dom.interact.on('keyUp', evt => {
 		if (evt.keyPressed === 'ENTER') {

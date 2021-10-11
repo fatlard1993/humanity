@@ -37,7 +37,7 @@ class Game extends Room {
 	registerPlayer({ name, type, socket }) {
 		const existingPlayer = name && this.getPlayerByName(name);
 
-		if (existingPlayer?.type === type) {
+		if (type && existingPlayer?.type === type) {
 			if (existingPlayer.state.status !== 'inactive') {
 				return sendError(socket, 'register', 'A player by that name is already playing in this room');
 			}
@@ -174,7 +174,7 @@ class Game extends Room {
 			const { name, type, state } = this.players[id];
 			const { status, submission, vote } = state;
 
-			if (type === 'view') return;
+			if (type === 'watch') return;
 
 			if (status === 'veto') ++update.vetoVotes;
 
@@ -231,8 +231,6 @@ class Game extends Room {
 		const { votes } = this.state;
 		let winners = {};
 		let topScore = 0;
-
-		log.error('tp01', votes);
 
 		Object.keys(votes).forEach(card => {
 			const voteCount = votes[card];

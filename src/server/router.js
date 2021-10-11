@@ -41,7 +41,7 @@ const router = {
 		app.use(function (req, res, next) {
 			const splitPath = req.path.split('/');
 
-			if (req.method !== 'GET' || !{ join: 1, play: 1, view: 1 }[splitPath[1]]) return next();
+			if (req.method !== 'GET' || !{ join: 1, play: 1, watch: 1 }[splitPath[1]]) return next();
 
 			log(`Load ${req.path} ::: ${req.socket.remoteAddress}\n`);
 
