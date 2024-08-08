@@ -4,7 +4,6 @@ export const clients = {};
 export let url = '';
 
 export const socketBroadcast = data => {
-	console.log('broadcast', data);
 	Object.values(clients).forEach(socket => {
 		socket.send(JSON.stringify(data));
 	});

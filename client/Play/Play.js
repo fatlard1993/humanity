@@ -33,7 +33,7 @@ export default class Play extends View {
 		});
 
 		const socketCleanup = onMessage(data => {
-			if (data.gameId) {
+			if (data.gameId === this.options.gameId) {
 				// TODO smarter change handling
 				window.location.reload();
 			}
