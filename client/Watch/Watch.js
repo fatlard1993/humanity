@@ -7,21 +7,39 @@ import Notify from '../shared/Notify';
 import Card, { Hand } from '../shared/Card';
 import ScoreDialog from '../shared/ScoreDialog';
 import QRCode from '../shared/QRCode';
+import { onMessage } from '../socket';
 import PlayersDialog from './PlayersDialog';
 
 export default class Watch extends View {
 	async render() {
 		super.render();
 
-		const game = await getGame(this.options.gameId);
+		this.options.game = await getGame(this.options.gameId, {
+			onRefetch: () => {
+				this.elem.remove();
+				this.render();
+			},
+		});
 
-		if (game.response.status !== 200) {
-			new Notify({ type: 'error', content: game.body?.message || game.response.statusText });
+		const socketCleanup = onMessage(data => {
+			if (data.gameId === this.options.gameId) {
+				// TODO smarter change handling
+				window.location.reload();
+			}
+		});
+
+		this.options.onDisconnected = () => {
+			this.options.game.unsubscribe();
+			socketCleanup();
+		};
+
+		if (this.options.game.response.status !== 200) {
+			new Notify({ type: 'error', content: this.options.game.body?.message || this.options.game.response.statusText });
 			window.location.href = `#/hub`;
 			return;
 		}
 
-		this.game = game.body;
+		this.game = this.options.game.body;
 
 		this._toolbar.options.heading = this.game.name;
 		this._toolbar.options.left = [
