@@ -1,9 +1,0 @@
-{
-	"lang": "en-US",
-	"orientation": "any",
-	"display": "standalone",
-	"theme_color": "#BADA55",
-	"background_color": "#333",
-	"name": "[humanity]",
-	"start_url": "/lobby"
-}

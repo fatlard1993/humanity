@@ -2,10 +2,29 @@
 	"name": "humanity",
 	"version": "2.1.0",
 	"description": "A card game for terrible people",
-	"main": "src/server/index.js",
+	"type": "module",
+	"exports": {
+		"./package.json": "./package.json",
+		".": "./server/index.js"
+	},
+	"browserslist": [
+		"last 1 version",
+		"> 1%",
+		"not dead",
+		"not op_mini all"
+	],
 	"scripts": {
-		"start": "src/server/index.js",
-		"lint": "eslint"
+		"prepare": "bun run build",
+		"_build": "bun build client/index.js --outdir client/build --define 'process.env.AUTOPREFIXER_GRID=\"undefined\"'",
+		"build": "NODE_ENV=production bun run _build",
+		"build:dev": "NODE_ENV=development bun run _build -- --watch",
+		"start": "NODE_ENV=production bun server/index.js",
+		"dev": "NODE_ENV=development bun --hot server/index.js",
+		"lint": "bun --bun eslint",
+		"lint:fix": "bun --bun eslint --fix",
+		"pretty": "bun --bun prettier --check .",
+		"pretty:fix": "bun --bun prettier --write .",
+		"fix": "bun run lint:fix ; bun run pretty:fix"
 	},
 	"author": "fatlard1993",
 	"license": "MIT",
@@ -14,33 +33,30 @@
 		"url": "git+https://github.com/fatlard1993/humanity.git"
 	},
 	"dependencies": {
-		"@fortawesome/fontawesome-free": "^5.15.3",
+		"argi": "github:fatlard1993/argi#e3f79c8",
 		"cardcast-api": "^0.2.3",
-		"config-manager": "github:fatlard1993/config-manager#2.x.x",
-		"dialog": "github:fatlard1993/dialog#2.x.x",
-		"dom": "github:fatlard1993/dom#2.x.x",
 		"find-root": "^1.1.0",
-		"fs-extended": "github:fatlard1993/fs-extended#2.x.x",
-		"js-util": "github:fatlard1993/js-util#2.x.x",
-		"log": "github:fatlard1993/log#3.x.x",
-		"menu": "github:fatlard1993/menu#2.x.x",
-		"nanoid": "^3.1.23",
-		"notify": "github:fatlard1993/notify#2.x.x",
+		"lowdb": "^7.0.1",
+		"nanoid": "^5.0.7",
 		"performance-now": "^2.1.0",
-		"socket-client": "github:fatlard1993/socket-client#2.x.x",
-		"source-sans-pro": "^3.6.0",
-		"http-server": "github:fatlard1993/http-server#4.x.x",
-		"websocket-server": "github:fatlard1993/websocket-server#2.x.x"
+		"qrcode": "^1.5.4",
+		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#3ec2ab1"
 	},
 	"devDependencies": {
-		"eslint": "^7.27.0",
-		"eslint-config-prettier": "^8.3.0",
-		"eslint-plugin-prettier": "^3.4.0",
-		"husky": "^6.0.0",
-		"lint-staged": "^11.0.0",
-		"prettier": "2.3.0"
-	},
-	"lint-staged": {
-		"**/*": "prettier --write --ignore-unknown"
+		"@eslint/compat": "^1.1.1",
+		"@eslint/js": "^9.8.0",
+		"@happy-dom/global-registrator": "^14.12.3",
+		"@testing-library/dom": "^10.4.0",
+		"@testing-library/jest-dom": "^6.4.8",
+		"bun-types": "^1.1.21",
+		"eslint": "^9.8.0",
+		"eslint-plugin-compat": "^6.0.0",
+		"eslint-plugin-import": "^2.29.1",
+		"eslint-plugin-spellcheck": "0.0.20",
+		"eslint-plugin-testing-library": "^6.2.2",
+		"eslint-plugin-unicorn": "^55.0.0",
+		"eslint-plugin-write-good-comments": "^0.2.0",
+		"globals": "^15.9.0",
+		"prettier": "3.3.3"
 	}
 }
