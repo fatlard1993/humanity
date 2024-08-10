@@ -13,13 +13,11 @@ const router = async (request, server) => {
 		match = requestMatch('GET', '/', request);
 		if (match) return new Response(Bun.file('client/index.html'));
 
-		if (process.env.NODE_ENV === 'development') {
-			match = requestMatch('GET', '/ws', request);
-			if (match) {
-				const success = server.upgrade(request, { data: { clientId: nanoid() } });
+		match = requestMatch('GET', '/ws', request);
+		if (match) {
+			const success = server.upgrade(request, { data: { clientId: nanoid() } });
 
-				return success ? undefined : new Response('WebSocket upgrade error', { status: 400 });
-			}
+			return success ? undefined : new Response('WebSocket upgrade error', { status: 400 });
 		}
 
 		response = await gameRoutes(request);
