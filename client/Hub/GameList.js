@@ -17,6 +17,7 @@ export const GameList = styled(
 
 			& > button, & > a {
 				margin-bottom: 0;
+				height: 32px;
 			}
 		}
 	`,

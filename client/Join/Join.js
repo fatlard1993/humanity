@@ -83,7 +83,10 @@ export default class Join extends View {
 
 		this.form = new Form({
 			appendTo: this._body,
-			styles: () => `margin: 30px 0 30px 30px;`,
+			styles: () => `
+				margin: 12px 0 12px 12px;
+				padding-right: 12px;
+			`,
 			data: { name },
 			inputs: [{ key: 'name', label: 'Player Name', validations: [[/.+/, 'Required']] }],
 		});

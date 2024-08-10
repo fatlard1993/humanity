@@ -6,7 +6,7 @@ export default class Body extends DomElem {
 			{
 				...options,
 				styles: (theme, domElem) => `
-					overflow: auto;
+					overflow: hidden auto;
 					flex: 1;
 
 					${options.styles?.(theme, domElem) || ''}

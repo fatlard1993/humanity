@@ -71,7 +71,10 @@ export default class Create extends View {
 
 		this.form = new Form({
 			appendTo: this._body,
-			styles: () => `margin: 30px 0 30px 30px;`,
+			styles: () => `
+				margin: 12px 0 12px 12px;
+				padding-right: 12px;
+			`,
 			data: formData,
 			inputs: [
 				{ key: 'name', label: 'Room Name', validations: [[/.+/, 'Required']] },
@@ -123,7 +126,7 @@ export default class Create extends View {
 						),
 					],
 				},
-				{ key: 'customCards', label: 'Customizable Cards', Component: Input, type: 'checkbox' },
+				{ key: 'customCards', Component: Input, type: 'checkbox' },
 				{
 					key: 'handSize',
 					type: 'number',
