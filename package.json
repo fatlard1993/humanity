@@ -40,7 +40,7 @@
 		"nanoid": "^5.0.7",
 		"performance-now": "^2.1.0",
 		"qrcode": "^1.5.4",
-		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#3ec2ab1"
+		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#7853db3"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.1.1",

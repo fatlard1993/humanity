@@ -22,7 +22,7 @@ module.exports = [
 		languageOptions: {
 			globals: {
 				...globals.node,
-				Bun: true,
+				Bun: false,
 			},
 		},
 		rules: {
