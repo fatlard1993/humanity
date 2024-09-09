@@ -22,9 +22,7 @@
 		"dev": "NODE_ENV=development bun --hot server/index.js",
 		"lint": "bun --bun eslint",
 		"lint:fix": "bun --bun eslint --fix",
-		"pretty": "bun --bun prettier --check .",
-		"pretty:fix": "bun --bun prettier --write .",
-		"fix": "bun run lint:fix ; bun run pretty:fix"
+		"format": "bun run lint:fix && bun --bun prettier --write ."
 	},
 	"author": "fatlard1993",
 	"license": "MIT",
