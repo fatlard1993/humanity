@@ -1,8 +1,8 @@
-import { DomElem, Link, Button } from 'vanilla-bean-components';
+import { DomElem, Dialog, Button, Input, Label } from 'vanilla-bean-components';
 
 import { randInt } from '../../utils/rand';
 import { View } from '../layout';
-import { getGame, joinGame, selectCard } from '../api/game';
+import { exitGame, getGame, joinGame, selectCard } from '../api/game';
 import Notify from '../shared/Notify';
 import Card, { Hand } from '../shared/Card';
 import { ReadyOrNot } from '../shared/WaitingPlayerList';
@@ -11,7 +11,62 @@ import { onMessage } from '../socket';
 
 export default class Play extends View {
 	constructor(options, ...children) {
-		super({ ...options, toolbar: { left: [new Link({ textContent: 'Exit', href: '#/hub' })] } }, ...children);
+		super(
+			{
+				...options,
+				toolbar: {
+					left: [
+						new Button({
+							content: 'Exit',
+							onPointerPress: () => {
+								this.options.removePlayerOnExit = true;
+
+								new Dialog({
+									size: 'small',
+									style: { height: '144px' },
+									header: 'Exiting',
+									body: new Label(
+										{
+											label: 'Remove me from the game',
+											inline: { after: true },
+											styles: () => `
+												bottom: 48px;
+												position: absolute;
+												width: calc(100% - 60px);
+											`,
+										},
+										new Input({
+											type: 'checkbox',
+											value: true,
+											onChange: ({ value }) => {
+												this.options.removePlayerOnExit = value;
+											},
+										}),
+									),
+									buttons: ['Exit', 'Cancel'],
+									onButtonPress: async ({ button, closeDialog }) => {
+										if (button === 'Exit' && this.options.removePlayerOnExit) {
+											const { response, body } = await exitGame({
+												gameId: this.options.gameId,
+												playerId: this.playerId,
+											});
+
+											if (response.status !== 200) {
+												new Notify({ type: 'error', content: body?.message || response.statusText });
+											}
+										}
+										window.location.href = `#/hub`;
+
+										closeDialog();
+									},
+								});
+							},
+						}),
+					],
+				},
+			},
+			...children,
+		);
 	}
 
 	async render() {
@@ -52,6 +107,12 @@ export default class Play extends View {
 
 		this.game = this.options.game.body;
 		this.player = this.game.players.find(({ id }) => id === this.playerId);
+
+		if (!this.player) {
+			window.location.href = `#/join/${this.options.gameId}`;
+			return;
+		}
+
 		this.stage = this.player.stage !== this.game.stage ? 'wait' : this.player.stage;
 
 		this[`render_${this.stage}`]();
