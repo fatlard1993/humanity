@@ -1,38 +1,124 @@
 import { customAlphabet } from 'nanoid';
 
-import { url, socketBroadcast } from './server';
-import cards from './cards';
+import BaseGame from '@fatlard1993/web-game-framework/core/Game';
+
+import cards from './cards.js';
 
 // eslint-disable-next-line spellcheck/spell-checker
 const simpleId = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 5);
 
-export default class Game {
-	constructor({ name, ...options }) {
-		this.id = simpleId();
-		this.name = name;
-		this.options = options;
-		this.url = url;
-		this.cards = cards.buildSuperPack(options.packs);
-		this.black = this.draw('blacks');
-		this.players = new Map();
-		this.scores = {};
+export default class Game extends BaseGame {
+	constructor(options) {
+		// Generate ID before calling super so framework registers with correct ID
+		const gameId = options.saveState?.id || simpleId();
 
-		this.stage = 'wait';
-		this.submissions = [];
-		this.lastRoundScores = {};
-		this.lastRoundWinner = {};
+		super({ ...options, saveState: { ...options.saveState, id: gameId } });
 
-		console.log('new Game', { id: this.id, name, options });
+		// ID is now set by super() constructor
+
+		// Game-specific state
+		this.url = this.server?.httpServer?.url || '';
+		this.cards = options.saveState?.cards || cards.buildSuperPack(options.packs);
+		this.black = options.saveState?.black || this.draw('blacks');
+		this.scores = options.saveState?.scores || {};
+
+		this.stage = options.saveState?.stage || 'wait';
+		this.submissions = options.saveState?.submissions || [];
+		this.lastRoundScores = options.saveState?.lastRoundScores || {};
+		this.lastRoundWinner = options.saveState?.lastRoundWinner || {};
+
+		console.log('new Game', { id: this.id, name: this.name, options: this.options });
+
+		// Setup EventRouter event handlers
+		this._setupEventHandlers();
+	}
+
+	/**
+	 * Setup EventRouter event handlers
+	 */
+	_setupEventHandlers() {
+		// Define stage update event
+		this.events.defineEvent('game:updateStage', {
+			validate: (data) => {
+				const validStages = ['play', 'vote', 'end', 'wait'];
+				return data.stage && validStages.includes(data.stage);
+			},
+		});
+
+		this.events.on('game:updateStage', (data) => {
+			this.updateGameStage(data.stage);
+		});
+
+		// Define player card selection event
+		this.events.defineEvent('player:selectCard', {
+			validate: (data) => {
+				if (!data.playerId || !data.cardId) return false;
+				if (!this.players.has(data.playerId)) return false;
+				const player = this.players.get(data.playerId);
+				// Ensure player has the card
+				return player.cards.includes(data.cardId);
+			},
+		});
+
+		this.events.on('player:selectCard', (data) => {
+			this.updatePlayer(data.playerId, { selectedCard: data.cardId });
+			this.broadcast('cardSelected', { playerId: data.playerId });
+		});
+
+		// Wildcard listener for all game events (logging)
+		this.events.on('game:*', (_data, context) => {
+			console.log(`[Game Event] ${context.eventName}`, { gameId: this.id, stage: this.stage });
+		});
+
+		// Wildcard listener for all player events (logging)
+		this.events.on('player:*', (data, context) => {
+			console.log(`[Player Event] ${context.eventName}`, { playerId: data.playerId, gameId: this.id });
+		});
+
+		console.log('EventRouter configured', {
+			gameId: this.id,
+			eventCount: this.events.listEvents().length,
+		});
+	}
+
+	_generateId() {
+		return simpleId();
 	}
 
 	draw(deck, count = 1) {
-		const draw = this.cards[deck].splice(0, count);
+		if (this.cards[deck].length === 0) return count > 1 ? [] : undefined;
+
+		const available = Math.min(count, this.cards[deck].length);
+		const draw = this.cards[deck].splice(0, available);
 
 		return count > 1 ? draw : draw[0];
 	}
 
 	toClient() {
-		return { ...this, players: [...this.players.values()] };
+		return {
+			...super.toClient(),
+			url: this.url,
+			cards: { blacksRemaining: this.cards.blacks.length, whitesRemaining: this.cards.whites.length },
+			black: this.black,
+			scores: this.scores,
+			stage: this.stage,
+			submissions: this.submissions,
+			lastRoundScores: this.lastRoundScores,
+			lastRoundWinner: this.lastRoundWinner,
+		};
+	}
+
+	toSaveState() {
+		return {
+			...super.toSaveState(),
+			cards: this.cards,
+			black: this.black,
+			scores: this.scores,
+			stage: this.stage,
+			submissions: this.submissions,
+			lastRoundScores: this.lastRoundScores,
+			lastRoundWinner: this.lastRoundWinner,
+		};
 	}
 
 	addPlayer(name) {
@@ -47,7 +133,7 @@ export default class Game {
 
 		this.players.set(id, newPlayer);
 
-		socketBroadcast({ gameId: this.id });
+		this.broadcast('addPlayer', { newPlayer });
 
 		return newPlayer;
 	}
@@ -95,11 +181,12 @@ export default class Game {
 			this.submissions = [];
 			this.lastRoundScores = {};
 			this.lastRoundWinner = {};
+			this.black = this.draw('blacks'); // Draw new black card for next round
 
 			this.players.forEach(player => this.players.set(player.id, { ...player, stage: 'wait' }));
 		}
 
-		socketBroadcast({ gameId: this.id });
+		this.broadcast('stageUpdate', { stage });
 	}
 
 	updatePlayer(id, updates) {
@@ -109,8 +196,13 @@ export default class Game {
 		if (updates.selectedCard) {
 			newPlayer.stage = currentPlayer.stage === 'play' ? 'vote' : 'end';
 
-			if (currentPlayer.stage === 'play')
-				newPlayer.cards = newPlayer.cards.map(card => (card === updates.selectedCard ? this.draw('whites') : card));
+			if (currentPlayer.stage === 'play') {
+				const replacement = this.draw('whites');
+
+				newPlayer.cards = replacement
+					? newPlayer.cards.map(card => (card === updates.selectedCard ? replacement : card))
+					: newPlayer.cards.filter(card => card !== updates.selectedCard);
+			}
 		}
 
 		this.players.set(id, newPlayer);
@@ -120,12 +212,16 @@ export default class Game {
 			this.players.size > 1 &&
 			updates.stage &&
 			[...this.players].every(([, { stage }]) => stage === 'play')
-		)
+		) {
+			console.log('All players ready, starting game');
 			this.updateGameStage('play');
-		else if (updates.selectedCard && [...this.players].every(([, { selectedCard }]) => selectedCard)) {
+		} else if (updates.selectedCard && [...this.players].every(([, { selectedCard }]) => selectedCard)) {
 			if (this.stage === 'play') this.updateGameStage('vote');
 			else if (this.stage === 'vote') this.updateGameStage('end');
-		} else socketBroadcast({ gameId: this.id });
+		} else {
+			console.log('Broadcasting playerUpdate', { playerId: id, updates });
+			this.broadcast('playerUpdate', { playerId: id, updates });
+		}
 
 		return this.players.get(id);
 	}
@@ -133,7 +229,7 @@ export default class Game {
 	removePlayer(id) {
 		this.players.delete(id);
 
-		socketBroadcast({ gameId: this.id });
+		this.broadcast('removePlayer', { id });
 
 		return id;
 	}

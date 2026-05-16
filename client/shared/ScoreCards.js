@@ -1,4 +1,4 @@
-import { DomElem, List } from 'vanilla-bean-components';
+import { Component, List } from 'vanilla-bean-components';
 
 export default class ScoreCards extends List {
 	constructor(options = {}) {
@@ -19,26 +19,32 @@ export default class ScoreCards extends List {
 		});
 	}
 
-	async render() {
+	render() {
 		super.render();
 
 		const { game } = this.options;
 
-		this.options.items = Object.entries(game.scores).map(([playerId, { wins, votes }]) => [
-			new DomElem(
-				{
-					styles: () => `
-						font-size: 18px;
-						padding-bottom: 6px;
-						margin: 6px;
-						border-bottom: 1px solid;
-						text-align: center;
-					`,
-				},
-				game.players.find(({ id }) => id === playerId).name,
-			),
-			new DomElem({}, `Votes: ${votes}`),
-			new DomElem({}, `Wins: ${wins}`),
-		]);
+		if (!game?.scores) return;
+
+		this.options.items = Object.entries(game.scores).map(([playerId, { wins, votes }]) => {
+			const player = game.players.find(({ id }) => id === playerId);
+
+			return [
+				new Component(
+					{
+						styles: () => `
+							font-size: 18px;
+							padding-bottom: 6px;
+							margin: 6px;
+							border-bottom: 1px solid;
+							text-align: center;
+						`,
+					},
+					player?.name ?? '(left)',
+				),
+				new Component({}, `Votes: ${votes}`),
+				new Component({}, `Wins: ${wins}`),
+			];
+		});
 	}
 }

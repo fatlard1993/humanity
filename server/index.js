@@ -1,23 +1,9 @@
 #!/usr/bin/env bun
 
-import argi from 'argi';
+import '@fatlard1993/web-game-framework/utils/exit';
 
-import cards from './cards';
-import { init as server } from './server';
+import cards from './cards.js';
 
-import './hotReload';
-import './exit';
-
-const { options } = argi.parse({
-	port: {
-		type: 'number',
-		alias: 'p',
-		defaultValue: 8032,
-	},
-});
-
-console.log('Options', options, process.env.NODE_ENV);
+import './server.js';
 
 cards.init();
-
-server({ port: options.port });

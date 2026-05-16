@@ -1,11 +1,25 @@
-import process from 'process';
 import { Page } from 'vanilla-bean-components';
 
 import router from './router';
 
-import './socket';
+import '@fatlard1993/web-game-framework/client/socket';
 
-window.process = process;
+// Keep screen awake during gameplay
+if ('wakeLock' in navigator) {
+	let wakeLock = null;
+
+	const requestWakeLock = async () => {
+		try {
+			wakeLock = await navigator.wakeLock.request('screen');
+			wakeLock.addEventListener('release', () => { wakeLock = null; });
+		} catch {}
+	};
+
+	requestWakeLock();
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') requestWakeLock();
+	});
+}
 
 new Page({
 	styles: ({ colors }) => `

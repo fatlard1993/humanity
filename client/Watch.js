@@ -1,36 +1,27 @@
-import { DomElem, Link, Button } from 'vanilla-bean-components';
+import { Component, Link, Button, randInt } from 'vanilla-bean-components';
 
-import { randInt } from '../../utils/rand';
-import { View } from '../layout';
-import { getGame } from '../api/game';
-import Notify from '../shared/Notify';
-import Card, { Hand } from '../shared/Card';
-import ScoreDialog from '../shared/ScoreDialog';
-import QRCode from '../shared/QRCode';
-import { onMessage } from '../socket';
-import PlayersDialog from './PlayersDialog';
+import View from './shared/View.js';
+import { getGame } from './api/game.js';
+import Notify from './shared/Notify.js';
+import Card, { Hand } from './shared/Card.js';
+import ScoreDialog from './shared/ScoreDialog.js';
+import QRCode from './shared/QRCode.js';
+import createGameRouter from './eventRouter.js';
+import PlayersDialog from './shared/PlayersDialog.js';
 
 export default class Watch extends View {
 	async render() {
 		super.render();
 
-		this.options.game = await getGame(this.options.gameId, {
-			onRefetch: () => {
-				this.elem.remove();
-				this.render();
-			},
-		});
+		this.options.game = await getGame(this.options.gameId);
 
-		const socketCleanup = onMessage(data => {
-			if (data.gameId === this.options.gameId) {
-				// TODO smarter change handling
-				window.location.reload();
-			}
+		const router = createGameRouter(this.options.gameId, {
+			onUpdate: () => this.refresh(),
 		});
 
 		this.options.onDisconnected = () => {
 			this.options.game.unsubscribe();
-			socketCleanup();
+			router.destroy();
 		};
 
 		if (this.options.game.response.status !== 200) {
@@ -48,10 +39,34 @@ export default class Watch extends View {
 				style: { margin: '-12px 12px -24px -12px' },
 				qrCodeConfig: { width: 70 },
 			}),
-			new Link({ textContent: 'Exit', href: '#/hub' }),
+			new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
 		];
 
 		this[`render_${this.game.stage === 'end' ? 'end' : 'play'}`]();
+	}
+
+	async refresh() {
+		if (this._refreshing) return;
+		this._refreshing = true;
+
+		try {
+			this.options.game.invalidateCache();
+			this.options.game = await getGame(this.options.gameId);
+
+			if (this.options.game.response.status !== 200) {
+				window.location.href = '#/hub';
+				return;
+			}
+
+			this.game = this.options.game.body;
+
+			this._body.empty();
+			this._toolbar._right.empty();
+			this._toolbar.options.heading = this.game.name;
+			this[`render_${this.game.stage === 'end' ? 'end' : 'play'}`]();
+		} finally {
+			this._refreshing = false;
+		}
 	}
 
 	render_play() {
@@ -61,7 +76,7 @@ export default class Watch extends View {
 				margin: '0 auto',
 				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
 			},
-			content: this.game.black,
+			innerHTML: this.game.black,
 			appendTo: this._body,
 		});
 
@@ -89,7 +104,8 @@ export default class Watch extends View {
 						onPointerPress: function () {
 							const selectedCard = submissions.elem.querySelector('.selected');
 
-							if (selectedCard?._domElem) selectedCard._domElem.options.toggleSelection.call(selectedCard._domElem);
+							if (selectedCard?._Component)
+								selectedCard._Component.options.toggleSelection.call(selectedCard._Component);
 							if (!selectedCard || selectedCard !== this.elem) this.options.toggleSelection.call(this);
 
 							submissions.options.selectedCard = submissions.elem.querySelector('.selected') ? this : undefined;
@@ -110,7 +126,7 @@ export default class Watch extends View {
 		this._toolbar.options.heading = 'Round Over';
 		this._toolbar.options.right = [];
 
-		new DomElem(
+		new Component(
 			{
 				styles: ({ colors }) => `
 					background: ${colors.black};
@@ -119,7 +135,7 @@ export default class Watch extends View {
 				`,
 				appendTo: this._body,
 			},
-			new DomElem(
+			new Component(
 				{
 					styles: () => `
 						border-bottom: 1px solid;
@@ -129,14 +145,14 @@ export default class Watch extends View {
 					`,
 					appendTo: this._body,
 				},
-				new DomElem(
+				new Component(
 					{ style: { flex: 1, fontSize: '30px' } },
 					`Winner: ${this.game.players.find(({ id }) => id === this.game.lastRoundWinner.playerId).name}`,
 				),
 				new Button({ onPointerPress: () => new ScoreDialog({ game: this.game }) }, 'Show Scores'),
 			),
-			new DomElem({}, `Votes: ${this.game.lastRoundWinner.votes}`),
-			new DomElem({}, `Wins: ${this.game.scores[this.game.lastRoundWinner.playerId].wins}`),
+			new Component({}, `Votes: ${this.game.lastRoundWinner.votes}`),
+			new Component({}, `Wins: ${this.game.scores[this.game.lastRoundWinner.playerId].wins}`),
 		);
 
 		new Card({
@@ -145,7 +161,7 @@ export default class Watch extends View {
 				margin: '0 auto',
 				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
 			},
-			content: this.game.black,
+			innerHTML: this.game.black,
 			appendTo: this._body,
 		});
 
@@ -155,7 +171,7 @@ export default class Watch extends View {
 				margin: '0 auto',
 				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
 			},
-			content: this.game.lastRoundWinner.card,
+			innerHTML: this.game.lastRoundWinner.card,
 			appendTo: this._body,
 		});
 

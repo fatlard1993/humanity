@@ -1,26 +1,22 @@
-import { nanoid } from 'nanoid';
-
 import requestMatch from '../utils/requestMatch';
 
 import gameRoutes from './game';
 import staticRoutes from './static';
 
-const router = async (request, server) => {
+const router = (server) => async (request) => {
 	try {
 		let match;
 		let response;
 
 		match = requestMatch('GET', '/', request);
-		if (match) return new Response(Bun.file('client/index.html'));
-
-		match = requestMatch('GET', '/ws', request);
 		if (match) {
-			const success = server.upgrade(request, { data: { clientId: nanoid() } });
-
-			return success ? undefined : new Response('WebSocket upgrade error', { status: 400 });
+			const file = Bun.file('client/build/index.html');
+			return new Response(await file.arrayBuffer(), { headers: { 'Content-Type': file.type } });
 		}
 
-		response = await gameRoutes(request);
+		// WebSocket upgrade handled automatically by Server
+
+		response = await gameRoutes(request, server);
 		if (response) return response;
 
 		response = await staticRoutes(request);

@@ -1,0 +1,14 @@
+- waiting player kick
+
+- prompt to reconnect instead of automatic
+- skip black
+- trash whites
+- record custom cards
+- save packs (remove skipped blacks and trashed whites)
+- better cross-interaction updates, websockets?
+- waiting player poke
+- player icons (https://avatars.dicebear.com/api/human/${id}.svg)
+- player renames
+- random name buttons for player & room (use base pack whites)
+- pack list item click should check the box
+- pack list "select all"

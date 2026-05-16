@@ -1,8 +1,8 @@
-import { DomElem, List, Label, Button, styled, conditionalList } from 'vanilla-bean-components';
+import { Component, List, Label, Button, styled, conditionalList } from 'vanilla-bean-components';
 
-import { readyUp } from '../api/game';
+import { readyUp, pokePlayer } from '../api/game.js';
 
-import Notify from './Notify';
+import Notify from './Notify.js';
 
 const WaitingPlayerList = styled(
 	List,
@@ -27,7 +27,7 @@ const WaitingPlayerList = styled(
 );
 
 const WaitingPlayerListText = styled(
-	DomElem,
+	Component,
 	() => `
 		font-size: 1.2em;
 		line-height: 1.6;
@@ -40,7 +40,7 @@ const WaitingPlayerListText = styled(
 	`,
 );
 
-export class ReadyOrNot extends DomElem {
+export class ReadyOrNot extends Component {
 	render() {
 		super.render();
 
@@ -83,7 +83,8 @@ export class ReadyOrNot extends DomElem {
 							elseItems: [
 								new Button({
 									content: 'Poke',
-									onPointerPress: event => {
+									onPointerPress: async event => {
+										await pokePlayer({ gameId: this.options.game.id, targetPlayerId: id });
 										new Notify({
 											x: event.clientX,
 											y: event.clientY,

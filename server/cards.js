@@ -1,27 +1,30 @@
+import fs from 'fs';
+
 import { shuffleArray } from '../utils/rand';
-import { forEachFile, JSONFile } from './utils';
+import { forEachFile } from './utils';
 
 const cards = {
 	db: {},
-	async init() {
+	init() {
 		forEachFile(`${import.meta.dir}/../cards`, ({ isDirectory, name, path }) => {
 			if (!isDirectory) this.loadPack(name, path);
 		});
 	},
-	async loadPack(name, path) {
+	loadPack(name, path) {
 		console.log('Loading pack:', name);
 
-		cards.db[name] = new JSONFile(path);
-
-		await cards.db[name].read();
+		cards.db[name] = { data: JSON.parse(fs.readFileSync(path, 'utf8')) };
 	},
 	buildSuperPack(packNames) {
 		const blacks = [];
 		const whites = [];
 
 		packNames.forEach(name => {
-			blacks.push(...cards.db[name].data.blacks);
-			whites.push(...cards.db[name].data.whites);
+			const pack = cards.db[name]?.data;
+			if (!pack) return;
+
+			if (pack.blacks) blacks.push(...pack.blacks);
+			if (pack.whites) whites.push(...pack.whites);
 		});
 
 		return { blacks: shuffleArray([...new Set(blacks)]), whites: shuffleArray([...new Set(whites)]) };

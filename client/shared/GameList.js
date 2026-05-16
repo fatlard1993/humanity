@@ -1,4 +1,4 @@
-import { DomElem, List, styled } from 'vanilla-bean-components';
+import { Component, List, styled } from 'vanilla-bean-components';
 
 export const GameList = styled(
 	List,
@@ -24,7 +24,7 @@ export const GameList = styled(
 );
 
 export const GameListText = styled(
-	DomElem,
+	Component,
 	() => `
 		font-size: 1.2em;
 		line-height: 1.6;

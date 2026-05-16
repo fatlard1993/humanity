@@ -1,6 +1,6 @@
 import { Dialog } from 'vanilla-bean-components';
 
-import { ReadyOrNot } from '../shared/WaitingPlayerList';
+import { ReadyOrNot } from './WaitingPlayerList.js';
 
 export default class PlayersDialog extends Dialog {
 	constructor(options = {}) {

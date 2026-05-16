@@ -1,8 +1,8 @@
-import { DomElem, List, Link, Button, Form, Input, updateValidationErrors, styled } from 'vanilla-bean-components';
+import { Component, List, Link, Button, Form, Input, Label, styled } from 'vanilla-bean-components';
 
-import Notify from '../shared/Notify';
-import { View } from '../layout';
-import { getPacks, createGame } from '../api';
+import Notify from './shared/Notify.js';
+import View from './shared/View.js';
+import { getPacks, getRandomName, createGame } from './api';
 
 const CheckList = styled(
 	List,
@@ -26,12 +26,17 @@ export default class Create extends View {
 				...options,
 				toolbar: {
 					heading: 'Create',
-					left: [new Link({ textContent: 'Cancel', href: '#/hub' })],
+					left: [new Link({ textContent: 'Cancel', href: '#/hub', variant: 'button' })],
 					right: [
 						new Button({
 							textContent: 'Create',
 							onPointerPress: async () => {
 								if (this.form.validate()) return;
+
+								if (this.form.options.data.packs.size === 0) {
+									new Notify({ type: 'error', content: 'Must select at least 1 pack' });
+									return;
+								}
 
 								const game = (
 									await createGame({ body: { ...this.form.options.data, packs: [...this.form.options.data.packs] } })
@@ -77,10 +82,33 @@ export default class Create extends View {
 			`,
 			data: formData,
 			inputs: [
-				{ key: 'name', label: 'Room Name', validations: [[/.+/, 'Required']] },
+				{
+					key: 'name',
+					label: {
+						label: 'Room Name',
+						inline: { after: true },
+						append: new Button({
+							content: '\u{1F3B2}',
+							styles: () => `
+								min-width: unset;
+								padding: 2px 8px;
+								margin-left: 6px;
+								font-size: 18px;
+								vertical-align: middle;
+							`,
+							onPointerPress: async () => {
+								const result = await getRandomName();
+								if (!result.success) return;
+								this.form.options.data.name = result.body;
+								this.form.inputElements.name.options.value = result.body;
+							},
+						}),
+					},
+					validations: [[/.+/, 'Required']],
+				},
 				{
 					key: 'submissionTimer',
-					Component: DomElem,
+					Component: Component,
 					append: [
 						new Input({
 							type: 'number',
@@ -89,7 +117,7 @@ export default class Create extends View {
 								this.form.options.data.submissionTimer = value;
 							},
 						}),
-						new DomElem(
+						new Component(
 							{},
 							new Input({
 								type: 'checkbox',
@@ -98,13 +126,13 @@ export default class Create extends View {
 									this.form.options.data.randomizeMissingSubmissions = value;
 								},
 							}),
-							new DomElem({ tag: 'label' }, 'Randomize submission on timeout'),
+							new Component({ tag: 'label' }, 'Randomize submission on timeout'),
 						),
 					],
 				},
 				{
 					key: 'voteTimer',
-					Component: DomElem,
+					Component: Component,
 					append: [
 						new Input({
 							type: 'number',
@@ -113,7 +141,7 @@ export default class Create extends View {
 								this.form.options.data.voteTimer = value;
 							},
 						}),
-						new DomElem(
+						new Component(
 							{},
 							new Input({
 								type: 'checkbox',
@@ -122,7 +150,7 @@ export default class Create extends View {
 									this.form.options.data.randomizeMissingVotes = value;
 								},
 							}),
-							new DomElem({ tag: 'label' }, 'Randomize vote on timeout'),
+							new Component({ tag: 'label' }, 'Randomize vote on timeout'),
 						),
 					],
 				},
@@ -138,11 +166,46 @@ export default class Create extends View {
 					],
 				},
 				{ key: 'npcCount', label: 'NPCs', type: 'number' },
-				{
-					key: 'packs',
-					Component: CheckList,
-					items: packs.body.map(name => [
-						new Input({
+			],
+		});
+
+		// Add packs selection separately
+		const packNames = packs.body;
+		const checkboxes = [];
+
+		new Label({
+			label: 'Packs (select at least one)',
+			appendTo: this._body,
+			styles: () => `
+				margin: 12px 0 6px 12px;
+			`,
+			append: [
+				new Component(
+					{
+						styles: () => `
+							display: flex;
+							gap: 6px;
+							margin-bottom: 6px;
+						`,
+					},
+					new Button({
+						content: 'All',
+						onPointerPress: () => {
+							packNames.forEach(name => this.form.options.data.packs.add(name));
+							checkboxes.forEach(cb => { cb.options.value = true; });
+						},
+					}),
+					new Button({
+						content: 'None',
+						onPointerPress: () => {
+							this.form.options.data.packs.clear();
+							checkboxes.forEach(cb => { cb.options.value = false; });
+						},
+					}),
+				),
+				new CheckList({
+					items: packNames.map(name => {
+						const checkbox = new Input({
 							type: 'checkbox',
 							name,
 							onChange: event => {
@@ -150,16 +213,11 @@ export default class Create extends View {
 
 								this.form.options.data.packs[event.value ? 'add' : 'delete'](name);
 							},
-						}),
-						new DomElem({ tag: 'label', for: name }, name),
-					]),
-					validate: () =>
-						updateValidationErrors({
-							elem: this.form.inputElements.packs.elem,
-							validations: [[value => value > 0, 'Must select at least 1 pack']],
-							value: this.form.options.data.packs.size,
-						}),
-				},
+						});
+						checkboxes.push(checkbox);
+						return [checkbox, new Component({ tag: 'label', for: name }, name)];
+					}),
+				}),
 			],
 		});
 	}

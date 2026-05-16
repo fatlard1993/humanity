@@ -2,6 +2,8 @@ import { GET, POST } from 'vanilla-bean-components';
 
 export const getPacks = async options => await GET('/packs', { id: 'packs', ...options });
 
+export const getRandomName = async options => await GET('/packs/random-name', { cache: false, ...options });
+
 export const getGames = async options => await GET('/games', { id: 'games', ...options });
 
 export const getGame = async (id, options) =>
@@ -31,5 +33,13 @@ export const exitGame = async ({ gameId, playerId }, options) =>
 	await POST('/games/:gameId/:playerId/exit', {
 		invalidates: ['games'],
 		urlParameters: { gameId, playerId },
+		...options,
+	});
+
+export const pokePlayer = async ({ gameId, targetPlayerId }, options) =>
+	await POST('/games/:gameId/poke', {
+		cache: false,
+		urlParameters: { gameId },
+		body: { targetPlayerId },
 		...options,
 	});

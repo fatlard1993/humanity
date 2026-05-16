@@ -1,7 +1,7 @@
-import { DomElem, styled } from 'vanilla-bean-components';
+import { Component, styled } from 'vanilla-bean-components';
 
 export const Hand = styled(
-	DomElem,
+	Component,
 	() => `
 		display: flex;
 		flex-wrap: wrap;
@@ -9,11 +9,12 @@ export const Hand = styled(
 	`,
 );
 
-export default class Card extends DomElem {
+export default class Card extends Component {
 	constructor(options) {
 		super({
 			...options,
-			styles: (theme, domElem) => `
+			classList: [`type-${options.type}`],
+			styles: (theme, Component) => `
 				width: 216px;
 				height: 288px;
 				padding: 18px;
@@ -39,7 +40,7 @@ export default class Card extends DomElem {
 					outline: 1px solid ${theme.colors.green};
 				}
 
-				${options.styles?.(theme, domElem) || ''}
+				${options.styles?.(theme, Component) || ''}
 			`,
 		});
 	}

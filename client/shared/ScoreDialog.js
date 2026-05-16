@@ -7,16 +7,14 @@ export default class ScoreDialog extends Dialog {
 			size: 'standard',
 			header: options.game.name,
 			buttons: ['Close'],
-			onButtonPress: () => this.close(),
+			onButtonPress: ({ closeDialog }) => closeDialog(),
 			...options,
 		});
 	}
 
-	async render() {
+	render() {
 		super.render();
 
-		const { game } = this.options;
-
-		new ScoreCards({ game, appendTo: this._body });
+		new ScoreCards({ game: this.options.game, appendTo: this._body });
 	}
 }

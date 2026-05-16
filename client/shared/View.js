@@ -6,8 +6,8 @@ export default class View extends BaseView {
 	render() {
 		super.render();
 
-		this._toolbar = new Toolbar({ appendTo: this.elem, ...this.options.toolbar });
+		this._toolbar = new Toolbar({ appendTo: this, ...this.options.toolbar });
 
-		this._body = new Body({ appendTo: this.elem, ...this.options.body });
+		this._body = new Body({ appendTo: this, ...this.options.body });
 	}
 }

@@ -1,5 +1,8 @@
 {
-	"blacks": ["What does bigfoot eat for breakfast _____", "Who shot kennedy?"],
+	"blacks": [
+		"What does bigfoot eat for breakfast _____",
+		"Who shot kennedy?"
+	],
 	"whites": [
 		"Sweet potato pie",
 		"Tulpa",
@@ -8,8 +11,6 @@
 		"Thats true!",
 		"Thats truuuee!!",
 		"Thats TRUE",
-		"Thats true..",
-		"Thats is true.",
 		"\"Jewish time\" portals",
 		"Jewish \"time portals\"",
 		"Ghost chair",

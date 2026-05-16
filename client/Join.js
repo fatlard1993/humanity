@@ -1,11 +1,11 @@
-import { DomElem, Link, Button, Form, styled } from 'vanilla-bean-components';
+import { Component, Link, Button, Form, styled } from 'vanilla-bean-components';
 
-import { View } from '../layout';
-import { getGame, joinGame } from '../api/game';
-import Notify from '../shared/Notify';
+import View from './shared/View.js';
+import { getGame, joinGame } from './api/game.js';
+import Notify from './shared/Notify.js';
 
 const Heading = styled(
-	DomElem,
+	Component,
 	() => `
 		font-size: 1.5em;
 		text-align: center;
@@ -21,7 +21,7 @@ export default class Join extends View {
 				...options,
 				toolbar: {
 					heading: 'Join',
-					left: [new Link({ content: 'Cancel', href: '#/hub' })],
+					left: [new Link({ content: 'Cancel', href: '#/hub', variant: 'button' })],
 					right: [
 						new Button({
 							content: 'Watch',

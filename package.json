@@ -1,12 +1,14 @@
 {
 	"name": "humanity",
 	"version": "3.0.0",
-	"description": "A card game for terrible people",
 	"type": "module",
 	"exports": {
 		"./package.json": "./package.json",
 		".": "./server/index.js"
 	},
+	"description": "A card game for terrible people",
+	"author": "fatlard1993",
+	"license": "MIT",
 	"browserslist": [
 		"last 1 version",
 		"> 1%",
@@ -15,43 +17,48 @@
 	],
 	"scripts": {
 		"prepare": "bun run build",
-		"_build": "bun build client/index.js --outdir client/build --define 'process.env.AUTOPREFIXER_GRID=\"undefined\"'",
-		"build": "NODE_ENV=production bun run _build",
-		"build:dev": "NODE_ENV=development bun run _build -- --watch",
+		"build": "bun run build:clean && bun run client/build.js",
+		"build:clean": "rm -rf ./client/build/",
+		"build:watch": "bun run build -- --watch",
 		"start": "NODE_ENV=production bun server/index.js",
 		"dev": "NODE_ENV=development bun --hot server/index.js",
 		"lint": "bun --bun eslint",
 		"lint:fix": "bun --bun eslint --fix",
-		"format": "bun run lint:fix && bun --bun prettier --write ."
+		"format": "bun run lint:fix && bun --bun prettier --write .",
+		"version": "npm version"
 	},
-	"author": "fatlard1993",
-	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/fatlard1993/humanity.git"
 	},
+	"bugs": {
+		"url": "https://github.com/fatlard1993/humanity/issues"
+	},
+	"homepage": "https://github.com/fatlard1993/humanity#readme",
 	"dependencies": {
-		"argi": "github:fatlard1993/argi#e3f79c8",
+		"@fatlard1993/web-game-framework": "file:../web-game-framework",
+		"argi": "github:fatlard1993/argi#fcac703",
 		"lowdb": "^7.0.1",
-		"nanoid": "^5.0.7",
+		"nanoid": "^5.1.5",
 		"qrcode": "^1.5.4",
-		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#a53432b"
+		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#fd7c5fa"
 	},
 	"devDependencies": {
-		"@eslint/compat": "^1.1.1",
-		"@eslint/js": "^9.10.0",
-		"@happy-dom/global-registrator": "^15.7.3",
+		"@eslint/compat": "^1.2.7",
+		"@eslint/js": "^9.23.0",
+		"@happy-dom/global-registrator": "^17.4.4",
 		"@testing-library/dom": "^10.4.0",
-		"@testing-library/jest-dom": "^6.5.0",
-		"bun-types": "^1.1.27",
-		"eslint": "^9.10.0",
-		"eslint-plugin-compat": "^6.0.0",
-		"eslint-plugin-import": "^2.30.0",
+		"@testing-library/jest-dom": "^6.6.3",
+		"bun-types": "^1.2.8",
+		"eslint": "^9.23.0",
+		"eslint-plugin-compat": "^6.0.2",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-jsdoc": "^50.6.9",
 		"eslint-plugin-spellcheck": "0.0.20",
-		"eslint-plugin-testing-library": "^6.3.0",
-		"eslint-plugin-unicorn": "^55.0.0",
+		"eslint-plugin-testing-library": "^7.1.1",
+		"eslint-plugin-unicorn": "^58.0.0",
 		"eslint-plugin-write-good-comments": "^0.2.0",
-		"globals": "^15.9.0",
-		"prettier": "3.3.3"
+		"globals": "^16.0.0",
+		"prettier": "3.5.3"
 	}
 }

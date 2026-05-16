@@ -1,7 +1,7 @@
 import qrCode from 'qrcode';
-import { DomElem } from 'vanilla-bean-components';
+import { Component } from 'vanilla-bean-components';
 
-export default class QRCode extends DomElem {
+export default class QRCode extends Component {
 	constructor(options) {
 		super({ ...options, tag: 'canvas' });
 	}
@@ -10,7 +10,7 @@ export default class QRCode extends DomElem {
 		super.render();
 
 		qrCode.toCanvas(this.elem, this.options.src, this.options.qrCodeConfig || {}, error => {
-			if (error) this.options?.onError(error);
+			if (error) this.options?.onError?.(error);
 		});
 	}
 }

@@ -1,29 +1,53 @@
+#!/usr/bin/env bun
+
+import os from 'os';
+import path from 'path';
+
+import Argi from 'argi';
+
+import { Server, Database } from '@fatlard1993/web-game-framework';
+
+import Game from './game.js';
 import router from './router';
 
-export const clients = {};
-export let url = '';
-
-export const socketBroadcast = data => {
-	Object.values(clients).forEach(socket => {
-		socket.send(JSON.stringify(data));
-	});
-};
-
-export const init = async ({ port }) => {
-	const server = Bun.serve({
-		port,
-		fetch: router,
-		websocket: {
-			open(socket) {
-				clients[socket.data.clientId] = socket;
-			},
-			close(socket) {
-				delete clients[socket.data.clientId];
-			},
+const { options } = new Argi({
+	options: {
+		database: {
+			type: 'string',
+			alias: 'd',
+			defaultValue: path.join(os.homedir(), '.humanity.json'),
+			description: 'Database json file to use',
 		},
-	});
+		port: {
+			type: 'number',
+			alias: 'p',
+			defaultValue: 8032,
+		},
+		verbosity: {
+			type: 'number',
+			alias: 'v',
+			defaultValue: process.env.NODE_ENV === 'production' ? 1 : 3,
+			description: 'Logging verbosity level (0=all, 1=production, 2=development, 3=debug)',
+		},
+	},
+});
 
-	url = server.url;
+const database = new Database({
+	filePath: options.database,
+	onReady: (db) => {
+		const savedGames = db.collections?.games?.read() || {};
+		Object.values(savedGames).forEach(saveState => {
+			new Game({ saveState, server });
+		});
+	},
+});
 
-	console.log(`Listening on ${url}`);
-};
+const server = new Server({
+	port: options.port,
+	database,
+	verbosity: options.verbosity,
+	Game,
+	router,
+});
+
+export default server;
