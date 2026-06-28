@@ -1,4 +1,4 @@
-import { Component, List } from 'vanilla-bean-components';
+import { Component, List } from '@vanilla-bean/components';
 
 export default class ScoreCards extends List {
 	constructor(options = {}) {
@@ -7,7 +7,7 @@ export default class ScoreCards extends List {
 				list-style: none;
 				padding: 12px;
 
-				li {
+				& li {
 					background: ${colors.black};
 					border: 1px solid;
 					border-radius: 6px;
@@ -19,9 +19,7 @@ export default class ScoreCards extends List {
 		});
 	}
 
-	render() {
-		super.render();
-
+	build() {
 		const { game } = this.options;
 
 		if (!game?.scores) return;

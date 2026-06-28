@@ -1,4 +1,4 @@
-import { Link, Button } from 'vanilla-bean-components';
+import { Link, Button } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { getGames } from './api';
@@ -41,9 +41,12 @@ export default class Hub extends View {
 		};
 	}
 
-	async render() {
-		super.render();
+	build() {
+		super.build();
+		this._init();
+	}
 
+	async _init() {
 		const games = await getGames();
 
 		if (games.response.status !== 200) {

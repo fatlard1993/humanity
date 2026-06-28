@@ -1,4 +1,4 @@
-import { Notify as BaseNotify, randInt } from 'vanilla-bean-components';
+import { Notify as BaseNotify, randInt } from '@vanilla-bean/components';
 
 export default class Notify extends BaseNotify {
 	constructor(options) {

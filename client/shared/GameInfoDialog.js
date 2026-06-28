@@ -1,4 +1,4 @@
-import { Component, Dialog } from 'vanilla-bean-components';
+import { Component, Dialog } from '@vanilla-bean/components';
 
 export default class GameInfoDialog extends Dialog {
 	constructor(options = {}) {
@@ -15,8 +15,8 @@ export default class GameInfoDialog extends Dialog {
 		});
 	}
 
-	async render() {
-		super.render();
+	build() {
+		super.build();
 
 		const { game } = this.options;
 

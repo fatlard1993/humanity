@@ -1,4 +1,4 @@
-import { Component, Link, Button, randInt } from 'vanilla-bean-components';
+import { Component, Link, Button, randInt } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { getGame } from './api/game.js';
@@ -10,9 +10,12 @@ import createGameRouter from './eventRouter.js';
 import PlayersDialog from './shared/PlayersDialog.js';
 
 export default class Watch extends View {
-	async render() {
-		super.render();
+	build() {
+		super.build();
+		this._init();
+	}
 
+	async _init() {
 		this.options.game = await getGame(this.options.gameId);
 
 		const router = createGameRouter(this.options.gameId, {

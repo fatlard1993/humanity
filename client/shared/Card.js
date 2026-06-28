@@ -1,4 +1,4 @@
-import { Component, styled } from 'vanilla-bean-components';
+import { Component, styled } from '@vanilla-bean/components';
 
 export const Hand = styled(
 	Component,
@@ -45,8 +45,7 @@ export default class Card extends Component {
 		});
 	}
 
-	setOption(key, value) {
-		if (key === 'type') this.removeClass(/\btype-\S+\b/).addClass(`type-${value}`);
-		else super.setOption(key, value);
-	}
+	static handlers = {
+		type(value) { this.removeClass(/\btype-\S+\b/).addClass(`type-${value}`); },
+	};
 }

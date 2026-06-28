@@ -1,4 +1,4 @@
-import { Dialog } from 'vanilla-bean-components';
+import { Dialog } from '@vanilla-bean/components';
 
 import { ReadyOrNot } from './WaitingPlayerList.js';
 
@@ -13,11 +13,9 @@ export default class PlayersDialog extends Dialog {
 		});
 	}
 
-	async render() {
-		super.render();
+	build() {
+		super.build();
 
-		const { game } = this.options;
-
-		new ReadyOrNot({ appendTo: this._body, game });
+		new ReadyOrNot({ appendTo: this._body, game: this.options.game });
 	}
 }

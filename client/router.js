@@ -1,4 +1,4 @@
-import { Router } from 'vanilla-bean-components';
+import { Router } from '@vanilla-bean/components';
 
 import Create from './Create.js';
 import Hub from './Hub.js';

@@ -1,4 +1,4 @@
-import { Component, Link, Button, Form, styled } from 'vanilla-bean-components';
+import { Component, Link, Button, Form, styled } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { getGame, joinGame } from './api/game.js';
@@ -57,9 +57,12 @@ export default class Join extends View {
 		);
 	}
 
-	async render() {
-		super.render();
+	build() {
+		super.build();
+		this._init();
+	}
 
+	async _init() {
 		const name = localStorage.getItem('lastName') || '';
 		const playerId = localStorage.getItem(this.options.gameId);
 

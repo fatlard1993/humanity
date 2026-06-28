@@ -1,4 +1,4 @@
-import { Component, styled } from 'vanilla-bean-components';
+import { Component, styled } from '@vanilla-bean/components';
 
 const Heading = styled(
 	Component,
@@ -40,24 +40,17 @@ export default class Toolbar extends Component {
 		);
 	}
 
-	render() {
+	build() {
 		this._heading = new Heading({ appendTo: this.elem, textContent: this.options.heading });
 		this._left = new Component({}, ...this.options.left);
 		this._right = new Component({}, ...this.options.right);
 
 		new FlexContainer({ appendTo: this.elem }, this._left, this._right);
-
-		super.render();
 	}
 
-	setOption(key, value) {
-		if (key === 'heading') this._heading.elem.textContent = value;
-		else if (key === 'left') {
-			this._left.empty();
-			this._left.append(value);
-		} else if (key === 'right') {
-			this._right.empty();
-			this._right.append(value);
-		} else super.setOption(key, value);
-	}
+	static handlers = {
+		heading(value) { this._heading.elem.textContent = value; },
+		left(value) { this._left.empty(); this._left.append(value); },
+		right(value) { this._right.empty(); this._right.append(value); },
+	};
 }

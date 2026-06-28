@@ -1,4 +1,4 @@
-import { Component, Dialog, Button, Input, Label, randInt } from 'vanilla-bean-components';
+import { Component, Dialog, Button, Input, Label, randInt } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { exitGame, getGame, joinGame, selectCard } from './api/game.js';
@@ -69,9 +69,12 @@ export default class Play extends View {
 		);
 	}
 
-	async render() {
-		super.render();
+	build() {
+		super.build();
+		this._init();
+	}
 
+	async _init() {
 		this.playerId = localStorage.getItem(this.options.gameId);
 
 		if (!this.playerId) {

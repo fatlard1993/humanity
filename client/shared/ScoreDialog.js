@@ -1,4 +1,4 @@
-import { Dialog } from 'vanilla-bean-components';
+import { Dialog } from '@vanilla-bean/components';
 import ScoreCards from './ScoreCards';
 
 export default class ScoreDialog extends Dialog {
@@ -12,8 +12,8 @@ export default class ScoreDialog extends Dialog {
 		});
 	}
 
-	render() {
-		super.render();
+	build() {
+		super.build();
 
 		new ScoreCards({ game: this.options.game, appendTo: this._body });
 	}

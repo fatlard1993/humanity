@@ -1,4 +1,4 @@
-import { Component, List, Label, Button, styled, conditionalList } from 'vanilla-bean-components';
+import { Component, List, Label, Button, styled, conditionalList } from '@vanilla-bean/components';
 
 import { readyUp, pokePlayer } from '../api/game.js';
 
@@ -10,7 +10,7 @@ const WaitingPlayerList = styled(
 		padding: 0;
 		overflow: visible;
 
-		li {
+		& li {
 			display: flex;
 			margin: 6px;
 			padding: 6px;
@@ -41,8 +41,7 @@ const WaitingPlayerListText = styled(
 );
 
 export class ReadyOrNot extends Component {
-	render() {
-		super.render();
+	build() {
 
 		const ready = [];
 		const notReady = [];

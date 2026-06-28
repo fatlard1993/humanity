@@ -1,4 +1,4 @@
-import { Component, List, styled } from 'vanilla-bean-components';
+import { Component, List, styled } from '@vanilla-bean/components';
 
 export const GameList = styled(
 	List,
@@ -6,7 +6,7 @@ export const GameList = styled(
 		padding: 0;
 		overflow: visible;
 
-		li {
+		& li {
 			display: flex;
 			margin: 6px;
 			padding: 6px;

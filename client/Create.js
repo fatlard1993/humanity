@@ -1,4 +1,4 @@
-import { Component, List, Link, Button, Form, Input, Label, styled } from 'vanilla-bean-components';
+import { Component, List, Link, Button, Form, Input, Label, styled } from '@vanilla-bean/components';
 
 import Notify from './shared/Notify.js';
 import View from './shared/View.js';
@@ -9,7 +9,7 @@ const CheckList = styled(
 	({ colors }) => `
 		padding: 0;
 
-		li {
+		& li {
 			margin: 6px;
 			padding: 6px;
 			border: 2px solid ${colors.white.setAlpha(0.4)};

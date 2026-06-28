@@ -41,7 +41,10 @@
 		"lowdb": "^7.0.1",
 		"nanoid": "^5.1.5",
 		"qrcode": "^1.5.4",
-		"vanilla-bean-components": "github:fatlard1993/vanilla-bean-components#fd7c5fa"
+		"@vanilla-bean/components": "^1.0.0",
+		"@vanilla-bean/hypertether": "^1.0.0",
+		"augmented-ui": "^2.0.0",
+		"source-code-pro": "^2.42.0"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.7",
