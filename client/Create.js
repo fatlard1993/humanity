@@ -12,7 +12,7 @@ const CheckList = styled(
 		& li {
 			margin: 6px;
 			padding: 6px;
-			border: 2px solid ${colors.white.setAlpha(0.4)};
+			border: 2px solid ${colors.alpha(colors.white, 0.4)};
 			border-radius: 6px;
 			list-style: none;
 		}
@@ -31,7 +31,7 @@ export default class Create extends View {
 						new Button({
 							textContent: 'Create',
 							onPointerPress: async () => {
-								if (this.form.validate()) return;
+								if (this.form.hasErrors()) return;
 
 								if (this.form.options.data.packs.size === 0) {
 									new Notify({ type: 'error', content: 'Must select at least 1 pack' });
@@ -98,7 +98,7 @@ export default class Create extends View {
 							`,
 							onPointerPress: async () => {
 								const result = await getRandomName();
-								if (!result.success) return;
+								if (result.status !== 'success') return;
 								this.form.options.data.name = result.body;
 								this.form.inputElements.name.options.value = result.body;
 							},

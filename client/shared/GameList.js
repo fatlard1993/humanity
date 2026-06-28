@@ -10,7 +10,7 @@ export const GameList = styled(
 			display: flex;
 			margin: 6px;
 			padding: 6px;
-			border: 2px solid ${colors.white.setAlpha(0.4)};
+			border: 2px solid ${colors.alpha(colors.white, 0.4)};
 			border-radius: 6px;
 			list-style: none;
 			text-indent: 0;

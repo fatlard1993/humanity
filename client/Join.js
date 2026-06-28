@@ -26,7 +26,7 @@ export default class Join extends View {
 						new Button({
 							content: 'Watch',
 							onPointerPress: async () => {
-								if (this.form.validate()) return;
+								if (this.form.hasErrors()) return;
 
 								localStorage.setItem('lastName', this.form.options.data.name);
 
@@ -36,13 +36,13 @@ export default class Join extends View {
 						new Button({
 							content: 'Play',
 							onPointerPress: async () => {
-								if (this.form.validate()) return;
+								if (this.form.hasErrors()) return;
 
 								const join = await joinGame(this.options.gameId, {
 									body: { ...this.form.options.data, playerId: localStorage.getItem(this.options.gameId) },
 								});
 
-								if (!join.success) return new Notify({ type: 'error', content: join.body });
+								if (join.status !== 'success') return new Notify({ type: 'error', content: join.body?.message || String(join.body) });
 
 								localStorage.setItem(this.options.gameId, join.body.id);
 								localStorage.setItem('lastName', join.body.name);
