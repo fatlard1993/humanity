@@ -192,14 +192,18 @@ export default class Create extends View {
 						content: 'All',
 						onPointerPress: () => {
 							packNames.forEach(name => this.form.options.data.packs.add(name));
-							checkboxes.forEach(cb => { cb.options.value = true; });
+							checkboxes.forEach(cb => {
+								cb.options.value = true;
+							});
 						},
 					}),
 					new Button({
 						content: 'None',
 						onPointerPress: () => {
 							this.form.options.data.packs.clear();
-							checkboxes.forEach(cb => { cb.options.value = false; });
+							checkboxes.forEach(cb => {
+								cb.options.value = false;
+							});
 						},
 					}),
 				),

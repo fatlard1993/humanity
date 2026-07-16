@@ -64,7 +64,7 @@ export default class Watch extends View {
 			this.game = this.options.game.body;
 
 			this._body.empty();
-			this._toolbar._right.empty();
+			this._toolbar.options.right = [];
 			this._toolbar.options.heading = this.game.name;
 			this[`render_${this.game.stage === 'end' ? 'end' : 'play'}`]();
 		} finally {

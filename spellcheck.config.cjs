@@ -1,3 +1,22 @@
 module.exports = {
-	skipWords: ['localhost', 'ip', 'nanoid', 'argi', 'usr', 'npc', 'Customizable', 'readdir', 'lstat'],
+	skipWords: [
+		'localhost',
+		'ip',
+		'nanoid',
+		'argi',
+		'bigfoot',
+		'fatlard1993',
+		'usr',
+		'npc',
+		'Customizable',
+		'readdir',
+		'lstat',
+		'checkboxes',
+		'gameplay',
+		'homedir',
+		'os',
+		'visibilitychange',
+		'wildcard',
+		'zelda',
+	],
 };

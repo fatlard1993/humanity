@@ -11,8 +11,12 @@ if ('wakeLock' in navigator) {
 	const requestWakeLock = async () => {
 		try {
 			wakeLock = await navigator.wakeLock.request('screen');
-			wakeLock.addEventListener('release', () => { wakeLock = null; });
-		} catch {}
+			wakeLock.addEventListener('release', () => {
+				wakeLock = null;
+			});
+		} catch {
+			// Wake lock is best-effort; unsupported browsers and denied requests are fine
+		}
 	};
 
 	requestWakeLock();

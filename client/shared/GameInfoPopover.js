@@ -3,9 +3,9 @@ import { Component, Button, styled } from '@vanilla-bean/components';
 import { getGame } from '../api/game.js';
 import GameInfoDialog from './GameInfoDialog.js';
 
-export default class GameInfoPopover extends styled.Popover`
+export default class GameInfoPopover extends (styled.Popover`
 	flex-direction: column;
-` {
+`) {
 	build() {
 		this._init();
 	}

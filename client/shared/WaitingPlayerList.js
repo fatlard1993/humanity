@@ -42,7 +42,6 @@ const WaitingPlayerListText = styled(
 
 export class ReadyOrNot extends Component {
 	build() {
-
 		const ready = [];
 		const notReady = [];
 
@@ -74,7 +73,8 @@ export class ReadyOrNot extends Component {
 								onPointerPress: async event => {
 									const ready = await readyUp({ gameId: this.options.game.id, playerId: this.options.playerId });
 
-									if (ready.status !== 'success') return new Notify({ type: 'error', content: ready.body?.message || String(ready.body) });
+									if (ready.status !== 'success')
+										return new Notify({ type: 'error', content: ready.body?.message || String(ready.body) });
 
 									new Notify({ x: event.clientX, y: event.clientY, content: 'Ready!', type: 'success', timeout: 1300 });
 								},

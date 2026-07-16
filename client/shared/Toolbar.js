@@ -22,11 +22,35 @@ const FlexContainer = styled(
 );
 
 export default class Toolbar extends Component {
+	static schema = {
+		heading: {
+			set(value) {
+				this._heading.elem.textContent = value;
+			},
+		},
+		left: {
+			get default() {
+				return [];
+			},
+			set(value) {
+				this._left.empty();
+				this._left.append(value);
+			},
+		},
+		right: {
+			get default() {
+				return [];
+			},
+			set(value) {
+				this._right.empty();
+				this._right.append(value);
+			},
+		},
+	};
+
 	constructor(options = {}, ...children) {
 		super(
 			{
-				left: [],
-				right: [],
 				...options,
 				styles: (theme, Component) => `
 					padding: 15px 15px 0 15px;
@@ -41,16 +65,10 @@ export default class Toolbar extends Component {
 	}
 
 	build() {
-		this._heading = new Heading({ appendTo: this.elem, textContent: this.options.heading });
-		this._left = new Component({}, ...this.options.left);
-		this._right = new Component({}, ...this.options.right);
+		this._heading = new Heading({ appendTo: this.elem });
+		this._left = new Component();
+		this._right = new Component();
 
 		new FlexContainer({ appendTo: this.elem }, this._left, this._right);
 	}
-
-	static handlers = {
-		heading(value) { this._heading.elem.textContent = value; },
-		left(value) { this._left.empty(); this._left.append(value); },
-		right(value) { this._right.empty(); this._right.append(value); },
-	};
 }

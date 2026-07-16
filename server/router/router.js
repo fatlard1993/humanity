@@ -1,14 +1,16 @@
-import requestMatch from '../utils/requestMatch';
+import { basicGameRoutes } from '@fatlard1993/web-game-framework/core';
+import { requestMatch } from '@fatlard1993/web-game-framework/utils';
 
 import gameRoutes from './game';
 import staticRoutes from './static';
 
-const router = (server) => async (request) => {
+const gameCrudRoutes = basicGameRoutes();
+
+const router = server => async request => {
 	try {
-		let match;
 		let response;
 
-		match = requestMatch('GET', '/', request);
+		const match = requestMatch('GET', '/', request);
 		if (match) {
 			const file = Bun.file('client/build/index.html');
 			return new Response(await file.arrayBuffer(), { headers: { 'Content-Type': file.type } });
@@ -17,6 +19,9 @@ const router = (server) => async (request) => {
 		// WebSocket upgrade handled automatically by Server
 
 		response = await gameRoutes(request, server);
+		if (response) return response;
+
+		response = await gameCrudRoutes(request, server);
 		if (response) return response;
 
 		response = await staticRoutes(request);

@@ -42,7 +42,8 @@ export default class Join extends View {
 									body: { ...this.form.options.data, playerId: localStorage.getItem(this.options.gameId) },
 								});
 
-								if (join.status !== 'success') return new Notify({ type: 'error', content: join.body?.message || String(join.body) });
+								if (join.status !== 'success')
+									return new Notify({ type: 'error', content: join.body?.message || String(join.body) });
 
 								localStorage.setItem(this.options.gameId, join.body.id);
 								localStorage.setItem('lastName', join.body.name);

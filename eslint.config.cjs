@@ -29,4 +29,11 @@ module.exports = [
 			'no-console': 'off',
 		},
 	},
+	{
+		files: ['client/**/*.js'],
+		ignores: ['client/build.js'],
+		rules: {
+			'no-console': ['warn', { allow: ['error', 'warn'] }],
+		},
+	},
 ];

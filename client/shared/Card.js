@@ -45,7 +45,11 @@ export default class Card extends Component {
 		});
 	}
 
-	static handlers = {
-		type(value) { this.removeClass(/\btype-\S+\b/).addClass(`type-${value}`); },
+	static schema = {
+		type: {
+			set(value) {
+				this.removeClass(/\btype-\S+\b/).addClass(`type-${value}`);
+			},
+		},
 	};
 }

@@ -1,6 +1,5 @@
-import requestMatch from '../utils/requestMatch';
+import { requestMatch } from '@fatlard1993/web-game-framework/utils';
 import cards from '../cards.js';
-import Game from '../game.js';
 
 const _game = async (request, server) => {
 	let match;
@@ -22,25 +21,6 @@ const _game = async (request, server) => {
 
 		const name = cards._shortWhites[Math.floor(Math.random() * cards._shortWhites.length)];
 		return Response.json(name);
-	}
-
-	match = requestMatch('GET', '/games', request);
-	if (match) return Response.json(Object.values(server.games).map(game => game.toClient()));
-
-	match = requestMatch('GET', '/games/:gameId', request);
-	if (match) {
-		const game = server.games[match.gameId];
-
-		if (!game) return Response.json({ message: `Could not find game "${match.gameId}"` }, { status: 404 });
-
-		return Response.json(game.toClient());
-	}
-
-	match = requestMatch('POST', '/games', request);
-	if (match) {
-		const game = new Game({ server, ...await request.json() });
-
-		return Response.json(game.toClient(), { status: 201 });
 	}
 
 	match = requestMatch('POST', '/games/:gameId/join', request);
@@ -109,19 +89,6 @@ const _game = async (request, server) => {
 		game.broadcast('poke', { targetPlayerId, targetPlayerName: target.name });
 
 		return Response.json({ ok: true });
-	}
-
-	match = requestMatch('POST', '/games/:gameId/:playerId/exit', request);
-	if (match) {
-		const { gameId, playerId } = match;
-
-		if (!playerId || !server.games[gameId]?.players?.has(playerId)) {
-			return Response.json({ message: `Could not find player "${playerId}"` }, { status: 404 });
-		}
-
-		const removedPlayerId = server.games[gameId].removePlayer(playerId);
-
-		return Response.json({ id: removedPlayerId }, { status: 200 });
 	}
 };
 

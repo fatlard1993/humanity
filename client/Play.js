@@ -87,7 +87,7 @@ export default class Play extends View {
 
 		const router = createGameRouter(this.options.gameId, {
 			onUpdate: () => this.refresh(),
-			onPoke: (data) => {
+			onPoke: data => {
 				if (data.targetPlayerId === this.playerId) {
 					if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
 					new Notify({ content: 'Hey! Ready up!', type: 'success', timeout: 2500 });
@@ -115,8 +115,6 @@ export default class Play extends View {
 		}
 
 		this.stage = this.player.stage !== this.game.stage ? 'wait' : this.player.stage;
-
-		console.log('Play render - stage:', this.stage, 'player.stage:', this.player.stage, 'game.stage:', this.game.stage);
 
 		if (typeof this[`render_${this.stage}`] === 'function') {
 			this[`render_${this.stage}`]();
@@ -155,7 +153,7 @@ export default class Play extends View {
 			this.stage = this.player.stage !== this.game.stage ? 'wait' : this.player.stage;
 
 			this._body.empty();
-			this._toolbar._right.empty();
+			this._toolbar.options.right = [];
 			this[`render_${this.stage}`]();
 		} finally {
 			this._refreshing = false;
@@ -163,13 +161,11 @@ export default class Play extends View {
 	}
 
 	render_wait() {
-		console.log('render_wait called', 'game:', this.game, 'playerId:', this.playerId);
-		this._toolbar._heading.elem.textContent = `${this.game.name} - Waiting`;
+		this._toolbar.options.heading = `${this.game.name} - Waiting`;
 		this._toolbar.options.right = [];
-		this._toolbar._right.empty();
 
 		try {
-			const readyOrNot = new ReadyOrNot({
+			new ReadyOrNot({
 				appendTo: this._body,
 				game: this.game,
 				playerId: this.playerId,
@@ -178,7 +174,6 @@ export default class Play extends View {
 					padding-right: 12px;
 				`,
 			});
-			console.log('ReadyOrNot created:', readyOrNot);
 		} catch (error) {
 			console.error('Error creating ReadyOrNot:', error);
 			new Notify({ type: 'error', content: 'Error rendering waiting screen: ' + error.message });
@@ -186,7 +181,7 @@ export default class Play extends View {
 	}
 
 	render_play() {
-		this._toolbar._heading.elem.textContent = `${this.game.name} - Play Your Card`;
+		this._toolbar.options.heading = `${this.game.name} - Play Your Card`;
 
 		new Card({
 			type: 'black',
@@ -280,12 +275,11 @@ export default class Play extends View {
 				}),
 		});
 
-		this._toolbar._right.empty();
-		this._toolbar._right.append(playButton);
+		this._toolbar.options.right = [playButton];
 	}
 
 	render_vote() {
-		this._toolbar._heading.elem.textContent = `${this.game.name} - Place Your Vote`;
+		this._toolbar.options.heading = `${this.game.name} - Place Your Vote`;
 
 		new Card({
 			type: 'black',
@@ -367,20 +361,18 @@ export default class Play extends View {
 				}),
 		});
 
-		this._toolbar._right.empty();
-		this._toolbar._right.append(voteButton);
+		this._toolbar.options.right = [voteButton];
 	}
 
 	render_end() {
-		this._toolbar._heading.elem.textContent = `${this.game.name} - Round Over`;
+		this._toolbar.options.heading = `${this.game.name} - Round Over`;
 
 		const playAgainButton = new Button({
 			content: 'Play Again',
 			onPointerPress: () => joinGame(this.options.gameId, { body: { playerId: this.playerId } }),
 		});
 
-		this._toolbar._right.empty();
-		this._toolbar._right.append(playAgainButton);
+		this._toolbar.options.right = [playAgainButton];
 
 		new Component(
 			{

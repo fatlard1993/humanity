@@ -1,20 +1,11 @@
-import { customAlphabet } from 'nanoid';
-
 import BaseGame from '@fatlard1993/web-game-framework/core/Game';
+import { simpleId } from '@fatlard1993/web-game-framework/utils';
 
 import cards from './cards.js';
 
-// eslint-disable-next-line spellcheck/spell-checker
-const simpleId = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 5);
-
 export default class Game extends BaseGame {
 	constructor(options) {
-		// Generate ID before calling super so framework registers with correct ID
-		const gameId = options.saveState?.id || simpleId();
-
-		super({ ...options, saveState: { ...options.saveState, id: gameId } });
-
-		// ID is now set by super() constructor
+		super(options);
 
 		// Game-specific state
 		this.url = this.server?.httpServer?.url || '';
@@ -39,19 +30,19 @@ export default class Game extends BaseGame {
 	_setupEventHandlers() {
 		// Define stage update event
 		this.events.defineEvent('game:updateStage', {
-			validate: (data) => {
+			validate: data => {
 				const validStages = ['play', 'vote', 'end', 'wait'];
 				return data.stage && validStages.includes(data.stage);
 			},
 		});
 
-		this.events.on('game:updateStage', (data) => {
+		this.events.on('game:updateStage', data => {
 			this.updateGameStage(data.stage);
 		});
 
 		// Define player card selection event
 		this.events.defineEvent('player:selectCard', {
-			validate: (data) => {
+			validate: data => {
 				if (!data.playerId || !data.cardId) return false;
 				if (!this.players.has(data.playerId)) return false;
 				const player = this.players.get(data.playerId);
@@ -60,7 +51,7 @@ export default class Game extends BaseGame {
 			},
 		});
 
-		this.events.on('player:selectCard', (data) => {
+		this.events.on('player:selectCard', data => {
 			this.updatePlayer(data.playerId, { selectedCard: data.cardId });
 			this.broadcast('cardSelected', { playerId: data.playerId });
 		});

@@ -3,7 +3,7 @@
 import os from 'os';
 import path from 'path';
 
-import Argi from 'argi';
+import Argi from 'argi-cli';
 
 import { Server, Database } from '@fatlard1993/web-game-framework';
 
@@ -32,15 +32,7 @@ const { options } = new Argi({
 	},
 });
 
-const database = new Database({
-	filePath: options.database,
-	onReady: (db) => {
-		const savedGames = db.collections?.games?.read() || {};
-		Object.values(savedGames).forEach(saveState => {
-			new Game({ saveState, server });
-		});
-	},
-});
+const database = new Database({ filePath: options.database });
 
 const server = new Server({
 	port: options.port,

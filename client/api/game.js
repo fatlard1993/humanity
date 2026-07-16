@@ -1,18 +1,10 @@
 import { GET, POST } from '@vanilla-bean/hypertether';
 
+export { getGames, getGame, createGame, joinGame } from '@fatlard1993/web-game-framework/client';
+
 export const getPacks = async options => await GET('/packs', { apiId: 'packs', ...options });
 
 export const getRandomName = async options => await GET('/packs/random-name', { cache: false, ...options });
-
-export const getGames = async options => await GET('/games', { apiId: 'games', ...options });
-
-export const getGame = async (id, options) =>
-	await GET('/games/:id', { apiId: ['games', id], urlParameters: { id }, ...options });
-
-export const createGame = async options => await POST('/games', { invalidates: ['games'], ...options });
-
-export const joinGame = async (id, options) =>
-	await POST('/games/:id/join', { invalidates: ['games'], urlParameters: { id }, ...options });
 
 export const readyUp = async ({ gameId, playerId }, options) =>
 	await POST('/games/:gameId/:playerId/ready', {
