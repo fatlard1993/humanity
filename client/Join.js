@@ -1,8 +1,5 @@
-import { Component, Link, Button, Form, styled } from '@vanilla-bean/components';
-
-import View from './shared/View.js';
-import { getGame, joinGame } from './api/game.js';
-import Notify from './shared/Notify.js';
+import { Component, Button, styled } from '@vanilla-bean/components';
+import { Join as BaseJoin } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
 const Heading = styled(
 	Component,
@@ -14,45 +11,15 @@ const Heading = styled(
 	{ tag: 'h2' },
 );
 
-export default class Join extends View {
+export default class Join extends BaseJoin {
 	constructor(options, ...children) {
 		super(
 			{
+				formData: { name: localStorage.getItem('lastName') || '' },
+				formInputs: [{ key: 'name', label: 'Player Name', validations: [[/.+/, 'Required']] }],
 				...options,
-				toolbar: {
-					heading: 'Join',
-					left: [new Link({ content: 'Cancel', href: '#/hub', variant: 'button' })],
-					right: [
-						new Button({
-							content: 'Watch',
-							onPointerPress: async () => {
-								if (this.form.hasErrors()) return;
-
-								localStorage.setItem('lastName', this.form.options.data.name);
-
-								window.location.href = `#/watch/${this.options.gameId}`;
-							},
-						}),
-						new Button({
-							content: 'Play',
-							onPointerPress: async () => {
-								if (this.form.hasErrors()) return;
-
-								const join = await joinGame(this.options.gameId, {
-									body: { ...this.form.options.data, playerId: localStorage.getItem(this.options.gameId) },
-								});
-
-								if (join.status !== 'success')
-									return new Notify({ type: 'error', content: join.body?.message || String(join.body) });
-
-								localStorage.setItem(this.options.gameId, join.body.id);
-								localStorage.setItem('lastName', join.body.name);
-
-								window.location.href = `#/play/${this.options.gameId}`;
-							},
-						}),
-					],
-				},
+				body: { backgroundImage: false },
+				toolbar: { heading: 'Join', backText: 'Cancel', joinText: 'Play' },
 			},
 			...children,
 		);
@@ -60,39 +27,28 @@ export default class Join extends View {
 
 	build() {
 		super.build();
-		this._init();
+
+		this._toolbar.options.right = [
+			new Button({
+				content: 'Watch',
+				onPointerPress: () => {
+					if (this.form.hasErrors()) return;
+
+					localStorage.setItem('lastName', this.form.options.data.name);
+
+					window.location.href = `#/watch/${this.options.gameId}`;
+				},
+			}),
+			...this._toolbar.options.right,
+		];
 	}
 
 	async _init() {
-		const name = localStorage.getItem('lastName') || '';
-		const playerId = localStorage.getItem(this.options.gameId);
+		await super._init();
 
-		const game = await getGame(this.options.gameId);
+		if (!this.game || !this.form) return;
 
-		if (game.response.status !== 200) {
-			new Notify({ type: 'error', content: game.body?.message || game.response.statusText });
-
-			window.location.href = '#/hub';
-
-			return;
-		}
-
-		if (playerId && game.body.players.some(({ id }) => id === playerId)) {
-			window.location.href = `#/play/${this.options.gameId}`;
-
-			return;
-		}
-
-		new Heading({ appendTo: this._body, content: game.body.name });
-
-		this.form = new Form({
-			appendTo: this._body,
-			styles: () => `
-				margin: 12px 0 12px 12px;
-				padding-right: 12px;
-			`,
-			data: { name },
-			inputs: [{ key: 'name', label: 'Player Name', validations: [[/.+/, 'Required']] }],
-		});
+		const heading = new Heading({ content: this.game.name });
+		this._body.elem.prepend(heading.elem);
 	}
 }

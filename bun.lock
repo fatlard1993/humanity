@@ -5,7 +5,7 @@
     "": {
       "name": "humanity",
       "dependencies": {
-        "@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#b493200",
+        "@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#b61cd94",
         "@vanilla-bean/components": "^2.0.1",
         "@vanilla-bean/hypertether": "^1.0.1",
         "argi-cli": "^1.0.0",
@@ -69,7 +69,7 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.2", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="],
 
-    "@fatlard1993/web-game-framework": ["@fatlard1993/web-game-framework@github:fatlard1993/web-game-framework#b493200", { "dependencies": { "@vanilla-bean/components": "^2.0.1", "@vanilla-bean/hypertether": "^1.0.1", "lowdb": "^7.0.1", "nanoid": "^6.0.0" } }, "fatlard1993-web-game-framework-b493200", "sha512-34mCEj707SBa808hpfQPZR421opXVulbuWdhh7hjMF7j6u12AsD4iltz5TrvdqhBsdnUnni57cbiuAqqb1FIuA=="],
+    "@fatlard1993/web-game-framework": ["@fatlard1993/web-game-framework@github:fatlard1993/web-game-framework#b61cd94", { "dependencies": { "@vanilla-bean/components": "^2.0.1", "@vanilla-bean/hypertether": "^1.0.1", "lowdb": "^7.0.1", "nanoid": "^6.0.0" } }, "fatlard1993-web-game-framework-b61cd94", "sha512-YC+Slf+0txRtDFPKhm+2KdHXi1HxSBZhNVlnPl9HBTCPDJKUN3jYuyHcUAaFyNHHpJ77xlsRrXvRpD+pDZAMbg=="],
 
     "@fontsource-variable/kode-mono": ["@fontsource-variable/kode-mono@5.2.8", "", {}, "sha512-X1O4RAIPyP4Vm8rVoKHirg3amVdE2XvIAQUvDRU17aCzSUz648/9w2KJafH1vK6g0uy7U8PrOCc1I11riXhHwQ=="],
 

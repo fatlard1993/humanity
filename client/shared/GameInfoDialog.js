@@ -1,27 +1,12 @@
-import { Component, Dialog } from '@vanilla-bean/components';
+import { Component } from '@vanilla-bean/components';
+import { GameInfoDialog as BaseGameInfoDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
-export default class GameInfoDialog extends Dialog {
-	constructor(options = {}) {
-		super({
-			size: 'standard',
-			header: options.game.name,
-			buttons: ['Close', 'Join'],
-			onButtonPress: ({ button }) => {
-				if (button === 'Join') window.location.href = `#/join/${options.game.id}`;
-
-				this.close();
-			},
-			...options,
-		});
-	}
-
+export default class GameInfoDialog extends BaseGameInfoDialog {
 	build() {
 		super.build();
 
 		const { game } = this.options;
 
-		new Component({ content: `Game ID: ${game.id}`, appendTo: this._body });
-		new Component({ content: `Players: ${game.players.length}`, appendTo: this._body });
 		new Component({ content: `Submission Timer: ${game.options.submissionTimer}`, appendTo: this._body });
 		if (game.options.randomizeMissingSubmissions)
 			new Component({

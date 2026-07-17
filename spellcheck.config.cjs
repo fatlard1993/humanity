@@ -10,6 +10,7 @@ module.exports = {
 		'npc',
 		'Customizable',
 		'readdir',
+		'svg',
 		'lstat',
 		'checkboxes',
 		'gameplay',

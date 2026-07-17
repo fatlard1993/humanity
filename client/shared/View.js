@@ -1,11 +1,12 @@
-import { View as BaseView } from '@vanilla-bean/components';
-import Toolbar from './Toolbar';
-import Body from './Body';
+import { View as BaseView } from '@fatlard1993/web-game-framework/ui/layout';
 
 export default class View extends BaseView {
-	build() {
-		this._toolbar = new Toolbar({ appendTo: this, ...this.options.toolbar });
-
-		this._body = new Body({ appendTo: this, ...this.options.body });
-	}
+	static schema = {
+		body: {
+			// No background art (yet); the framework default expects img/background.svg
+			get default() {
+				return { backgroundImage: false };
+			},
+		},
+	};
 }
