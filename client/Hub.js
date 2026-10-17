@@ -7,7 +7,6 @@ export default class Hub extends BaseHub {
 		super(
 			{
 				...options,
-				body: { backgroundImage: false },
 				toolbar: { heading: 'Hub', createText: 'Create Game' },
 				buttons: { linkText: 'Share' },
 				popoverOptions: { dialogComponent: GameInfoDialog },

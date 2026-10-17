@@ -1,6 +1,6 @@
 import { Component, Dialog, Button, Input, Label, randInt, Notify } from '@vanilla-bean/components';
 
-import View from './shared/View.js';
+import { View } from '@fatlard1993/web-game-framework/ui/layout';
 import { exitGame, getGame, joinGame, selectCard } from './api/game.js';
 import Card, { Hand } from './shared/Card.js';
 import { ReadyOrNot } from './shared/WaitingPlayerList.js';

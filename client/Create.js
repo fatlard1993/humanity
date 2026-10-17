@@ -23,7 +23,6 @@ export default class Create extends BaseCreate {
 		super(
 			{
 				...options,
-				body: { backgroundImage: false },
 				toolbar: { heading: 'Create', backText: 'Cancel', createText: 'Create' },
 			},
 			...children,
