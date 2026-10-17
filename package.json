@@ -35,11 +35,11 @@
 	},
 	"homepage": "https://github.com/fatlard1993/humanity#readme",
 	"dependencies": {
-		"@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#7b1538a",
+		"@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#c077e4e",
 		"argi-cli": "^1.0.0",
 		"lowdb": "^7.0.1",
 		"qrcode": "^1.5.4",
-		"@vanilla-bean/components": "^3.0.0",
+		"@vanilla-bean/components": "^4.0.0",
 		"@vanilla-bean/hypertether": "^1.0.1",
 		"augmented-ui": "^2.0.0",
 		"source-code-pro": "^2.42.0"
