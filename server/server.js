@@ -6,6 +6,7 @@ import path from 'path';
 import Argi from 'argi-cli';
 
 import { Server, Database } from '@fatlard1993/web-game-framework';
+import { hotReload } from '@vanilla-bean/components/app';
 
 import Game from './game.js';
 import router from './router';
@@ -40,6 +41,9 @@ const server = new Server({
 	verbosity: options.verbosity,
 	Game,
 	router,
+	websocket: hotReload.websocket,
 });
+
+if (process.env.NODE_ENV === 'development') hotReload.watch();
 
 export default server;

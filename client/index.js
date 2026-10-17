@@ -3,6 +3,7 @@ import { Page } from '@vanilla-bean/components';
 import router from './router';
 
 import '@fatlard1993/web-game-framework/client/socket';
+import '@vanilla-bean/components/app/reloadOnBuild';
 
 // Keep screen awake during gameplay
 if ('wakeLock' in navigator) {

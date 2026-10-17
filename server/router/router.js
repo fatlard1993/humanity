@@ -1,13 +1,14 @@
 import { basicGameRoutes } from '@fatlard1993/web-game-framework/core';
-import { requestMatch } from '@fatlard1993/web-game-framework/utils';
+import { hotReload, requestMatch, serveStatic } from '@vanilla-bean/components/app';
 
 import gameRoutes from './game';
-import staticRoutes from './static';
 
 const gameCrudRoutes = basicGameRoutes();
 
 const router = server => async request => {
 	try {
+		if (hotReload.upgrade(request, server.httpServer)) return;
+
 		let response;
 
 		const match = requestMatch('GET', '/', request);
@@ -24,8 +25,10 @@ const router = server => async request => {
 		response = await gameCrudRoutes(request, server);
 		if (response) return response;
 
-		response = await staticRoutes(request);
+		response = await serveStatic(request);
 		if (response) return response;
+
+		return new Response('Not Found', { status: 404 });
 	} catch (error) {
 		console.error('An error was encountered processing a request\n', error);
 

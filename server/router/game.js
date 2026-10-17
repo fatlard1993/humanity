@@ -1,4 +1,5 @@
-import { requestMatch } from '@fatlard1993/web-game-framework/utils';
+import { requestMatch } from '@vanilla-bean/components/app';
+
 import cards from '../cards.js';
 
 const _game = async (request, server) => {
