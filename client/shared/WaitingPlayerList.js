@@ -1,8 +1,6 @@
-import { Component, List, Label, Button, styled, conditionalList } from '@vanilla-bean/components';
+import { Component, List, Label, Button, Notify, styled, conditionalList } from '@vanilla-bean/components';
 
 import { readyUp, pokePlayer } from '../api/game.js';
-
-import Notify from './Notify.js';
 
 const WaitingPlayerList = styled(
 	List,

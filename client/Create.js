@@ -1,7 +1,6 @@
-import { Component, List, Button, Input, Label, styled } from '@vanilla-bean/components';
+import { Component, List, Button, Input, Label, styled, Notify } from '@vanilla-bean/components';
 import { Create as BaseCreate } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
-import Notify from './shared/Notify.js';
 import { getPacks, getRandomName } from './api';
 
 const CheckList = styled(

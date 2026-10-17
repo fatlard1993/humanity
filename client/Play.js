@@ -1,8 +1,7 @@
-import { Component, Dialog, Button, Input, Label, randInt } from '@vanilla-bean/components';
+import { Component, Dialog, Button, Input, Label, randInt, Notify } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { exitGame, getGame, joinGame, selectCard } from './api/game.js';
-import Notify from './shared/Notify.js';
 import Card, { Hand } from './shared/Card.js';
 import { ReadyOrNot } from './shared/WaitingPlayerList.js';
 import ScoreDialog from './shared/ScoreDialog.js';

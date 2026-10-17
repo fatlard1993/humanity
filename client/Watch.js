@@ -1,8 +1,7 @@
-import { Component, Link, Button, randInt } from '@vanilla-bean/components';
+import { Component, Link, Button, randInt, Notify } from '@vanilla-bean/components';
 
 import View from './shared/View.js';
 import { getGame } from './api/game.js';
-import Notify from './shared/Notify.js';
 import Card, { Hand } from './shared/Card.js';
 import ScoreDialog from './shared/ScoreDialog.js';
 import QRCode from './shared/QRCode.js';
