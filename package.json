@@ -16,11 +16,17 @@
 		"not op_mini all"
 	],
 	"scripts": {
-		"prepare": "bun run build",
+		"prepare": "bun run prepare:githooks && bun run build",
+		"prepare:githooks": "[ -n \"$CI\" ] && exit 0 || (git config --local core.hooksPath .githooks || echo 'Cannot set core.hooksPath -- pre-commit checks will not run')",
 		"build": "bun run build:clean && bun run client/build.js",
 		"build:clean": "rm -rf ./client/build/",
 		"start": "NODE_ENV=production bun server/index.js",
 		"dev": "NODE_ENV=development bun --hot server/index.js",
+		"service:enable": "vbc-service enable --port 8032",
+		"service:disable": "vbc-service disable",
+		"service:reload": "vbc-service reload",
+		"deploy": "bun run build && bun run service:reload",
+		"test": "bun test",
 		"lint": "bun --bun eslint",
 		"lint:fix": "bun --bun eslint --fix",
 		"format": "bun run lint:fix && bun --bun prettier --write .",
@@ -35,9 +41,9 @@
 	},
 	"homepage": "https://github.com/fatlard1993/humanity#readme",
 	"dependencies": {
-		"@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#b5eb510",
+		"@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#0cd9ba3",
 		"argi-cli": "^1.0.0",
-		"@vanilla-bean/components": "^4.4.0",
+		"@vanilla-bean/components": "^4.5.0",
 		"@vanilla-bean/hypertether": "^1.0.3",
 		"augmented-ui": "^2.0.0",
 		"source-code-pro": "^2.42.0"
