@@ -5,12 +5,11 @@
     "": {
       "name": "humanity",
       "dependencies": {
-        "@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#8872ac8",
-        "@vanilla-bean/components": "^4.3.1",
+        "@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#b5eb510",
+        "@vanilla-bean/components": "^4.4.0",
         "@vanilla-bean/hypertether": "^1.0.3",
         "argi-cli": "^1.0.0",
         "augmented-ui": "^2.0.0",
-        "qrcode": "^1.5.4",
         "source-code-pro": "^2.42.0",
       },
       "devDependencies": {
@@ -66,7 +65,7 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.2", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="],
 
-    "@fatlard1993/web-game-framework": ["@fatlard1993/web-game-framework@github:fatlard1993/web-game-framework#8872ac8", { "dependencies": { "@vanilla-bean/components": "^4.1.0", "@vanilla-bean/hypertether": "^1.0.2", "lowdb": "^7.0.1", "nanoid": "^6.0.0" } }, "fatlard1993-web-game-framework-8872ac8", "sha512-iLihHt+3/3yVTQpjK46EK1CtQDSO2Z6g0qBxqgrY+IMKGBkKGBmPL4KAqs58lbWPN2CK0fQS7TgQ3CUQP1Shgg=="],
+    "@fatlard1993/web-game-framework": ["@fatlard1993/web-game-framework@github:fatlard1993/web-game-framework#b5eb510", { "dependencies": { "@vanilla-bean/components": "^4.4.0", "@vanilla-bean/hypertether": "^1.0.3", "lowdb": "^7.0.1", "nanoid": "^6.0.0", "qrcode": "^1.5.4" } }, "fatlard1993-web-game-framework-b5eb510", "sha512-5RIvMG+r/zTSlfFzuv1U066ijODvdGjEZCpjGogg9Gum3WoVWGvIgU7Bjb4Ccc11aktSHIMyZ9M4TQp+5dtQQw=="],
 
     "@fontsource-variable/kode-mono": ["@fontsource-variable/kode-mono@5.2.8", "", {}, "sha512-X1O4RAIPyP4Vm8rVoKHirg3amVdE2XvIAQUvDRU17aCzSUz648/9w2KJafH1vK6g0uy7U8PrOCc1I11riXhHwQ=="],
 
@@ -124,7 +123,7 @@
 
     "@typescript-eslint/visitor-keys": ["@typescript-eslint/visitor-keys@8.62.0", "", { "dependencies": { "@typescript-eslint/types": "8.62.0", "eslint-visitor-keys": "^5.0.0" } }, "sha512-CY3uyFSRbcQv3nnSv8S0+lDftMVz6P963PoRlxrV7ew/Md564g9ut60PYzdLM5qW4jFn93GBF+Soi90ISAN+GQ=="],
 
-    "@vanilla-bean/components": ["@vanilla-bean/components@4.3.1", "", { "dependencies": { "@ctrl/tinycolor": "^4.2.0", "@fontsource-variable/kode-mono": "^5.2.8", "@fortawesome/fontawesome-free": "^7.3.1", "@vanilla-bean/oxject": "^1.0.0", "nanoid": "6" }, "peerDependencies": { "@eslint/compat": "^2.1.0", "@eslint/js": "^10.0.1", "eslint": "^10.7.0", "eslint-plugin-compat": "^7.0.2", "eslint-plugin-import": "^2.32.0", "eslint-plugin-jsdoc": "^63.0.13 || ^65.0.0", "eslint-plugin-spellcheck": "0.0.20", "eslint-plugin-testing-library": "^7.16.2", "eslint-plugin-write-good-comments": "^0.2.0", "globals": "^17.7.0" }, "optionalPeers": ["@eslint/compat", "@eslint/js", "eslint", "eslint-plugin-compat", "eslint-plugin-import", "eslint-plugin-jsdoc", "eslint-plugin-spellcheck", "eslint-plugin-testing-library", "eslint-plugin-write-good-comments", "globals"] }, "sha512-RccglETmdv2Eebkt31u94M//EmV8qWBV97VLHjKPw7fKz1mVB6WYmFBDY/w0wPW0zBvfZPNmKDxU5Wim874Ifw=="],
+    "@vanilla-bean/components": ["@vanilla-bean/components@4.4.0", "", { "dependencies": { "@ctrl/tinycolor": "^4.2.0", "@fontsource-variable/kode-mono": "^5.2.8", "@fortawesome/fontawesome-free": "^7.3.1", "@vanilla-bean/oxject": "^1.0.0", "nanoid": "6" }, "peerDependencies": { "@eslint/compat": "^2.1.0", "@eslint/js": "^10.0.1", "eslint": "^10.7.0", "eslint-plugin-compat": "^7.0.2", "eslint-plugin-import": "^2.32.0", "eslint-plugin-jsdoc": "^63.0.13 || ^65.0.0", "eslint-plugin-spellcheck": "0.0.20", "eslint-plugin-testing-library": "^7.16.2", "eslint-plugin-write-good-comments": "^0.2.0", "globals": "^17.7.0" }, "optionalPeers": ["@eslint/compat", "@eslint/js", "eslint", "eslint-plugin-compat", "eslint-plugin-import", "eslint-plugin-jsdoc", "eslint-plugin-spellcheck", "eslint-plugin-testing-library", "eslint-plugin-write-good-comments", "globals"] }, "sha512-JuSk1vl/VS3MMN9Nvn70YB6V2O9XlYvWyoYtq3gX6lCpOZ4VIinqmT3OMkPVj9iRWHRIpi2VUWX79Nz0rFRCYQ=="],
 
     "@vanilla-bean/hypertether": ["@vanilla-bean/hypertether@1.0.3", "", {}, "sha512-LS2yNukyexqKHQOaMzU/+D2a5NBrBzaK5PMF0Z7dCISk5fETGxXsh5B+5u8yGaEPjS72FzFf0QWFDzolNecw+g=="],
 

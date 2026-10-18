@@ -4,7 +4,7 @@ import { View } from '@fatlard1993/web-game-framework/ui/layout';
 import { getGame } from './api/game.js';
 import Card, { Hand } from './shared/Card.js';
 import ScoreDialog from './shared/ScoreDialog.js';
-import QRCode from './shared/QRCode.js';
+import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
 import createGameRouter from './eventRouter.js';
 import PlayersDialog from './shared/PlayersDialog.js';
 
