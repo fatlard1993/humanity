@@ -1,30 +1,12 @@
-import { Page } from '@vanilla-bean/components';
+import { Page, requestWakeLock } from '@vanilla-bean/components';
 
 import router from './router';
 
 import '@fatlard1993/web-game-framework/client/socket';
 import '@vanilla-bean/components/app/reloadOnBuild';
 
-// Keep screen awake during gameplay
-if ('wakeLock' in navigator) {
-	let wakeLock = null;
-
-	const requestWakeLock = async () => {
-		try {
-			wakeLock = await navigator.wakeLock.request('screen');
-			wakeLock.addEventListener('release', () => {
-				wakeLock = null;
-			});
-		} catch {
-			// Wake lock is best-effort; unsupported browsers and denied requests are fine
-		}
-	};
-
-	requestWakeLock();
-	document.addEventListener('visibilitychange', () => {
-		if (document.visibilityState === 'visible') requestWakeLock();
-	});
-}
+// The screen stays awake while the game is open
+requestWakeLock();
 
 new Page({
 	styles: ({ colors }) => `
