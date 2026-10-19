@@ -43,7 +43,7 @@
 	"dependencies": {
 		"@fatlard1993/web-game-framework": "github:fatlard1993/web-game-framework#0cd9ba3",
 		"argi-cli": "^1.0.0",
-		"@vanilla-bean/components": "^4.5.1",
+		"@vanilla-bean/components": "^4.5.2",
 		"@vanilla-bean/hypertether": "^1.0.3",
 		"augmented-ui": "^2.0.0",
 		"source-code-pro": "^2.42.0"
