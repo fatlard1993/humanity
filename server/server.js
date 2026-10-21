@@ -41,7 +41,6 @@ const server = new Server({
 	verbosity: options.verbosity,
 	Game,
 	router,
-	websocket: hotReload.websocket,
 });
 
 if (process.env.NODE_ENV === 'development') hotReload.watch();
