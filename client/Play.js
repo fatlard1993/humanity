@@ -21,19 +21,10 @@ export default class Play extends View {
 								this.options.removePlayerOnExit = true;
 
 								new Dialog({
-									size: 'small',
-									style: { height: '144px' },
+									size: 'fit',
 									header: 'Exiting',
 									body: new Label(
-										{
-											label: 'Remove me from the game',
-											inline: { after: true },
-											styles: () => `
-												bottom: 48px;
-												position: absolute;
-												width: calc(100% - 60px);
-											`,
-										},
+										{ label: 'Remove me from the game', variant: 'inline-after' },
 										new Input({
 											type: 'checkbox',
 											value: true,

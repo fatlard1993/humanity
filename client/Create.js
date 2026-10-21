@@ -14,6 +14,9 @@ const CheckList = styled(
 			border: 2px solid ${colors.alpha(colors.white, 0.4)};
 			border-radius: 6px;
 			list-style: none;
+			display: flex;
+			align-items: center;
+			gap: 6px;
 		}
 	`,
 );
@@ -68,13 +71,13 @@ export default class Create extends BaseCreate {
 				key: 'name',
 				label: {
 					label: 'Room Name',
-					inline: { after: true },
+					variant: 'inline',
 					append: new Button({
 						content: '\u{1F3B2}',
 						styles: () => `
 							min-width: unset;
 							padding: 2px 8px;
-							margin-left: 6px;
+							margin: 0 6px;
 							font-size: 18px;
 							vertical-align: middle;
 						`,
@@ -90,7 +93,7 @@ export default class Create extends BaseCreate {
 			},
 			{
 				key: 'submissionTimer',
-				Component: Component,
+				InputComponent: Component,
 				append: [
 					new Input({
 						type: 'number',
@@ -99,22 +102,20 @@ export default class Create extends BaseCreate {
 							this.form.options.data.submissionTimer = value;
 						},
 					}),
-					new Component(
-						{},
+					new Label(
+						{ label: 'Randomize submission on timeout', variant: 'inline-after' },
 						new Input({
 							type: 'checkbox',
-							style: { marginTop: '6px' },
 							onChange: ({ value }) => {
 								this.form.options.data.randomizeMissingSubmissions = value;
 							},
 						}),
-						new Component({ tag: 'label' }, 'Randomize submission on timeout'),
 					),
 				],
 			},
 			{
 				key: 'voteTimer',
-				Component: Component,
+				InputComponent: Component,
 				append: [
 					new Input({
 						type: 'number',
@@ -123,20 +124,18 @@ export default class Create extends BaseCreate {
 							this.form.options.data.voteTimer = value;
 						},
 					}),
-					new Component(
-						{},
+					new Label(
+						{ label: 'Randomize vote on timeout', variant: 'inline-after' },
 						new Input({
 							type: 'checkbox',
-							style: { marginTop: '6px' },
 							onChange: ({ value }) => {
 								this.form.options.data.randomizeMissingVotes = value;
 							},
 						}),
-						new Component({ tag: 'label' }, 'Randomize vote on timeout'),
 					),
 				],
 			},
-			{ key: 'customCards', Component: Input, type: 'checkbox' },
+			{ key: 'customCards', type: 'checkbox' },
 			{
 				key: 'handSize',
 				type: 'number',

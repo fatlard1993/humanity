@@ -1,40 +1,52 @@
-import { Component, List, Label, Button, Notify, styled, conditionalList } from '@vanilla-bean/components';
+import { Card, Component, List, Label, Button, Notify, styled, conditionalList } from '@vanilla-bean/components';
 
 import { readyUp, pokePlayer } from '../api/game.js';
 
-const WaitingPlayerList = styled(
-	List,
-	({ colors }) => `
-		padding: 0;
-		overflow: visible;
+const WaitingPlayerListItem = styled(
+	Card,
+	({ space }) => `
+		display: flex;
+		align-items: center;
+		gap: ${space.sm};
 
-		& li {
-			display: flex;
-			margin: 6px;
-			padding: 6px;
-			border: 2px solid ${colors.alpha(colors.white, 0.4)};
-			border-radius: 6px;
-			list-style: none;
-			text-indent: 0;
-
-			& > button, & > a {
-				margin-bottom: 0;
-			}
+		& > button {
+			margin: 0;
 		}
 	`,
 );
 
+class WaitingPlayerList extends styled(
+	List,
+	({ space }) => `
+		display: flex;
+		flex-direction: column;
+		gap: ${space.sm};
+		margin: ${space.sm} 0;
+		padding: 0;
+		overflow: visible;
+
+		& > li {
+			list-style: none;
+			text-indent: 0;
+			line-height: normal;
+		}
+	`,
+) {
+	static schema = {
+		ListItemComponent: { default: WaitingPlayerListItem },
+	};
+}
+
 const WaitingPlayerListText = styled(
 	Component,
-	() => `
+	({ space }) => `
+		flex: 1;
+		min-width: 0;
 		font-size: 1.2em;
 		line-height: 1.6;
-		padding: 0 6px;
+		padding: 0 ${space.xs};
+		overflow-wrap: anywhere;
 		pointer-events: none;
-
-		&:first-of-type {
-			flex: 1;
-		}
 	`,
 );
 
