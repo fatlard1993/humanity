@@ -1,6 +1,7 @@
 import fs from 'fs';
 
-import { shuffleArray } from '../utils/rand';
+import { shuffleArray } from '@vanilla-bean/components/utils';
+
 import { forEachFile } from './utils';
 
 const cards = {
