@@ -8,7 +8,7 @@ export default class Game extends BaseGame {
 		super(options);
 
 		// Game-specific state
-		this.url = this.server?.httpServer?.url || '';
+		this.url = this.server.url;
 		this.cards = options.saveState?.cards || cards.buildSuperPack(options.packs);
 		this.black = options.saveState?.black || this.draw('blacks');
 		this.scores = options.saveState?.scores || {};

@@ -5,8 +5,7 @@ import path from 'path';
 
 import Argi from 'argi-cli';
 
-import { Server, Database } from '@fatlard1993/web-game-framework';
-import { hotReload } from '@vanilla-bean/components/app';
+import { Server } from '@fatlard1993/web-game-framework';
 
 import Game from './game.js';
 import router from './router';
@@ -33,16 +32,12 @@ const { options } = new Argi({
 	},
 });
 
-const database = new Database({ filePath: options.database });
-
 const server = new Server({
 	port: options.port,
-	database,
+	database: options.database,
 	verbosity: options.verbosity,
 	Game,
 	router,
 });
-
-if (process.env.NODE_ENV === 'development') hotReload.watch();
 
 export default server;
