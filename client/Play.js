@@ -156,9 +156,9 @@ export default class Play extends View {
 				appendTo: this._body,
 				game: this.game,
 				playerId: this.playerId,
-				styles: () => `
-					margin: 12px 0 12px 12px;
-					padding-right: 12px;
+				styles: ({ space }) => `
+					margin: ${space.md} 0 ${space.md} ${space.md};
+					padding-right: ${space.md};
 				`,
 			});
 		} catch (error) {
