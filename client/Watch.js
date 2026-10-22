@@ -1,9 +1,9 @@
-import { Component, Link, Button, randInt, Notify } from '@vanilla-bean/components';
+import { Link, Button, randInt, Notify } from '@vanilla-bean/components';
 
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
 import { getGame } from './api/game.js';
 import Card, { Hand } from './shared/Card.js';
-import ScoreDialog from './shared/ScoreDialog.js';
+import RoundWinner from './shared/RoundWinner.js';
 import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
 import createGameRouter from './eventRouter.js';
 import PlayersDialog from './shared/PlayersDialog.js';
@@ -125,53 +125,6 @@ export default class Watch extends View {
 		this._toolbar.options.heading = 'Round Over';
 		this._toolbar.options.right = [];
 
-		new Component(
-			{
-				styles: ({ colors }) => `
-					background: ${colors.black};
-					padding: 12px 24px;
-					margin-bottom: 12px;
-				`,
-				appendTo: this._body,
-			},
-			new Component(
-				{
-					styles: () => `
-						border-bottom: 1px solid;
-						display: flex;
-						padding-bottom: 12px;
-						margin-bottom: 12px;
-					`,
-					appendTo: this._body,
-				},
-				new Component(
-					{ style: { flex: 1, fontSize: '30px' } },
-					`Winner: ${this.game.players.find(({ id }) => id === this.game.lastRoundWinner.playerId).name}`,
-				),
-				new Button({ onPointerPress: () => new ScoreDialog({ game: this.game }) }, 'Show Scores'),
-			),
-			new Component({}, `Votes: ${this.game.lastRoundWinner.votes}`),
-			new Component({}, `Wins: ${this.game.scores[this.game.lastRoundWinner.playerId].wins}`),
-		);
-
-		new Card({
-			type: 'black',
-			style: {
-				margin: '0 auto',
-				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
-			},
-			innerHTML: this.game.black,
-			appendTo: this._body,
-		});
-
-		new Card({
-			type: 'white',
-			style: {
-				margin: '0 auto',
-				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
-			},
-			innerHTML: this.game.lastRoundWinner.card,
-			appendTo: this._body,
-		});
+		new RoundWinner({ game: this.game, appendTo: this._body });
 	}
 }
