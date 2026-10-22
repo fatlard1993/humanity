@@ -1,7 +1,9 @@
-import { Component, Dialog, Button, Input, Label, randInt, Notify, vibrate } from '@vanilla-bean/components';
+import { Component, Button, randInt, Notify, vibrate } from '@vanilla-bean/components';
+import { failureReason } from '@vanilla-bean/hypertether';
 
+import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
-import { exitGame, getGame, joinGame, selectCard } from './api/game.js';
+import { getGame, joinGame, selectCard } from './api/game.js';
 import Card, { Hand } from './shared/Card.js';
 import { ReadyOrNot } from './shared/WaitingPlayerList.js';
 import RoundWinner from './shared/RoundWinner.js';
@@ -45,40 +47,7 @@ export default class Play extends View {
 					left: [
 						new Button({
 							content: 'Exit',
-							onPointerPress: () => {
-								this.options.removePlayerOnExit = true;
-
-								new Dialog({
-									size: 'fit',
-									header: 'Exiting',
-									body: new Label(
-										{ label: 'Remove me from the game', variant: 'inline-after' },
-										new Input({
-											type: 'checkbox',
-											value: true,
-											onChange: ({ value }) => {
-												this.options.removePlayerOnExit = value;
-											},
-										}),
-									),
-									buttons: ['Exit', 'Cancel'],
-									onButtonPress: async ({ button, closeDialog }) => {
-										if (button === 'Exit' && this.options.removePlayerOnExit) {
-											const { response, body } = await exitGame({
-												gameId: this.options.gameId,
-												playerId: this.playerId,
-											});
-
-											if (response.status !== 200) {
-												new Notify({ type: 'error', content: body?.message || response.statusText });
-											}
-										}
-										window.location.href = `#/hub`;
-
-										closeDialog();
-									},
-								});
-							},
+							onPointerPress: () => new ExitDialog({ gameId: this.options.gameId, playerId: this.playerId }),
 						}),
 					],
 				},
@@ -119,7 +88,7 @@ export default class Play extends View {
 		};
 
 		if (this.options.game.response.status !== 200) {
-			new Notify({ type: 'error', content: this.options.game.body?.message || this.options.game.response.statusText });
+			new Notify({ type: 'error', content: failureReason(this.options.game) });
 			window.location.href = `#/hub`;
 			return;
 		}

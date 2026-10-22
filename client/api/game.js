@@ -21,13 +21,6 @@ export const selectCard = async ({ gameId, playerId, selectedCard }, options) =>
 		...options,
 	});
 
-export const exitGame = async ({ gameId, playerId }, options) =>
-	await POST('/games/:gameId/:playerId/exit', {
-		invalidates: ['games'],
-		urlParameters: { gameId, playerId },
-		...options,
-	});
-
 export const pokePlayer = async ({ gameId, targetPlayerId }, options) =>
 	await POST('/games/:gameId/poke', {
 		cache: false,
