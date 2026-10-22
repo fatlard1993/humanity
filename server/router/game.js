@@ -1,4 +1,5 @@
 import { requestMatch } from '@vanilla-bean/components/app';
+import { randFromArray } from '@vanilla-bean/components/utils';
 
 import cards from '../cards.js';
 
@@ -20,7 +21,7 @@ const _game = async (request, server) => {
 				});
 		}
 
-		const name = cards._shortWhites[Math.floor(Math.random() * cards._shortWhites.length)];
+		const name = randFromArray(cards._shortWhites);
 		return Response.json(name);
 	}
 

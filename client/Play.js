@@ -1,4 +1,4 @@
-import { Component, Dialog, Button, Input, Label, randInt, Notify } from '@vanilla-bean/components';
+import { Component, Dialog, Button, Input, Label, randInt, Notify, vibrate } from '@vanilla-bean/components';
 
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
 import { exitGame, getGame, joinGame, selectCard } from './api/game.js';
@@ -107,7 +107,7 @@ export default class Play extends View {
 			onUpdate: () => this.refresh(),
 			onPoke: data => {
 				if (data.targetPlayerId === this.playerId) {
-					if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+					vibrate([200, 100, 200]);
 					new Notify({ content: 'Hey! Ready up!', type: 'success', timeout: 2500 });
 				}
 			},
