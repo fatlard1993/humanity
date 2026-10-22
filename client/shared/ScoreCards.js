@@ -1,23 +1,43 @@
-import { Component, List } from '@vanilla-bean/components';
+import { Card, Component, List, styled } from '@vanilla-bean/components';
 
-export default class ScoreCards extends List {
-	constructor(options = {}) {
-		super({
-			styles: ({ colors }) => `
-				list-style: none;
-				padding: 12px;
+const ScoreCard = styled(
+	Card,
+	({ space }) => `
+		display: flex;
+		flex-direction: column;
+		gap: ${space.xs};
+	`,
+);
 
-				& li {
-					background: ${colors.black};
-					border: 1px solid;
-					border-radius: 6px;
-					padding: 6px 24px;
-					margin: 12px;
-				}
-			`,
-			...options,
-		});
-	}
+const ScoreCardName = styled(
+	Component,
+	({ colors, space }) => `
+		font-size: 18px;
+		padding-bottom: ${space.sm};
+		margin-bottom: ${space.xs};
+		border-bottom: 1px solid ${colors.border};
+		text-align: center;
+	`,
+);
+
+export default class ScoreCards extends styled(
+	List,
+	({ space }) => `
+		display: flex;
+		flex-direction: column;
+		gap: ${space.sm};
+		margin: 0;
+		padding: 0;
+
+		& > li {
+			list-style: none;
+			text-indent: 0;
+		}
+	`,
+) {
+	static schema = {
+		ListItemComponent: { default: ScoreCard },
+	};
 
 	build() {
 		const { game } = this.options;
@@ -27,22 +47,13 @@ export default class ScoreCards extends List {
 		this.options.items = Object.entries(game.scores).map(([playerId, { wins, votes }]) => {
 			const player = game.players.find(({ id }) => id === playerId);
 
-			return [
-				new Component(
-					{
-						styles: () => `
-							font-size: 18px;
-							padding-bottom: 6px;
-							margin: 6px;
-							border-bottom: 1px solid;
-							text-align: center;
-						`,
-					},
-					player?.name ?? '(left)',
-				),
-				new Component({}, `Votes: ${votes}`),
-				new Component({}, `Wins: ${wins}`),
-			];
+			return {
+				append: [
+					new ScoreCardName({ content: player?.name ?? '(left)' }),
+					new Component({ content: `Votes: ${votes}` }),
+					new Component({ content: `Wins: ${wins}` }),
+				],
+			};
 		});
 	}
 }
