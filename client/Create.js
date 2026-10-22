@@ -1,4 +1,4 @@
-import { Component, List, Button, Input, Label, styled, Notify } from '@vanilla-bean/components';
+import { Component, List, Button, Input, Label, styled, theme, Notify } from '@vanilla-bean/components';
 import { failureReason } from '@vanilla-bean/hypertether';
 import { Create as BaseCreate } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
@@ -6,18 +6,18 @@ import { getPacks, getRandomName } from './api';
 
 const CheckList = styled(
 	List,
-	({ colors }) => `
+	({ colors, space, radius }) => `
 		padding: 0;
 
 		& li {
-			margin: 6px;
-			padding: 6px;
-			border: 2px solid ${colors.alpha(colors.white, 0.4)};
-			border-radius: 6px;
+			margin: ${space.sm};
+			padding: ${space.sm};
+			border: 2px solid ${colors.border};
+			border-radius: ${radius.md};
 			list-style: none;
 			display: flex;
 			align-items: center;
-			gap: 6px;
+			gap: ${space.sm};
 		}
 	`,
 );
@@ -68,12 +68,10 @@ export default class Create extends BaseCreate {
 					label: 'Room Name',
 					variant: 'inline',
 					append: new Button({
-						content: '\u{1F3B2}',
-						styles: () => `
-							min-width: unset;
-							padding: 2px 8px;
-							margin: 0 6px;
-							font-size: 18px;
+						icon: 'dice',
+						tooltip: 'A random name',
+						styles: ({ space }) => `
+							margin: 0 ${space.sm};
 							vertical-align: middle;
 						`,
 						onPointerPress: async () => {
@@ -101,16 +99,14 @@ export default class Create extends BaseCreate {
 		new Label({
 			label: 'Packs (select at least one)',
 			appendTo: this._body,
-			styles: () => `
-				margin: 12px 0 6px 12px;
-			`,
+			style: { margin: `${theme.space.md} 0 ${theme.space.sm} ${theme.space.md}` },
 			append: [
 				new Component(
 					{
-						styles: () => `
+						styles: ({ space }) => `
 							display: flex;
-							gap: 6px;
-							margin-bottom: 6px;
+							gap: ${space.sm};
+							margin-bottom: ${space.sm};
 						`,
 					},
 					new Button({
