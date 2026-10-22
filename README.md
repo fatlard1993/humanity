@@ -6,15 +6,13 @@ My digital take on the; wonderful, terrible, hilarious, hideous game provided by
 
 ## Screenshots
 
-![Creating a game: room name, submission and vote timers, hand size, NPCs and the card packs to play with](./img/lobby_new_game.png)
+![Creating a game: room name, hand size and the card packs to play with](./img/lobby_new_game.png)
 
 ![A player's hand under the black card, with one white card picked and raised, ready to Play](./img/player_enter_submission.png)
 
 ![The same hand on a phone, two cards across](./img/player_enter_submission_phone.png)
 
 ![Round over: the winner, their votes and wins, and the winning card under the black card](./img/player_vote_results.png)
-
-The timer, custom card and NPC options are on the form, but the server doesn't use them yet.
 
 ## Start
 

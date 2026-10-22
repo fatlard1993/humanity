@@ -55,14 +55,8 @@ export default class Create extends BaseCreate {
 
 		const formData = {
 			name: '',
-			submissionTimer: 0,
-			voteTimer: 0,
-			customCards: false,
 			handSize: 10,
-			npcCount: 0,
 			packs: new Set(),
-			randomizeMissingSubmissions: false,
-			randomizeMissingVotes: false,
 		};
 
 		this.options.formData = formData;
@@ -92,61 +86,10 @@ export default class Create extends BaseCreate {
 				validations: [[/.+/, 'Required']],
 			},
 			{
-				key: 'submissionTimer',
-				InputComponent: Component,
-				append: [
-					new Input({
-						type: 'number',
-						value: formData.submissionTimer,
-						onChange: ({ value }) => {
-							this.form.options.data.submissionTimer = value;
-						},
-					}),
-					new Label(
-						{ label: 'Randomize submission on timeout', variant: 'inline-after' },
-						new Input({
-							type: 'checkbox',
-							onChange: ({ value }) => {
-								this.form.options.data.randomizeMissingSubmissions = value;
-							},
-						}),
-					),
-				],
-			},
-			{
-				key: 'voteTimer',
-				InputComponent: Component,
-				append: [
-					new Input({
-						type: 'number',
-						value: formData.voteTimer,
-						onChange: ({ value }) => {
-							this.form.options.data.voteTimer = value;
-						},
-					}),
-					new Label(
-						{ label: 'Randomize vote on timeout', variant: 'inline-after' },
-						new Input({
-							type: 'checkbox',
-							onChange: ({ value }) => {
-								this.form.options.data.randomizeMissingVotes = value;
-							},
-						}),
-					),
-				],
-			},
-			{ key: 'customCards', type: 'checkbox' },
-			{
 				key: 'handSize',
 				type: 'number',
-				validations: [
-					[
-						value => value >= (this.form.options.data.customCards ? 0 : 2),
-						() => `Must be ${this.form.options.data.customCards ? 0 : 2} or more`,
-					],
-				],
+				validations: [[value => value >= 2, 'Must be 2 or more']],
 			},
-			{ key: 'npcCount', label: 'NPCs', type: 'number' },
 		];
 
 		super._init();
