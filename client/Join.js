@@ -3,10 +3,10 @@ import { Join as BaseJoin } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
 const Heading = styled(
 	Component,
-	() => `
+	({ space }) => `
 		font-size: 1.5em;
 		text-align: center;
-		margin: 0 0 12px;
+		margin: 0 0 ${space.md};
 	`,
 	{ tag: 'h2' },
 );
