@@ -1,4 +1,5 @@
 import { Component, List, Button, Input, Label, styled, Notify } from '@vanilla-bean/components';
+import { failureReason } from '@vanilla-bean/hypertether';
 import { Create as BaseCreate } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
 import { getPacks, getRandomName } from './api';
@@ -49,7 +50,7 @@ export default class Create extends BaseCreate {
 		const packs = await getPacks();
 
 		if (packs.response.status !== 200) {
-			new Notify({ type: 'error', content: packs.body?.message || packs.response.statusText });
+			new Notify({ type: 'error', content: failureReason(packs) });
 			return;
 		}
 
