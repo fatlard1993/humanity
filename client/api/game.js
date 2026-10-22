@@ -1,6 +1,6 @@
 import { GET, POST } from '@vanilla-bean/hypertether';
 
-export { getGames, getGame, createGame, joinGame } from '@fatlard1993/web-game-framework/client';
+export { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
 export const getPacks = async options => await GET('/packs', { apiId: 'packs', ...options });
 

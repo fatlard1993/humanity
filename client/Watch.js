@@ -116,9 +116,6 @@ export default class Watch extends View {
 			),
 		});
 
-		// TODO display this if the screen is "large"
-		// new ReadyOrNot({ appendTo: this._body, game: this.game });
-
 		this._toolbar.options.right = [
 			new Button({ onPointerPress: () => new PlayersDialog({ game: this.game }) }, 'Show Players'),
 		];
@@ -176,8 +173,5 @@ export default class Watch extends View {
 			innerHTML: this.game.lastRoundWinner.card,
 			appendTo: this._body,
 		});
-
-		// TODO display this if the screen is "large"
-		// new ScoreCards({ game, appendTo: this._body });
 	}
 }
