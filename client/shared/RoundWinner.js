@@ -15,20 +15,22 @@ export default class RoundWinner extends Component {
 
 		new Component(
 			{
-				styles: ({ colors }) => `
+				styles: ({ colors, space }) => `
 					background: ${colors.black};
-					padding: 12px 24px;
-					margin-bottom: 12px;
+					padding: ${space.md} ${space.xl};
+					margin-bottom: ${space.md};
 				`,
 				appendTo: this,
 			},
 			new Component(
 				{
-					styles: () => `
-						border-bottom: 1px solid;
+					styles: ({ colors, space }) => `
+						border-bottom: 1px solid ${colors.border};
 						display: flex;
-						padding-bottom: 12px;
-						margin-bottom: 12px;
+						align-items: center;
+						gap: ${space.sm};
+						padding-bottom: ${space.md};
+						margin-bottom: ${space.md};
 					`,
 				},
 				new Component(
