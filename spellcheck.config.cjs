@@ -19,5 +19,6 @@ module.exports = {
 		'visibilitychange',
 		'wildcard',
 		'zelda',
+		'cqi',
 	],
 };

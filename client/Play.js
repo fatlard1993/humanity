@@ -183,23 +183,32 @@ export default class Play extends View {
 			appendTo: this._body,
 		});
 
+		const resting = 'translate(var(--shift-x, 40px), var(--overlap-y, 102px))';
+
+		// A card is 252px across its padding; on a phone two fit side by side, sized from the hand's width (less 16px for
+		// their tilt), with the overlap and padding in step. The resting translate takes half the overlap there so the
+		// pair sits centered.
 		const hand = new Hand({
-			styles: () => `
+			styles: ({ media }) => `
 				padding: 0 42px;
 				box-sizing: border-box;
 
-				@media only screen and (min-width: 1px) {
-					transform: unset;
-				}
+				@media ${media.phone} {
+					container-type: inline-size;
+					padding: 0 12px;
 
-				@media only screen and (min-width: 310px) {
-					transform: scale(0.5) translate(-50%, -50%);
-					width: 200%;
-				}
+					--card-size: min(252px, calc((100cqi - 16px) / 1.84));
+					--card-pad: max(10px, calc(var(--card-size) * 18 / 252));
+					--overlap-x: calc(var(--card-size) * 40 / 252);
+					--overlap-y: calc(var(--card-size) * 102 / 252);
+					--shift-x: calc(var(--overlap-x) / 2);
 
-				@media only screen and (min-width: 520px) {
-					transform: unset;
-					width: 100%;
+					& > .type-white {
+						width: calc(var(--card-size) - 2 * var(--card-pad));
+						height: calc(var(--card-size) * 9 / 7 - 2 * var(--card-pad));
+						padding: var(--card-pad);
+						font-size: clamp(14px, calc(var(--card-size) * 16 / 252), 16px);
+					}
 				}
 			`,
 			appendTo: this._body,
@@ -208,15 +217,15 @@ export default class Play extends View {
 					new Card({
 						type: 'white',
 						style: {
-							marginTop: '-102px',
-							marginLeft: '-40px',
-							transform: `translate(40px, 102px) rotate(${(-5 + index) * randInt(1, 3)}deg)`,
+							marginTop: 'calc(-1 * var(--overlap-y, 102px))',
+							marginLeft: 'calc(-1 * var(--overlap-x, 40px))',
+							transform: `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`,
 						},
 						innerHTML: content,
 						toggleSelection: function () {
 							const isSelected = this.hasClass('selected');
 							this.elem.style.transform = isSelected
-								? `translate(40px, 102px) rotate(${(-5 + index) * randInt(1, 3)}deg)`
+								? `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`
 								: 'rotate(' + randInt(-33, 33) + 'deg)';
 							this[isSelected ? 'removeClass' : 'addClass']('selected');
 						},
@@ -226,7 +235,7 @@ export default class Play extends View {
 							// Deselect all cards first
 							hand.elem.querySelectorAll('.selected').forEach(elem => {
 								elem.classList.remove('selected');
-								elem.style.transform = `translate(40px, 102px) rotate(${(-5 + index) * randInt(1, 3)}deg)`;
+								elem.style.transform = `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`;
 							});
 
 							// If this card was already selected, leave it deselected
