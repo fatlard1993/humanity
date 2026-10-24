@@ -1,5 +1,4 @@
-import { Component, Button, randInt, Notify, vibrate } from '@vanilla-bean/components';
-import { failureReason } from '@vanilla-bean/hypertether';
+import { Component, Button, randInt, Notify, vibrate, failureReason } from '@vanilla-bean/components';
 
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
@@ -77,7 +76,7 @@ export default class Play extends View {
 			onPoke: data => {
 				if (data.targetPlayerId === this.playerId) {
 					vibrate([200, 100, 200]);
-					new Notify({ content: 'Hey! Ready up!', type: 'success', timeout: 2500 });
+					new Notify({ content: 'Hey! Ready up!', intent: 'success', timeout: 2500 });
 				}
 			},
 		});
@@ -88,7 +87,7 @@ export default class Play extends View {
 		};
 
 		if (this.options.game.response.status !== 200) {
-			new Notify({ type: 'error', content: failureReason(this.options.game) });
+			new Notify({ intent: 'danger', content: failureReason(this.options.game) });
 			window.location.href = `#/hub`;
 			return;
 		}
@@ -107,7 +106,7 @@ export default class Play extends View {
 			this[`render_${this.stage}`]();
 		} else {
 			console.error(`No render method for stage: ${this.stage}`);
-			new Notify({ type: 'error', content: `Unknown game stage: ${this.stage}` });
+			new Notify({ intent: 'danger', content: `Unknown game stage: ${this.stage}` });
 			this._body.append(
 				new Component({
 					content: `Debug info: stage="${this.stage}", player.stage="${this.player.stage}", game.stage="${this.game.stage}"`,
@@ -163,7 +162,7 @@ export default class Play extends View {
 			});
 		} catch (error) {
 			console.error('Error creating ReadyOrNot:', error);
-			new Notify({ type: 'error', content: 'Error rendering waiting screen: ' + error.message });
+			new Notify({ intent: 'danger', content: 'Error rendering waiting screen: ' + error.message });
 		}
 	}
 

@@ -1,5 +1,14 @@
-import { Card, Component, List, Label, Button, Notify, styled, conditionalList } from '@vanilla-bean/components';
-import { failureReason } from '@vanilla-bean/hypertether';
+import {
+	Card,
+	Component,
+	List,
+	Label,
+	Button,
+	Notify,
+	styled,
+	conditionalList,
+	failureReason,
+} from '@vanilla-bean/components';
 
 import { readyUp, pokePlayer } from '../api/game.js';
 
@@ -84,9 +93,16 @@ export class ReadyOrNot extends Component {
 								onPointerPress: async event => {
 									const ready = await readyUp({ gameId: this.options.game.id, playerId: this.options.playerId });
 
-									if (ready.status !== 'success') return new Notify({ type: 'error', content: failureReason(ready) });
+									if (ready.status !== 'success')
+										return new Notify({ intent: 'danger', content: failureReason(ready) });
 
-									new Notify({ x: event.clientX, y: event.clientY, content: 'Ready!', type: 'success', timeout: 1300 });
+									new Notify({
+										x: event.clientX,
+										y: event.clientY,
+										content: 'Ready!',
+										intent: 'success',
+										timeout: 1300,
+									});
 								},
 							}),
 							elseItems: [
@@ -98,7 +114,7 @@ export class ReadyOrNot extends Component {
 											x: event.clientX,
 											y: event.clientY,
 											content: 'Poked!',
-											type: 'success',
+											intent: 'success',
 											timeout: 1300,
 										});
 									},

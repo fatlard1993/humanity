@@ -16,7 +16,7 @@ export default class Join extends BaseJoin {
 		super(
 			{
 				formData: { name: localStorage.getItem('lastName') || '' },
-				formInputs: [{ key: 'name', label: 'Player Name', validations: [[/.+/, 'Required']] }],
+				formInputs: [{ key: 'name', label: 'Player Name', validate: value => (value ? null : 'Required') }],
 				...options,
 				toolbar: { heading: 'Join', backText: 'Cancel', joinText: 'Play' },
 			},

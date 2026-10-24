@@ -1,5 +1,4 @@
-import { Component, List, Button, Input, Label, styled, theme, Notify } from '@vanilla-bean/components';
-import { failureReason } from '@vanilla-bean/hypertether';
+import { Component, List, Button, Input, Label, styled, theme, Notify, failureReason } from '@vanilla-bean/components';
 import { Create as BaseCreate } from '@fatlard1993/web-game-framework/ui/GameRoom';
 
 import { getPacks, getRandomName } from './api';
@@ -35,7 +34,7 @@ export default class Create extends BaseCreate {
 
 	create() {
 		if (this.form.options.data.packs.size === 0) {
-			new Notify({ type: 'error', content: 'Must select at least 1 pack' });
+			new Notify({ intent: 'danger', content: 'Must select at least 1 pack' });
 			return;
 		}
 
@@ -50,7 +49,7 @@ export default class Create extends BaseCreate {
 		const packs = await getPacks();
 
 		if (packs.response.status !== 200) {
-			new Notify({ type: 'error', content: failureReason(packs) });
+			new Notify({ intent: 'danger', content: failureReason(packs) });
 			return;
 		}
 
@@ -82,12 +81,12 @@ export default class Create extends BaseCreate {
 						},
 					}),
 				},
-				validations: [[/.+/, 'Required']],
+				validate: value => (value ? null : 'Required'),
 			},
 			{
 				key: 'handSize',
 				type: 'number',
-				validations: [[value => value >= 2, 'Must be 2 or more']],
+				validate: value => (value >= 2 ? null : 'Must be 2 or more'),
 			},
 		];
 

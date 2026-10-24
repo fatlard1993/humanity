@@ -1,4 +1,4 @@
-import { GET, POST } from '@vanilla-bean/hypertether';
+import { GET, POST } from '@vanilla-bean/components';
 
 export { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
