@@ -66,14 +66,6 @@ export default class Create extends BaseCreate {
 				label: {
 					label: 'Room Name',
 					variant: 'inline',
-					// The field's error takes a line of its own, below the row
-					styles: () => `
-						flex-wrap: wrap;
-
-						& > .vbc-field-error {
-							flex-basis: 100%;
-						}
-					`,
 					append: new Button({
 						icon: 'dice',
 						tooltip: 'A random name',
