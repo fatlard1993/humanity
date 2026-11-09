@@ -27,7 +27,7 @@ const started = () => {
 	return { game, ada, bo };
 };
 
-const handOf = (game, id) => game.players.get(id).cards;
+const handOf = (game, id) => game.hands[id];
 
 test('a round: everyone ready, plays a card, votes, and the winner scores', () => {
 	const { game, ada, bo } = started();
@@ -125,4 +125,58 @@ test('joining again at the end of a round starts the next one, ready', () => {
 	expect(game.stage).toBe('wait');
 	expect(game.players.get(ada.id).stage).toBe('play');
 	expect(game.players.get(bo.id).stage).toBe('wait');
+});
+
+test("a player's page shows their own hand alone; the lobby and watchers see no hand, nor who played which card", () => {
+	const sent = [];
+	const game = newGame();
+
+	game.server.gameBroadcast = (_gameId, data) => sent.push(data);
+
+	const { ada, bo } = (() => {
+		const ada = game.addPlayer('Ada');
+		const bo = game.addPlayer('Bo');
+
+		game.act(ada.id, 'ready');
+		game.act(bo.id, 'ready');
+
+		return { ada, bo };
+	})();
+	const everyHand = [...handOf(game, ada.id), ...handOf(game, bo.id)];
+	const shows = view => everyHand.filter(card => JSON.stringify(view).includes(JSON.stringify(card)));
+
+	expect(game.viewFor(ada.id).hand).toEqual(handOf(game, ada.id));
+	expect(shows(game.viewFor(ada.id))).toEqual(handOf(game, ada.id));
+	expect(shows(game.viewFor(null))).toEqual([]);
+	expect(shows(game.toClient())).toEqual([]);
+	expect(shows(sent)).toEqual([]);
+
+	const adaCard = handOf(game, ada.id)[0];
+	const boCard = handOf(game, bo.id)[0];
+
+	game.act(ada.id, 'play', { card: adaCard });
+	expect(game.toClient().players.find(({ id }) => id === ada.id).selectedCard).toBe(true);
+	game.act(bo.id, 'play', { card: boCard });
+
+	expect(game.viewFor(ada.id).submissions).toEqual([boCard]);
+	expect(game.viewFor(null).submissions.sort()).toEqual([adaCard, boCard].sort());
+	expect(JSON.stringify(game.viewFor(null).submissions)).not.toContain(ada.id);
+});
+
+test('a save from before hands moved off the players comes back with them in hands', () => {
+	const old = {
+		id: 'old',
+		name: 'Old',
+		options: { handSize: 2, packs: ['base'] },
+		players: [{ id: 'ada', name: 'Ada', cards: ['One', 'Two'], stage: 'wait', selectedCard: false }],
+		cards: { blacks: ['A _____'], whites: ['Three'] },
+		black: 'B _____',
+		stage: 'wait',
+	};
+	const game = new Game({ saveState: old, server: { games: {}, publish() {} }, logger: quiet });
+
+	expect(game.hands).toEqual({ ada: ['One', 'Two'] });
+	expect(game.players.get('ada').cards).toBeUndefined();
+	expect(game.toSaveState()).toMatchObject({ version: 2, hands: { ada: ['One', 'Two'] } });
+	expect(game.viewFor('ada').hand).toEqual(['One', 'Two']);
 });

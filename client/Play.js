@@ -111,7 +111,7 @@ export default class Play extends View {
 		const { name, black, players, submissions, lastRoundWinner, scores } = this.game;
 
 		if (this.stage === 'wait') return [this.stage, name, players.map(({ id, name, stage }) => [id, name, stage])];
-		if (this.stage === 'play') return [this.stage, name, black, this.player.cards];
+		if (this.stage === 'play') return [this.stage, name, black, this.game.hand];
 		if (this.stage === 'vote') return [this.stage, name, black, submissions];
 
 		return [this.stage, name, black, lastRoundWinner, scores, players.map(({ id, name }) => [id, name])];
@@ -153,7 +153,7 @@ export default class Play extends View {
 		const hand = new Hand({
 			styles: fittedHand,
 			appendTo: this._body,
-			append: this.player.cards.map(
+			append: this.game.hand.map(
 				(content, index) =>
 					new Card({
 						type: 'white',
@@ -229,57 +229,56 @@ export default class Play extends View {
 		const submissions = new Hand({
 			styles: fittedHand,
 			appendTo: this._body,
-			append: this.game.submissions
-				.filter(({ playerId }) => playerId !== this.playerId)
-				.map(
-					({ card: content }, index) =>
-						new Card({
-							type: 'white',
-							style: {
-								marginTop: 'calc(-1 * var(--overlap-y, 102px))',
-								marginLeft: 'calc(-1 * var(--overlap-x, 40px))',
-								transform: `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`,
-							},
-							innerHTML: content,
-							toggleSelection: function () {
-								const isSelected = this.hasClass('selected');
-								this.elem.style.transform = isSelected
-									? `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`
-									: 'rotate(' + randInt(-33, 33) + 'deg)';
-								this[isSelected ? 'removeClass' : 'addClass']('selected');
-							},
-							onPointerPress: function () {
-								const isAlreadySelected = this.elem.classList.contains('selected');
+			// Everyone's card but this player's own (the server leaves it out)
+			append: this.game.submissions.map(
+				(content, index) =>
+					new Card({
+						type: 'white',
+						style: {
+							marginTop: 'calc(-1 * var(--overlap-y, 102px))',
+							marginLeft: 'calc(-1 * var(--overlap-x, 40px))',
+							transform: `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`,
+						},
+						innerHTML: content,
+						toggleSelection: function () {
+							const isSelected = this.hasClass('selected');
+							this.elem.style.transform = isSelected
+								? `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`
+								: 'rotate(' + randInt(-33, 33) + 'deg)';
+							this[isSelected ? 'removeClass' : 'addClass']('selected');
+						},
+						onPointerPress: function () {
+							const isAlreadySelected = this.elem.classList.contains('selected');
 
-								// Deselect all cards first
-								submissions.elem.querySelectorAll('.selected').forEach(elem => {
-									elem.classList.remove('selected');
-									elem.style.transform = `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`;
-								});
+							// Deselect all cards first
+							submissions.elem.querySelectorAll('.selected').forEach(elem => {
+								elem.classList.remove('selected');
+								elem.style.transform = `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`;
+							});
 
-								// If this card was already selected, leave it deselected
-								if (isAlreadySelected) {
-									submissions.options.selectedCard = undefined;
-									return;
-								}
+							// If this card was already selected, leave it deselected
+							if (isAlreadySelected) {
+								submissions.options.selectedCard = undefined;
+								return;
+							}
 
-								// Select this card - move it up and toward center
-								this.addClass('selected');
+							// Select this card - move it up and toward center
+							this.addClass('selected');
 
-								// Calculate how far to move toward center (30% of the way)
-								const cardRect = this.elem.getBoundingClientRect();
-								const submissionsRect = submissions.elem.getBoundingClientRect();
-								const cardCenter = cardRect.left + cardRect.width / 2;
-								const submissionsCenter = submissionsRect.left + submissionsRect.width / 2;
-								const offsetToCenter = (submissionsCenter - cardCenter) * 0.3;
+							// Calculate how far to move toward center (30% of the way)
+							const cardRect = this.elem.getBoundingClientRect();
+							const submissionsRect = submissions.elem.getBoundingClientRect();
+							const cardCenter = cardRect.left + cardRect.width / 2;
+							const submissionsCenter = submissionsRect.left + submissionsRect.width / 2;
+							const offsetToCenter = (submissionsCenter - cardCenter) * 0.3;
 
-								this.elem.style.transition = 'transform 0.3s ease-out';
-								this.elem.style.transform = `translate(${offsetToCenter}px, -120px) rotate(${randInt(-5, 5)}deg) scale(1.1)`;
+							this.elem.style.transition = 'transform 0.3s ease-out';
+							this.elem.style.transform = `translate(${offsetToCenter}px, -120px) rotate(${randInt(-5, 5)}deg) scale(1.1)`;
 
-								submissions.options.selectedCard = this;
-							},
-						}),
-				),
+							submissions.options.selectedCard = this;
+						},
+					}),
+			),
 		});
 
 		const voteButton = new Button({

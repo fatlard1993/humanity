@@ -1,9 +1,24 @@
 import { Game as BaseGame, refuse } from '@fatlard1993/web-game-framework';
 import { simpleId } from '@fatlard1993/web-game-framework/utils';
 
+import { shuffleArray } from '@vanilla-bean/components/utils';
+
 import cards from './cards.js';
 
 export default class Game extends BaseGame {
+	// 2: each player's hand moved off the player (whom every page is shown) into `hands`
+	static version = 2;
+	static migrations = {
+		2: save => {
+			save.hands = {};
+
+			for (const player of save.players ?? []) {
+				save.hands[player.id] = player.cards ?? [];
+				delete player.cards;
+			}
+		},
+	};
+
 	constructor(options) {
 		super(options);
 
@@ -11,6 +26,8 @@ export default class Game extends BaseGame {
 		this.url = this.server.url;
 		this.cards = options.saveState?.cards || cards.buildSuperPack(options.packs);
 		this.black = options.saveState?.black || this.draw('blacks');
+		// Each player's cards, by player id: on their own page alone (viewFor)
+		this.hands = options.saveState?.hands || {};
 		this.scores = options.saveState?.scores || {};
 
 		this.stage = options.saveState?.stage || 'wait';
@@ -32,17 +49,35 @@ export default class Game extends BaseGame {
 		return count > 1 ? draw : draw[0];
 	}
 
+	// What anyone is shown (the lobby, a watcher, every player): no one's hand, whether each player has played or voted but
+	// not which card, and the cards played this round but not who played them
 	toClient() {
+		const { players, ...game } = super.toClient();
+
 		return {
-			...super.toClient(),
+			...game,
+			players: players.map(player => ({ ...player, selectedCard: !!player.selectedCard })),
 			url: this.url,
 			cards: { blacksRemaining: this.cards.blacks.length, whitesRemaining: this.cards.whites.length },
 			black: this.black,
 			scores: this.scores,
 			stage: this.stage,
-			submissions: this.submissions,
+			submissions: this.submissions.map(({ card }) => card),
 			lastRoundScores: this.lastRoundScores,
 			lastRoundWinner: this.lastRoundWinner,
+		};
+	}
+
+	// A player's page: their own hand, and the cards to vote for without their own
+	viewFor(playerId) {
+		const view = this.toClient();
+
+		if (!playerId) return view;
+
+		return {
+			...view,
+			hand: this.hands[playerId] ?? [],
+			submissions: this.submissions.filter(submission => submission.playerId !== playerId).map(({ card }) => card),
 		};
 	}
 
@@ -50,6 +85,7 @@ export default class Game extends BaseGame {
 		return {
 			...super.toSaveState(),
 			cards: this.cards,
+			hands: this.hands,
 			black: this.black,
 			scores: this.scores,
 			stage: this.stage,
@@ -59,9 +95,9 @@ export default class Game extends BaseGame {
 		};
 	}
 
-	// What a new player starts with: a hand, and waiting to ready up
+	// A new player waits to ready up, and is dealt a hand (onPlayerAdded)
 	createPlayer() {
-		return { cards: this.draw('whites', this.options.handSize), stage: 'wait', selectedCard: false };
+		return { stage: 'wait', selectedCard: false };
 	}
 
 	// What a player can do, from their page: act('ready'), act('play', { card }), act('vote', { card }),
@@ -76,7 +112,7 @@ export default class Game extends BaseGame {
 		},
 		play(player, { card } = {}) {
 			if (this.stage !== 'play' || player.stage !== 'play') refuse('Not the time to play a card');
-			if (typeof card !== 'string' || !player.cards.includes(card)) refuse('That card is not in your hand');
+			if (typeof card !== 'string' || !this.hands[player.id]?.includes(card)) refuse('That card is not in your hand');
 
 			this.selectCard(player.id, card);
 		},
@@ -109,11 +145,15 @@ export default class Game extends BaseGame {
 		this.publish();
 	}
 
-	onPlayerAdded() {
+	onPlayerAdded(player) {
+		this.hands[player.id] = this.draw('whites', this.options.handSize);
 		this.publish();
 	}
 
-	onPlayerRemoved() {
+	// A player who leaves puts their hand back at the bottom of the deck
+	onPlayerRemoved(id) {
+		this.cards.whites.push(...(this.hands[id] ?? []));
+		delete this.hands[id];
 		this.publish();
 	}
 
@@ -128,6 +168,8 @@ export default class Game extends BaseGame {
 				this.submissions.push({ playerId: player.id, card: player.selectedCard });
 				this.players.set(player.id, { ...player, selectedCard: false });
 			});
+			// In no one's order, so where a card sits says nothing of who played it
+			this.submissions = shuffleArray(this.submissions);
 		} else if (stage === 'end') {
 			this.stage = 'end';
 			this.lastRoundScores = {};
@@ -183,12 +225,13 @@ export default class Game extends BaseGame {
 		const next = { ...player, selectedCard: card };
 
 		if (player.stage === 'play') {
+			const hand = this.hands[id];
 			const replacement = this.draw('whites');
 
 			next.stage = 'vote';
-			next.cards = replacement
-				? player.cards.map(held => (held === card ? replacement : held))
-				: player.cards.filter(held => held !== card);
+			this.hands[id] = replacement
+				? hand.map(held => (held === card ? replacement : held))
+				: hand.filter(held => held !== card);
 		} else next.stage = 'end';
 
 		this.players.set(id, next);
