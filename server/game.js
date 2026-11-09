@@ -19,57 +19,6 @@ export default class Game extends BaseGame {
 		this.lastRoundWinner = options.saveState?.lastRoundWinner || {};
 
 		console.log('new Game', { id: this.id, name: this.name, options: this.options });
-
-		// Setup EventRouter event handlers
-		this._setupEventHandlers();
-	}
-
-	/**
-	 * Setup EventRouter event handlers
-	 */
-	_setupEventHandlers() {
-		// Define stage update event
-		this.events.defineEvent('game:updateStage', {
-			validate: data => {
-				const validStages = ['play', 'vote', 'end', 'wait'];
-				return data.stage && validStages.includes(data.stage);
-			},
-		});
-
-		this.events.on('game:updateStage', data => {
-			this.updateGameStage(data.stage);
-		});
-
-		// Define player card selection event
-		this.events.defineEvent('player:selectCard', {
-			validate: data => {
-				if (!data.playerId || !data.cardId) return false;
-				if (!this.players.has(data.playerId)) return false;
-				const player = this.players.get(data.playerId);
-				// Ensure player has the card
-				return player.cards.includes(data.cardId);
-			},
-		});
-
-		this.events.on('player:selectCard', data => {
-			this.updatePlayer(data.playerId, { selectedCard: data.cardId });
-			this.broadcast('cardSelected', { playerId: data.playerId });
-		});
-
-		// Wildcard listener for all game events (logging)
-		this.events.on('game:*', (_data, context) => {
-			console.log(`[Game Event] ${context.eventName}`, { gameId: this.id, stage: this.stage });
-		});
-
-		// Wildcard listener for all player events (logging)
-		this.events.on('player:*', (data, context) => {
-			console.log(`[Player Event] ${context.eventName}`, { playerId: data.playerId, gameId: this.id });
-		});
-
-		console.log('EventRouter configured', {
-			gameId: this.id,
-			eventCount: this.events.listEvents().length,
-		});
 	}
 
 	_generateId() {

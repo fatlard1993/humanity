@@ -1,6 +1,6 @@
 import { createClientEventRouter } from '@fatlard1993/web-game-framework/client';
 
-const GAME_EVENTS = ['stageUpdate', 'addPlayer', 'removePlayer', 'playerUpdate', 'cardSelected'];
+const GAME_EVENTS = ['stageUpdate', 'addPlayer', 'removePlayer', 'playerUpdate'];
 
 /**
  * Creates a client event router for a game, wiring shared game events to callbacks.
