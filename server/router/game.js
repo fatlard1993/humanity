@@ -25,26 +25,6 @@ const _game = async (request, server) => {
 		return Response.json(name);
 	}
 
-	match = requestMatch('POST', '/games/:gameId/join', request);
-	if (match) {
-		const body = await request.json();
-		const { gameId } = match;
-		const { playerId, name } = body;
-		const game = server.games[gameId];
-
-		if (!game) return Response.json({ message: `Could not find game "${gameId}"` }, { status: 404 });
-
-		if (playerId && game.players.has(playerId)) {
-			if (game.stage === 'end') game.updateGameStage('wait');
-
-			return Response.json(game.updatePlayer(playerId, { stage: 'play' }), { status: 200 });
-		}
-
-		const newPlayer = game.addPlayer(name);
-
-		return Response.json(newPlayer, { status: 201 });
-	}
-
 	match = requestMatch('POST', '/games/:gameId/:playerId/ready', request);
 	if (match) {
 		const { gameId, playerId } = match;

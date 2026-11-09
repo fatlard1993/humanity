@@ -117,6 +117,13 @@ export default class Game extends BaseGame {
 		return { cards: this.draw('whites', this.options.handSize), stage: 'wait', selectedCard: false };
 	}
 
+	// Joining again as who they were (Play Again) starts the next round if this one is over, and readies them for it
+	onPlayerRejoined(player) {
+		if (this.stage === 'end') this.updateGameStage('wait');
+
+		this.updatePlayer(player.id, { stage: 'play' });
+	}
+
 	updateGameStage(stage) {
 		console.log('updateGameStage', stage);
 		if (stage === 'play') {
