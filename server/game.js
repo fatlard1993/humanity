@@ -34,7 +34,6 @@ export default class Game extends BaseGame {
 			this.options = { ...this.options, handSize, packs };
 		}
 
-		this.url = this.server.url;
 		this.cards = options.saveState?.cards || cards.buildSuperPack(this.options.packs);
 		this.black = options.saveState?.black || this.draw('blacks');
 		// Each player's cards, by player id: on their own page alone (viewFor)
@@ -68,7 +67,6 @@ export default class Game extends BaseGame {
 		return {
 			...game,
 			players: players.map(player => ({ ...player, selectedCard: !!player.selectedCard })),
-			url: this.url,
 			cards: { blacksRemaining: this.cards.blacks.length, whitesRemaining: this.cards.whites.length },
 			black: this.black,
 			scores: this.scores,

@@ -1,6 +1,6 @@
 import { Link, Button, randInt, Notify } from '@vanilla-bean/components';
 
-import { enterGame } from '@fatlard1993/web-game-framework/client';
+import { enterGame, joinUrl } from '@fatlard1993/web-game-framework/client';
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
 import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
 import Card, { Hand } from './shared/Card.js';
@@ -15,6 +15,14 @@ export default class Watch extends View {
 
 	async _init() {
 		const { gameId } = this.options;
+
+		// The join code a phone opens: this page's address, or the server's on the network when this page is localhost
+		joinUrl(gameId).then(src => {
+			this._toolbar.options.left = [
+				new QRCode({ src, style: { margin: '-12px 12px -24px -12px' }, qrCodeConfig: { width: 70 } }),
+				new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
+			];
+		});
 		const { leave } = await enterGame(gameId, {
 			watch: true,
 			onState: view => this.show(view),
@@ -31,7 +39,6 @@ export default class Watch extends View {
 
 	// Each view of the game the server sends, drawn again when what the screen shows has changed
 	show(view) {
-		const first = !this.game;
 		const { name, stage, black, players, submissions, lastRoundWinner, scores } = view;
 		const drawn = JSON.stringify([
 			name,
@@ -44,17 +51,6 @@ export default class Watch extends View {
 		]);
 
 		this.game = view;
-
-		if (first) {
-			this._toolbar.options.left = [
-				new QRCode({
-					src: `${view.url}/#/join/${this.options.gameId}`,
-					style: { margin: '-12px 12px -24px -12px' },
-					qrCodeConfig: { width: 70 },
-				}),
-				new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
-			];
-		}
 
 		if (drawn === this._drawn) return;
 		this._drawn = drawn;
