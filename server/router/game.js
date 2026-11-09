@@ -3,7 +3,7 @@ import { randFromArray } from '@vanilla-bean/components/utils';
 
 import cards from '../cards.js';
 
-const _game = async (request, server) => {
+const _game = async request => {
 	let match;
 
 	match = requestMatch('GET', '/packs', request);
@@ -23,54 +23,6 @@ const _game = async (request, server) => {
 
 		const name = randFromArray(cards._shortWhites);
 		return Response.json(name);
-	}
-
-	match = requestMatch('POST', '/games/:gameId/:playerId/ready', request);
-	if (match) {
-		const { gameId, playerId } = match;
-
-		if (!playerId || !server.games[gameId]?.players?.has(playerId)) {
-			return Response.json({ message: `Could not find player "${playerId}"` }, { status: 404 });
-		}
-
-		const player = server.games[gameId].updatePlayer(playerId, { stage: 'play' });
-
-		return Response.json({ ...player }, { status: 200 });
-	}
-
-	match = requestMatch('POST', '/games/:gameId/:playerId/selectCard', request);
-	if (match) {
-		const body = await request.json();
-		const { gameId, playerId } = match;
-		const { selectedCard } = body;
-
-		if (!playerId || !server.games[gameId]?.players?.has(playerId)) {
-			return Response.json({ message: `Could not find player "${playerId}"` }, { status: 404 });
-		}
-
-		// TODO add validations for selected card:
-		// if stage = play card must exist in players hand
-		// if stage = vote card must exist in submissions
-
-		const updatedPlayer = server.games[gameId].updatePlayer(playerId, { selectedCard });
-
-		return Response.json({ ...updatedPlayer }, { status: 200 });
-	}
-
-	match = requestMatch('POST', '/games/:gameId/poke', request);
-	if (match) {
-		const { gameId } = match;
-		const { targetPlayerId } = await request.json();
-		const game = server.games[gameId];
-
-		if (!game) return Response.json({ message: `Could not find game "${gameId}"` }, { status: 404 });
-
-		const target = game.players.get(targetPlayerId);
-		if (!target) return Response.json({ message: `Could not find player "${targetPlayerId}"` }, { status: 404 });
-
-		game.broadcast('poke', { targetPlayerId, targetPlayerName: target.name });
-
-		return Response.json({ ok: true });
 	}
 };
 

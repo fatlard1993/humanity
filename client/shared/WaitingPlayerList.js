@@ -1,16 +1,6 @@
-import {
-	Card,
-	Component,
-	List,
-	Label,
-	Button,
-	Notify,
-	styled,
-	conditionalList,
-	failureReason,
-} from '@vanilla-bean/components';
+import { Card, Component, List, Label, Button, Notify, styled, conditionalList } from '@vanilla-bean/components';
 
-import { readyUp, pokePlayer } from '../api/game.js';
+import { act } from '@fatlard1993/web-game-framework/client';
 
 const WaitingPlayerListItem = styled(
 	Card,
@@ -91,10 +81,9 @@ export class ReadyOrNot extends Component {
 							thenItem: new Button({
 								content: 'Ready',
 								onPointerPress: async event => {
-									const ready = await readyUp({ gameId: this.options.game.id, playerId: this.options.playerId });
+									const ready = await act('ready');
 
-									if (ready.status !== 'success')
-										return new Notify({ intent: 'danger', content: failureReason(ready) });
+									if (!ready.ok) return;
 
 									new Notify({
 										x: event.clientX,
@@ -105,21 +94,27 @@ export class ReadyOrNot extends Component {
 									});
 								},
 							}),
-							elseItems: [
-								new Button({
-									content: 'Poke',
-									onPointerPress: async event => {
-										await pokePlayer({ gameId: this.options.game.id, targetPlayerId: id });
-										new Notify({
-											x: event.clientX,
-											y: event.clientY,
-											content: 'Poked!',
-											intent: 'success',
-											timeout: 1300,
-										});
-									},
-								}),
-							],
+							// A player pokes; someone watching has no one to poke as
+							elseItems: !this.options.playerId
+								? []
+								: [
+										new Button({
+											content: 'Poke',
+											onPointerPress: async event => {
+												const poked = await act('poke', { targetPlayerId: id });
+
+												if (!poked.ok) return;
+
+												new Notify({
+													x: event.clientX,
+													y: event.clientY,
+													content: 'Poked!',
+													intent: 'success',
+													timeout: 1300,
+												});
+											},
+										}),
+									],
 						},
 					]),
 				})),

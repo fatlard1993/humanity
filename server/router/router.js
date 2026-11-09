@@ -8,7 +8,7 @@ const gameCrudRoutes = basicGameRoutes();
 // The game's routes, then the page and its files (the page revalidates; a game path no route took is a 404, not the
 // page). The Server takes socket upgrades, game and page reload alike, before this is asked.
 const router = server => async request =>
-	(await gameRoutes(request, server)) ??
+	(await gameRoutes(request)) ??
 	(await gameCrudRoutes(request, server)) ??
 	(await serveApp(request, { api: '/games/' })) ??
 	new Response('Not Found', { status: 404 });

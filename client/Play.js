@@ -1,12 +1,11 @@
-import { Component, Button, randInt, Notify, vibrate, failureReason } from '@vanilla-bean/components';
+import { Button, randInt, Notify, vibrate } from '@vanilla-bean/components';
 
+import { act, enterGame } from '@fatlard1993/web-game-framework/client';
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
-import { getGame, joinGame, selectCard } from './api/game.js';
 import Card, { Hand } from './shared/Card.js';
 import { ReadyOrNot } from './shared/WaitingPlayerList.js';
 import RoundWinner from './shared/RoundWinner.js';
-import createGameRouter from './eventRouter.js';
 
 // A card is 252px across its padding; on a phone two fit side by side, sized from the hand's width (less 16px for their
 // tilt), with the overlap and padding in step. The resting translate takes half the overlap there so the pair sits
@@ -61,89 +60,61 @@ export default class Play extends View {
 	}
 
 	async _init() {
-		this.playerId = localStorage.getItem(this.options.gameId);
-
-		if (!this.playerId) {
-			window.location.href = `#/join/${this.options.gameId}`;
-
-			return;
-		}
-
-		this.options.game = await getGame(this.options.gameId);
-
-		const router = createGameRouter(this.options.gameId, {
-			onUpdate: () => this.refresh(),
-			onPoke: data => {
-				if (data.targetPlayerId === this.playerId) {
+		const { gameId } = this.options;
+		const { playerId, leave } = await enterGame(gameId, {
+			onState: view => this.show(view),
+			onUpdate: message => {
+				if (message.update === 'poke' && message.targetPlayerId === this.playerId) {
 					vibrate([200, 100, 200]);
 					new Notify({ content: 'Hey! Ready up!', intent: 'success', timeout: 2500 });
 				}
 			},
+			notMember: () => (window.location.href = `#/join/${gameId}`),
+			gone: () => {
+				new Notify({ intent: 'danger', content: 'That game is gone' });
+				window.location.href = '#/hub';
+			},
 		});
 
-		this.options.onDisconnected = () => {
-			this.options.game.unsubscribe();
-			router.destroy();
-		};
+		this.playerId = playerId;
+		this.addCleanup('game', leave);
+		// Left before the game opened
+		if (!this.elem.isConnected) leave();
+	}
 
-		if (this.options.game.response.status !== 200) {
-			new Notify({ intent: 'danger', content: failureReason(this.options.game) });
-			window.location.href = `#/hub`;
-			return;
-		}
+	// Each view of the game the server sends: the screen is drawn again only when what it shows has changed, so a card
+	// picked and raised stays raised while others play
+	show(view) {
+		const player = view.players.find(({ id }) => id === this.playerId);
 
-		this.game = this.options.game.body;
-		this.player = this.game.players.find(({ id }) => id === this.playerId);
-
-		if (!this.player) {
+		if (!player) {
 			window.location.href = `#/join/${this.options.gameId}`;
 			return;
 		}
 
-		this.stage = this.player.stage !== this.game.stage ? 'wait' : this.player.stage;
+		this.game = view;
+		this.player = player;
+		this.stage = player.stage !== view.stage ? 'wait' : player.stage;
 
-		if (typeof this[`render_${this.stage}`] === 'function') {
-			this[`render_${this.stage}`]();
-		} else {
-			console.error(`No render method for stage: ${this.stage}`);
-			new Notify({ intent: 'danger', content: `Unknown game stage: ${this.stage}` });
-			this._body.append(
-				new Component({
-					content: `Debug info: stage="${this.stage}", player.stage="${this.player.stage}", game.stage="${this.game.stage}"`,
-				}),
-			);
-		}
+		const drawn = JSON.stringify(this.drawnFrom());
+
+		if (drawn === this._drawn) return;
+		this._drawn = drawn;
+
+		this._body.empty();
+		this._toolbar.options.right = [];
+		this[`render_${this.stage}`]();
 	}
 
-	async refresh() {
-		if (this._refreshing) return;
-		this._refreshing = true;
+	// What the current screen shows, to tell whether a new view changes it
+	drawnFrom() {
+		const { name, black, players, submissions, lastRoundWinner, scores } = this.game;
 
-		try {
-			this.options.game.invalidateCache();
-			this.options.game = await getGame(this.options.gameId);
+		if (this.stage === 'wait') return [this.stage, name, players.map(({ id, name, stage }) => [id, name, stage])];
+		if (this.stage === 'play') return [this.stage, name, black, this.player.cards];
+		if (this.stage === 'vote') return [this.stage, name, black, submissions];
 
-			if (this.options.game.response.status !== 200) {
-				window.location.href = '#/hub';
-				return;
-			}
-
-			this.game = this.options.game.body;
-			this.player = this.game.players.find(({ id }) => id === this.playerId);
-
-			if (!this.player) {
-				window.location.href = `#/join/${this.options.gameId}`;
-				return;
-			}
-
-			this.stage = this.player.stage !== this.game.stage ? 'wait' : this.player.stage;
-
-			this._body.empty();
-			this._toolbar.options.right = [];
-			this[`render_${this.stage}`]();
-		} finally {
-			this._refreshing = false;
-		}
+		return [this.stage, name, black, lastRoundWinner, scores, players.map(({ id, name }) => [id, name])];
 	}
 
 	render_wait() {
@@ -236,12 +207,7 @@ export default class Play extends View {
 		const playButton = new Button({
 			content: 'Play',
 			disabled: hand.options.subscriber('selectedCard', _ => !_),
-			onPointerPress: () =>
-				selectCard({
-					gameId: this.options.gameId,
-					playerId: this.playerId,
-					selectedCard: hand.options.selectedCard.options.innerHTML,
-				}),
+			onPointerPress: () => act('play', { card: hand.options.selectedCard.options.innerHTML }),
 		});
 
 		this._toolbar.options.right = [playButton];
@@ -319,12 +285,7 @@ export default class Play extends View {
 		const voteButton = new Button({
 			content: 'Vote',
 			disabled: submissions.options.subscriber('selectedCard', _ => !_),
-			onPointerPress: () =>
-				selectCard({
-					gameId: this.options.gameId,
-					playerId: this.playerId,
-					selectedCard: submissions.options.selectedCard.options.innerHTML,
-				}),
+			onPointerPress: () => act('vote', { card: submissions.options.selectedCard.options.innerHTML }),
 		});
 
 		this._toolbar.options.right = [voteButton];
@@ -335,7 +296,7 @@ export default class Play extends View {
 
 		const playAgainButton = new Button({
 			content: 'Play Again',
-			onPointerPress: () => joinGame(this.options.gameId, { body: { playerId: this.playerId } }),
+			onPointerPress: () => act('ready'),
 		});
 
 		this._toolbar.options.right = [playAgainButton];

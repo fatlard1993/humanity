@@ -1,11 +1,10 @@
-import { Link, Button, randInt, Notify, failureReason } from '@vanilla-bean/components';
+import { Link, Button, randInt, Notify } from '@vanilla-bean/components';
 
+import { enterGame } from '@fatlard1993/web-game-framework/client';
 import { View } from '@fatlard1993/web-game-framework/ui/layout';
-import { getGame } from './api/game.js';
+import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
 import Card, { Hand } from './shared/Card.js';
 import RoundWinner from './shared/RoundWinner.js';
-import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
-import createGameRouter from './eventRouter.js';
 import PlayersDialog from './shared/PlayersDialog.js';
 
 export default class Watch extends View {
@@ -15,60 +14,55 @@ export default class Watch extends View {
 	}
 
 	async _init() {
-		this.options.game = await getGame(this.options.gameId);
-
-		const router = createGameRouter(this.options.gameId, {
-			onUpdate: () => this.refresh(),
+		const { gameId } = this.options;
+		const { leave } = await enterGame(gameId, {
+			watch: true,
+			onState: view => this.show(view),
+			gone: () => {
+				new Notify({ intent: 'danger', content: 'That game is gone' });
+				window.location.href = '#/hub';
+			},
 		});
 
-		this.options.onDisconnected = () => {
-			this.options.game.unsubscribe();
-			router.destroy();
-		};
-
-		if (this.options.game.response.status !== 200) {
-			new Notify({ intent: 'danger', content: failureReason(this.options.game) });
-			window.location.href = `#/hub`;
-			return;
-		}
-
-		this.game = this.options.game.body;
-
-		this._toolbar.options.heading = this.game.name;
-		this._toolbar.options.left = [
-			new QRCode({
-				src: `${this.game.url}/#/join/${this.options.gameId}`,
-				style: { margin: '-12px 12px -24px -12px' },
-				qrCodeConfig: { width: 70 },
-			}),
-			new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
-		];
-
-		this[`render_${this.game.stage === 'end' ? 'end' : 'play'}`]();
+		this.addCleanup('game', leave);
+		// Left before the game opened
+		if (!this.elem.isConnected) leave();
 	}
 
-	async refresh() {
-		if (this._refreshing) return;
-		this._refreshing = true;
+	// Each view of the game the server sends, drawn again when what the screen shows has changed
+	show(view) {
+		const first = !this.game;
+		const { name, stage, black, players, submissions, lastRoundWinner, scores } = view;
+		const drawn = JSON.stringify([
+			name,
+			stage,
+			black,
+			players.map(({ id, name, stage, selectedCard }) => [id, name, stage, !!selectedCard]),
+			submissions.length,
+			lastRoundWinner,
+			scores,
+		]);
 
-		try {
-			this.options.game.invalidateCache();
-			this.options.game = await getGame(this.options.gameId);
+		this.game = view;
 
-			if (this.options.game.response.status !== 200) {
-				window.location.href = '#/hub';
-				return;
-			}
-
-			this.game = this.options.game.body;
-
-			this._body.empty();
-			this._toolbar.options.right = [];
-			this._toolbar.options.heading = this.game.name;
-			this[`render_${this.game.stage === 'end' ? 'end' : 'play'}`]();
-		} finally {
-			this._refreshing = false;
+		if (first) {
+			this._toolbar.options.left = [
+				new QRCode({
+					src: `${view.url}/#/join/${this.options.gameId}`,
+					style: { margin: '-12px 12px -24px -12px' },
+					qrCodeConfig: { width: 70 },
+				}),
+				new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
+			];
 		}
+
+		if (drawn === this._drawn) return;
+		this._drawn = drawn;
+
+		this._body.empty();
+		this._toolbar.options.right = [];
+		this._toolbar.options.heading = name;
+		this[`render_${stage === 'end' ? 'end' : 'play'}`]();
 	}
 
 	render_play() {

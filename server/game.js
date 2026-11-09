@@ -1,4 +1,4 @@
-import BaseGame from '@fatlard1993/web-game-framework/core/Game';
+import { Game as BaseGame, refuse } from '@fatlard1993/web-game-framework';
 import { simpleId } from '@fatlard1993/web-game-framework/utils';
 
 import cards from './cards.js';
@@ -17,8 +17,6 @@ export default class Game extends BaseGame {
 		this.submissions = options.saveState?.submissions || [];
 		this.lastRoundScores = options.saveState?.lastRoundScores || {};
 		this.lastRoundWinner = options.saveState?.lastRoundWinner || {};
-
-		console.log('new Game', { id: this.id, name: this.name, options: this.options });
 	}
 
 	_generateId() {
@@ -66,15 +64,60 @@ export default class Game extends BaseGame {
 		return { cards: this.draw('whites', this.options.handSize), stage: 'wait', selectedCard: false };
 	}
 
-	// Joining again as who they were (Play Again) starts the next round if this one is over, and readies them for it
+	// What a player can do, from their page: act('ready'), act('play', { card }), act('vote', { card }),
+	// act('poke', { targetPlayerId }). Each runs as the page's own player, and every page is sent its view after.
+	actions = {
+		// Ready for the next round; at the end of one, that's playing again
+		ready(player) {
+			if (this.stage === 'end') this.updateGameStage('wait');
+			else if (player.stage !== 'wait') refuse('Already ready');
+
+			this.readyUp(player.id);
+		},
+		play(player, { card } = {}) {
+			if (this.stage !== 'play' || player.stage !== 'play') refuse('Not the time to play a card');
+			if (typeof card !== 'string' || !player.cards.includes(card)) refuse('That card is not in your hand');
+
+			this.selectCard(player.id, card);
+		},
+		vote(player, { card } = {}) {
+			if (this.stage !== 'vote' || player.stage !== 'vote') refuse('Not the time to vote');
+
+			const submission = typeof card === 'string' && this.submissions.find(found => found.card === card);
+
+			if (!submission) refuse('That card was not played');
+			if (submission.playerId === player.id) refuse('Vote for someone else');
+
+			this.selectCard(player.id, card);
+		},
+		poke(player, { targetPlayerId } = {}) {
+			const target = this.players.get(targetPlayerId);
+
+			if (!target) refuse('No such player');
+			if (target.id === player.id) refuse('Poke someone else');
+
+			this.broadcast('poke', { targetPlayerId: target.id, targetPlayerName: target.name });
+		},
+	};
+
+	// Joining again as who they were (Play Again from an old page) starts the next round if this one is over, and readies
+	// them for it
 	onPlayerRejoined(player) {
 		if (this.stage === 'end') this.updateGameStage('wait');
 
-		this.updatePlayer(player.id, { stage: 'play' });
+		this.readyUp(player.id);
+		this.publish();
+	}
+
+	onPlayerAdded() {
+		this.publish();
+	}
+
+	onPlayerRemoved() {
+		this.publish();
 	}
 
 	updateGameStage(stage) {
-		console.log('updateGameStage', stage);
 		if (stage === 'play') {
 			this.stage = 'play';
 		} else if (stage === 'vote') {
@@ -120,44 +163,39 @@ export default class Game extends BaseGame {
 
 			this.players.forEach(player => this.players.set(player.id, { ...player, stage: 'wait' }));
 		}
-
-		this.broadcast('stageUpdate', { stage });
 	}
 
-	updatePlayer(id, updates) {
-		const currentPlayer = this.players.get(id);
-		const newPlayer = { ...currentPlayer, ...updates };
-
-		if (updates.selectedCard) {
-			newPlayer.stage = currentPlayer.stage === 'play' ? 'vote' : 'end';
-
-			if (currentPlayer.stage === 'play') {
-				const replacement = this.draw('whites');
-
-				newPlayer.cards = replacement
-					? newPlayer.cards.map(card => (card === updates.selectedCard ? replacement : card))
-					: newPlayer.cards.filter(card => card !== updates.selectedCard);
-			}
-		}
-
-		this.players.set(id, newPlayer);
+	// Ready: the round starts once everyone is, with two or more
+	readyUp(id) {
+		this.players.set(id, { ...this.players.get(id), stage: 'play' });
 
 		if (
 			this.stage === 'wait' &&
 			this.players.size > 1 &&
-			updates.stage &&
-			[...this.players].every(([, { stage }]) => stage === 'play')
-		) {
-			console.log('All players ready, starting game');
+			[...this.players.values()].every(({ stage }) => stage === 'play')
+		)
 			this.updateGameStage('play');
-		} else if (updates.selectedCard && [...this.players].every(([, { selectedCard }]) => selectedCard)) {
+	}
+
+	// A card played (from the hand, drawing another) or voted for: the stage moves on once everyone has
+	selectCard(id, card) {
+		const player = this.players.get(id);
+		const next = { ...player, selectedCard: card };
+
+		if (player.stage === 'play') {
+			const replacement = this.draw('whites');
+
+			next.stage = 'vote';
+			next.cards = replacement
+				? player.cards.map(held => (held === card ? replacement : held))
+				: player.cards.filter(held => held !== card);
+		} else next.stage = 'end';
+
+		this.players.set(id, next);
+
+		if ([...this.players.values()].every(({ selectedCard }) => selectedCard)) {
 			if (this.stage === 'play') this.updateGameStage('vote');
 			else if (this.stage === 'vote') this.updateGameStage('end');
-		} else {
-			console.log('Broadcasting playerUpdate', { playerId: id, updates });
-			this.broadcast('playerUpdate', { playerId: id, updates });
 		}
-
-		return this.players.get(id);
 	}
 }
