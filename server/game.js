@@ -112,21 +112,9 @@ export default class Game extends BaseGame {
 		};
 	}
 
-	addPlayer(name) {
-		const id = simpleId();
-		const newPlayer = {
-			id,
-			name,
-			cards: this.draw('whites', this.options.handSize),
-			stage: 'wait',
-			selectedCard: false,
-		};
-
-		this.players.set(id, newPlayer);
-
-		this.broadcast('addPlayer', { newPlayer });
-
-		return newPlayer;
+	// What a new player starts with: a hand, and waiting to ready up
+	createPlayer() {
+		return { cards: this.draw('whites', this.options.handSize), stage: 'wait', selectedCard: false };
 	}
 
 	updateGameStage(stage) {
@@ -215,13 +203,5 @@ export default class Game extends BaseGame {
 		}
 
 		return this.players.get(id);
-	}
-
-	removePlayer(id) {
-		this.players.delete(id);
-
-		this.broadcast('removePlayer', { id });
-
-		return id;
 	}
 }
