@@ -208,3 +208,50 @@ test('a room with no packs or a hand too small is refused; malformed actions are
 		expect(game.act(ada.id, 'poke', data).error).toBe('No such player');
 	}
 });
+
+test('someone joining mid-round sits it out (or joins it while cards are being played) without holding it up', () => {
+	const { game, ada, bo } = started();
+	const cy = game.addPlayer('Cy');
+	const adaCard = handOf(game, ada.id)[0];
+	const boCard = handOf(game, bo.id)[0];
+
+	game.act(ada.id, 'play', { card: adaCard });
+	game.act(bo.id, 'play', { card: boCard });
+	expect(game.stage).toBe('vote');
+	expect(game.act(cy.id, 'ready')).toEqual({ ok: false, error: 'The next round starts after this one' });
+
+	game.act(ada.id, 'vote', { card: boCard });
+	game.act(bo.id, 'vote', { card: adaCard });
+	expect(game.stage).toBe('end');
+	expect(game.scores[cy.id]).toBeUndefined();
+
+	// Ready while cards are being played: in this round
+	game.act(cy.id, 'ready');
+	game.act(ada.id, 'ready');
+	game.act(bo.id, 'ready');
+	expect(game.stage).toBe('play');
+
+	const dee = game.addPlayer('Dee');
+
+	expect(game.act(dee.id, 'ready')).toEqual({ ok: true });
+	for (const player of [ada, bo, cy]) game.act(player.id, 'play', { card: handOf(game, player.id)[0] });
+	expect(game.stage).toBe('play');
+	game.act(dee.id, 'play', { card: handOf(game, dee.id)[0] });
+	expect(game.stage).toBe('vote');
+	expect(game.submissions).toHaveLength(4);
+});
+
+test('someone leaving mid-round lets it go on, or calls it off when one player is left', () => {
+	const { game, ada, bo } = started();
+	const cy = game.addPlayer('Cy');
+
+	game.act(cy.id, 'ready');
+	game.act(ada.id, 'play', { card: handOf(game, ada.id)[0] });
+	game.act(bo.id, 'play', { card: handOf(game, bo.id)[0] });
+	game.removePlayer(cy.id);
+	expect(game.stage).toBe('vote');
+
+	game.removePlayer(bo.id);
+	expect(game.stage).toBe('wait');
+	expect(game.players.get(ada.id)).toMatchObject({ stage: 'wait', selectedCard: false });
+});

@@ -56,7 +56,8 @@ export class ReadyOrNot extends Component {
 		const notReady = [];
 
 		this.options.game.players.forEach(player => {
-			if (player.stage !== this.options.game.stage) ready.push(player);
+			// Done with this stage (readied, played, voted); someone sitting out the round (waiting) isn't
+			if (player.stage !== this.options.game.stage && player.stage !== 'wait') ready.push(player);
 			else notReady.push(player);
 		});
 

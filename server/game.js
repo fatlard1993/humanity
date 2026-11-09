@@ -118,6 +118,7 @@ export default class Game extends BaseGame {
 		ready(player) {
 			if (this.stage === 'end') this.updateGameStage('wait');
 			else if (player.stage !== 'wait') refuse('Already ready');
+			else if (this.stage === 'vote') refuse('The next round starts after this one');
 
 			this.readyUp(player.id);
 		},
@@ -165,11 +166,37 @@ export default class Game extends BaseGame {
 		this.publish();
 	}
 
-	// A player who leaves puts their hand back at the bottom of the deck
+	// A player who leaves puts their hand back at the bottom of the deck, and the round goes on without them
 	onPlayerRemoved(id) {
 		this.cards.whites.push(...(this.hands[id] ?? []));
 		delete this.hands[id];
+		this.advance();
 		this.publish();
+	}
+
+	// Who's in the round under way: everyone who readied for it. Someone who joined after it began (still waiting) sits
+	// it out, unless they ready while cards are still being played.
+	inRound() {
+		return [...this.players.values()].filter(({ stage }) => stage !== 'wait');
+	}
+
+	// The game moves on when everyone it waits for is done: the round starts once all of two or more are ready, and each
+	// stage ends once everyone in the round has played or voted. A round down to one player is called off.
+	advance() {
+		if (this.stage === 'wait') {
+			const players = [...this.players.values()];
+
+			if (players.length > 1 && players.every(({ stage }) => stage === 'play')) this.updateGameStage('play');
+
+			return;
+		}
+		if (this.stage === 'end') return;
+
+		const inRound = this.inRound();
+
+		if (inRound.length < 2) this.updateGameStage('wait');
+		else if (inRound.every(({ selectedCard }) => selectedCard))
+			this.updateGameStage(this.stage === 'play' ? 'vote' : 'end');
 	}
 
 	updateGameStage(stage) {
@@ -179,7 +206,7 @@ export default class Game extends BaseGame {
 			this.stage = 'vote';
 			this.submissions = [];
 
-			this.players.forEach(player => {
+			this.inRound().forEach(player => {
 				this.submissions.push({ playerId: player.id, card: player.selectedCard });
 				this.players.set(player.id, { ...player, selectedCard: false });
 			});
@@ -189,9 +216,10 @@ export default class Game extends BaseGame {
 			this.stage = 'end';
 			this.lastRoundScores = {};
 
-			this.players.forEach(player => {
+			this.inRound().forEach(player => {
 				const vote = this.submissions.find(({ card }) => card === player.selectedCard);
 
+				if (!vote) return;
 				if (!this.scores[vote.playerId]) this.scores[vote.playerId] = { votes: 0, wins: 0 };
 				if (!this.lastRoundScores[vote.playerId]) this.lastRoundScores[vote.playerId] = { votes: 0, card: vote.card };
 
@@ -210,7 +238,7 @@ export default class Game extends BaseGame {
 				}
 			});
 
-			this.scores[this.lastRoundWinner.playerId].wins += 1;
+			if (this.scores[this.lastRoundWinner.playerId]) this.scores[this.lastRoundWinner.playerId].wins += 1;
 		} else if (stage === 'wait') {
 			this.stage = 'wait';
 			this.submissions = [];
@@ -218,20 +246,14 @@ export default class Game extends BaseGame {
 			this.lastRoundWinner = {};
 			this.black = this.draw('blacks'); // Draw new black card for next round
 
-			this.players.forEach(player => this.players.set(player.id, { ...player, stage: 'wait' }));
+			this.players.forEach(player => this.players.set(player.id, { ...player, stage: 'wait', selectedCard: false }));
 		}
 	}
 
-	// Ready: the round starts once everyone is, with two or more
+	// Ready: for the next round, or the one under way while cards are being played
 	readyUp(id) {
 		this.players.set(id, { ...this.players.get(id), stage: 'play' });
-
-		if (
-			this.stage === 'wait' &&
-			this.players.size > 1 &&
-			[...this.players.values()].every(({ stage }) => stage === 'play')
-		)
-			this.updateGameStage('play');
+		this.advance();
 	}
 
 	// A card played (from the hand, drawing another) or voted for: the stage moves on once everyone has
@@ -251,9 +273,6 @@ export default class Game extends BaseGame {
 
 		this.players.set(id, next);
 
-		if ([...this.players.values()].every(({ selectedCard }) => selectedCard)) {
-			if (this.stage === 'play') this.updateGameStage('vote');
-			else if (this.stage === 'vote') this.updateGameStage('end');
-		}
+		this.advance();
 	}
 }

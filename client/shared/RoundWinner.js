@@ -35,12 +35,12 @@ export default class RoundWinner extends Component {
 				},
 				new Component(
 					{ style: { flex: 1, fontSize: '30px' } },
-					`Winner: ${game.players.find(({ id }) => id === playerId).name}`,
+					`Winner: ${game.players.find(({ id }) => id === playerId)?.name ?? '(left)'}`,
 				),
 				new Button({ onPointerPress: () => new ScoreDialog({ game }) }, 'Show Scores'),
 			),
 			new Component({}, `Votes: ${votes}`),
-			new Component({}, `Wins: ${game.scores[playerId].wins}`),
+			new Component({}, `Wins: ${game.scores[playerId]?.wins ?? 0}`),
 		);
 
 		new Card({ type: 'black', style: tossed(), innerHTML: game.black, appendTo: this });
