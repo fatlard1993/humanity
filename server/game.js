@@ -22,9 +22,20 @@ export default class Game extends BaseGame {
 	constructor(options) {
 		super(options);
 
-		// Game-specific state
+		// A new game's room: a hand of at least two, from packs there are (a save was checked when it was made)
+		if (!options.saveState) {
+			const handSize = Number(this.options.handSize ?? 10);
+			const packs = Array.isArray(this.options.packs) ? this.options.packs.filter(name => cards.db[name]) : [];
+
+			if (!Number.isInteger(handSize) || handSize < 2 || handSize > 30)
+				throw new Error('The hand size is a whole number from 2 to 30');
+			if (packs.length === 0) throw new Error('Pick at least one card pack');
+
+			this.options = { ...this.options, handSize, packs };
+		}
+
 		this.url = this.server.url;
-		this.cards = options.saveState?.cards || cards.buildSuperPack(options.packs);
+		this.cards = options.saveState?.cards || cards.buildSuperPack(this.options.packs);
 		this.black = options.saveState?.black || this.draw('blacks');
 		// Each player's cards, by player id: on their own page alone (viewFor)
 		this.hands = options.saveState?.hands || {};
@@ -110,13 +121,17 @@ export default class Game extends BaseGame {
 
 			this.readyUp(player.id);
 		},
-		play(player, { card } = {}) {
+		play(player, data) {
+			const card = data?.card;
+
 			if (this.stage !== 'play' || player.stage !== 'play') refuse('Not the time to play a card');
 			if (typeof card !== 'string' || !this.hands[player.id]?.includes(card)) refuse('That card is not in your hand');
 
 			this.selectCard(player.id, card);
 		},
-		vote(player, { card } = {}) {
+		vote(player, data) {
+			const card = data?.card;
+
 			if (this.stage !== 'vote' || player.stage !== 'vote') refuse('Not the time to vote');
 
 			const submission = typeof card === 'string' && this.submissions.find(found => found.card === card);
@@ -126,8 +141,8 @@ export default class Game extends BaseGame {
 
 			this.selectCard(player.id, card);
 		},
-		poke(player, { targetPlayerId } = {}) {
-			const target = this.players.get(targetPlayerId);
+		poke(player, data) {
+			const target = typeof data?.targetPlayerId === 'string' && this.players.get(data.targetPlayerId);
 
 			if (!target) refuse('No such player');
 			if (target.id === player.id) refuse('Poke someone else');
@@ -146,7 +161,7 @@ export default class Game extends BaseGame {
 	}
 
 	onPlayerAdded(player) {
-		this.hands[player.id] = this.draw('whites', this.options.handSize);
+		this.hands[player.id] = this.cards.whites.splice(0, this.options.handSize);
 		this.publish();
 	}
 

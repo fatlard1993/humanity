@@ -180,3 +180,31 @@ test('a save from before hands moved off the players comes back with them in han
 	expect(game.toSaveState()).toMatchObject({ version: 2, hands: { ada: ['One', 'Two'] } });
 	expect(game.viewFor('ada').hand).toEqual(['One', 'Two']);
 });
+
+test('a room with no packs or a hand too small is refused; malformed actions are refused, not thrown', () => {
+	const make = options => () =>
+		new Game({
+			server: { games: {}, publish() {} },
+			logger: quiet,
+			name: 'Bad',
+			handSize: 3,
+			packs: ['base'],
+			...options,
+		});
+
+	expect(make({ packs: [] })).toThrow('Pick at least one card pack');
+	expect(make({ packs: 'base' })).toThrow('Pick at least one card pack');
+	expect(make({ packs: ['no such pack'] })).toThrow('Pick at least one card pack');
+	expect(make({ handSize: 1 })).toThrow('The hand size is a whole number from 2 to 30');
+	expect(make({ handSize: 'lots' })).toThrow('The hand size is a whole number from 2 to 30');
+	expect(make({ handSize: '4' })().options.handSize).toBe(4);
+
+	const { game, ada } = started();
+
+	expect(handOf(game, ada.id)).toHaveLength(3);
+	for (const data of [null, 7, 'card', { card: null }, { card: ['a'] }]) {
+		expect(game.act(ada.id, 'play', data).error).toBe('That card is not in your hand');
+		expect(game.act(ada.id, 'vote', data).error).toBe('Not the time to vote');
+		expect(game.act(ada.id, 'poke', data).error).toBe('No such player');
+	}
+});
