@@ -18,7 +18,7 @@ My digital take on the; wonderful, terrible, hilarious, hideous game provided by
 
 `bun install`, then `bun start` and open [http://localhost:8032](http://localhost:8032). Options: `--port`/`-p`, `--database`/`-d` (default `~/.humanity.json`) and `--verbosity`/`-v`.
 
-`bun dev` runs it with hot reload, rebuilding the client on change.
+`bun dev` restarts the server on save and rebuilds the client on change.
 
 ## Card packs
 
