@@ -4,6 +4,7 @@ import { act, enterGame } from '@fatlard1993/web-game-framework/client';
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
 
+import { MAX_CHANGES, changes, editProblem } from '../rules/edit.js';
 import Card from './shared/Card.js';
 import PickHand from './shared/PickHand.js';
 import Results from './shared/Results.js';
@@ -55,9 +56,81 @@ const Lobby = styled(
 			}
 		}
 
+		/* A tiebreak's cards side by side, each under whose it is */
+		& .duel {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 22px;
+			/* Three cards across in the column */
+			zoom: 0.9;
+
+			& figure {
+				margin: 0;
+			}
+
+			& figcaption {
+				margin-bottom: 10px;
+				font-size: 0.72rem;
+				font-weight: 700;
+				letter-spacing: 0.09em;
+				text-transform: uppercase;
+				text-align: center;
+				color: var(--muted);
+				overflow-wrap: anywhere;
+			}
+
+			& textarea {
+				display: block;
+				width: 216px;
+				height: 288px;
+				padding: 18px;
+				border: 0;
+				border-radius: 14px;
+				outline: 4px solid var(--mark);
+				background: var(--paper);
+				color: var(--ink);
+				box-shadow: var(--card-shadow);
+				font: inherit;
+				font-size: 1.15rem;
+				font-weight: 700;
+				line-height: 1.22;
+				letter-spacing: -0.012em;
+				resize: none;
+			}
+		}
+
 		@media ${media.phone} {
 			& .pair {
 				zoom: 0.72;
+			}
+
+			& .duel {
+				zoom: 0.66;
+				gap: 16px;
+			}
+
+			/* The question lies across the top as a strip, leaving the row to the cards at stake */
+			& .duel .type-black {
+				width: auto;
+				height: auto;
+				min-height: 0;
+				padding-bottom: 44px;
+				transform: none !important;
+			}
+
+			& .duel > .type-black, & .duel > figure:has(.type-black) {
+				flex: 1 0 100%;
+				box-sizing: border-box;
+			}
+
+			& .duel > figure:has(.type-black) figcaption {
+				display: none;
+			}
+
+			/* Typed in at full size: a small field makes a phone zoom the page */
+			& .duel.editing {
+				zoom: 1;
 			}
 		}
 	`,
@@ -129,8 +202,11 @@ export default class Play extends Screen {
 		this.player = player;
 		// A card to pick while the round waits on this player; otherwise the table, or the round's end
 		const theirTurn = view.stage !== 'wait' && player.stage === view.stage;
+		// Tied, with a tiebreak move still to make
+		const theirMove = view.stage === 'tiebreak' && view.tiebreak.waiting.includes(player.id);
 
-		this.mode = (view.stage === 'end' && 'end') || (theirTurn && 'pick') || 'wait';
+		this.mode = (view.stage === 'end' && 'end') || (theirMove && 'duel') || (theirTurn && 'pick') || 'wait';
+		if (this.mode !== 'duel') this.swapping = false;
 
 		this.title(view.name, this.progress());
 		this.right(
@@ -149,7 +225,11 @@ export default class Play extends Screen {
 
 		if (drawn === this._drawn) return;
 		this._drawn = drawn;
+		this.lay();
+	}
 
+	// The table laid for what the game is showing now
+	lay() {
 		this.body.empty();
 		this.actions();
 		this[`render_${this.mode}`]();
@@ -161,23 +241,28 @@ export default class Play extends Screen {
 
 		if (stage === 'end') return 'Round over';
 		if (stage === 'wait') return 'Getting ready';
+		if (stage === 'tiebreak') return 'Tiebreaker';
 
 		const inRound = players.filter(player => !seatStatus(this.game, player).out);
 		const done = inRound.filter(player => seatStatus(this.game, player).done).length;
 
-		return `${stage === 'play' ? 'Cards in' : 'Votes in'}: ${done} of ${inRound.length}`;
+		const counted = (stage === 'play' && 'Cards in') || (this.game.tiebreak ? 'Tiebreak votes in' : 'Votes in');
+
+		return `${counted}: ${done} of ${inRound.length}`;
 	}
 
 	// What the table shows, to tell whether a new view changes it
 	drawnFrom() {
-		const { black, players, submissions, selected, results, scores, hand } = this.game;
+		const { black, players, submissions, selected, results, scores, hand, tiebreak, duel } = this.game;
 		const seats = players.map(({ id, name, stage }) => [id, name, stage]);
 
 		if (this.mode === 'pick')
 			return [this.mode, this.game.stage, black, this.game.stage === 'play' ? hand : submissions];
 		if (this.mode === 'end') return [this.mode, black, results, scores, seats];
+		// Their move in a tiebreak: laid again for a new step of it, not for what others do, so what's typed stays
+		if (this.mode === 'duel') return [this.mode, tiebreak.phase, duel, hand];
 
-		return [this.mode, this.game.stage, black, selected, seats, scores];
+		return [this.mode, this.game.stage, black, selected, seats, scores, tiebreak, duel, submissions];
 	}
 
 	// Nothing of this player's to do but wait: before a round (ready up), after playing or voting, or sitting one out
@@ -208,6 +293,32 @@ export default class Play extends Screen {
 			if (!ready)
 				this.actions(new Button({ content: "I'm ready", addClass: 'go', onPointerPress: () => act('ready') }));
 			else if (!alone) this.actions(waiting);
+
+			return;
+		}
+
+		// A tied vote being broken by the tied: everyone else, and the tied once their move is made, see the cards at stake
+		if (game.stage === 'tiebreak') {
+			const tied = game.players.filter(({ id }) => game.tiebreak.players.includes(id));
+			const others = tied.filter(({ id }) => id !== playerId).map(({ name }) => name);
+
+			headline(
+				'Tiebreaker',
+				`${game.duel ? `You and ${listNames(others)}` : listNames(others)} tied. ${waiting || 'Voting again next.'}`,
+			);
+
+			new Component({
+				addClass: 'duel',
+				appendTo: lobby,
+				append: [
+					new Card({ type: 'black', style: { transform: tossed() }, innerHTML: game.black }),
+					...[...(game.duel ? [game.duel.mine] : []), ...game.submissions].map(
+						card => new Card({ type: 'white', style: { transform: `rotate(${randInt(-4, 4)}deg)` }, innerHTML: card }),
+					),
+				],
+			});
+
+			new Seats({ game, playerId, appendTo: lobby });
 
 			return;
 		}
@@ -275,8 +386,156 @@ export default class Play extends Screen {
 
 		this.actions(
 			commit,
-			playing ? 'Pick the card that answers it best' : 'Pick your favorite. Your own card is not here.',
+			(playing && 'Pick the card that answers it best') ||
+				(game.tiebreak && 'The tiebreak: pick between the cards that tied, as they stand now.') ||
+				'Pick your favorite. Your own card is not here.',
 		);
+	}
+
+	// This player's move in a tiebreak: first the choice (rewrite their opponent's card, or swap their own for one
+	// from their hand), then, if they chose to rewrite, the rewriting
+	render_duel() {
+		const { game } = this;
+		const { duel, tiebreak, hand, black } = game;
+		const opponent = game.players.find(({ id }) => id === duel.opponent)?.name ?? 'your opponent';
+
+		if (tiebreak.phase === 'edit') {
+			this.rewrite(opponent);
+
+			return;
+		}
+
+		// Swapping: the hand, to pick the card to put down instead
+		if (this.swapping) {
+			const board = new Board({ appendTo: this.body });
+			let picked;
+
+			const swap = new Button({
+				content: 'Swap to this card',
+				addClass: 'go',
+				disabled: true,
+				onPointerPress: async () => {
+					if (!picked) return;
+
+					swap.elem.disabled = true;
+					this.swapping = false;
+
+					const done = await act('tiebreak', { move: 'repick', card: picked });
+
+					if (!done.ok && swap.elem.isConnected) swap.elem.disabled = false;
+				},
+			});
+
+			new Card({ type: 'black', style: { margin: '0 auto', transform: tossed() }, innerHTML: black, appendTo: board });
+			new PickHand({
+				appendTo: board,
+				cards: hand,
+				onPick: card => {
+					picked = card;
+					swap.elem.disabled = !card;
+				},
+			});
+
+			this.actions(
+				swap,
+				quiet('Back', () => {
+					this.swapping = false;
+					this.lay();
+				}),
+				`${opponent} gets to rewrite whichever card you end up with, if they choose to.`,
+			);
+
+			return;
+		}
+
+		const lobby = new Lobby({ appendTo: this.body });
+		const figure = (caption, card, type = 'white') =>
+			new Component(
+				{ tag: 'figure' },
+				new Component({ tag: 'figcaption', textContent: caption }),
+				new Card({ type, innerHTML: card }),
+			);
+
+		new Component(
+			{ appendTo: lobby },
+			new Component({ tag: 'h2', addClass: 'headline', textContent: 'Tiebreaker' }),
+			new Component({
+				addClass: 'sub',
+				textContent: `The vote tied. Change up to ${MAX_CHANGES} characters of ${opponent}'s card, or swap your own.`,
+			}),
+		);
+		new Component(
+			{ addClass: 'duel', appendTo: lobby },
+			figure('The question', black, 'black'),
+			figure('Yours', duel.mine),
+			figure(opponent, duel.theirs),
+		);
+
+		this.actions(
+			new Button({
+				content: `Rewrite ${opponent}'s card`,
+				addClass: 'go',
+				onPointerPress: () => act('tiebreak', { move: 'edit' }),
+			}),
+			quiet('Swap my card', () => {
+				this.swapping = true;
+				this.lay();
+			}),
+			'If they swap theirs, you rewrite the card they swap to. Then everyone votes again.',
+		);
+	}
+
+	// Rewriting the opponent's card: the card itself to type into, held to the changes allowed
+	rewrite(opponent) {
+		const { duel, tiebreak, black } = this.game;
+		const lobby = new Lobby({ appendTo: this.body });
+		const field = document.createElement('textarea');
+		const note = new Component({ addClass: 'note' });
+		const lock = new Button({
+			content: 'Lock it in',
+			addClass: 'go',
+			onPointerPress: async () => {
+				lock.elem.disabled = true;
+
+				const done = await act('tiebreak', { text: field.value });
+
+				if (!done.ok && lock.elem.isConnected) check();
+			},
+		});
+		const check = () => {
+			const problem = editProblem(duel.theirs, field.value);
+			const used = changes(duel.theirs, field.value);
+
+			lock.elem.disabled = !!problem;
+			note.elem.textContent = used > MAX_CHANGES || !problem ? `${used} of ${MAX_CHANGES} changes used` : `${problem}.`;
+			note.elem.style.color = problem ? 'var(--mark)' : '';
+		};
+
+		field.value = duel.theirs;
+		field.setAttribute('aria-label', `${opponent}'s card`);
+		field.spellcheck = false;
+		field.addEventListener('input', check);
+
+		new Component(
+			{ appendTo: lobby },
+			new Component({ tag: 'h2', addClass: 'headline', textContent: `Rewrite ${opponent}'s card` }),
+			new Component({
+				addClass: 'sub',
+				textContent:
+					tiebreak.moves?.[duel.opponent] === 'repick'
+						? `They swapped to this one. Change up to ${MAX_CHANGES} characters of it.`
+						: `Change up to ${MAX_CHANGES} characters: swap one, add one, take one out.`,
+			}),
+		);
+		new Component(
+			{ addClass: ['duel', 'editing'], appendTo: lobby },
+			new Card({ type: 'black', style: { transform: 'rotate(-3deg)' }, innerHTML: black }),
+			field,
+		);
+
+		this.actions(lock, note);
+		check();
+		field.focus();
 	}
 
 	render_end() {

@@ -279,3 +279,135 @@ test('someone leaving mid-round lets it go on, or calls it off when one player i
 	expect(game.toClient()).toMatchObject({ submissions: [], results: [], lastRoundWinner: {} });
 	expect(game.viewFor(ada.id).selected).toBe(false);
 });
+
+// Four players, the round played, and the vote tied two each between Ada's card and Bo's
+const tied = () => {
+	const { game, ada, bo } = started();
+	const cy = game.addPlayer('Cy');
+	const di = game.addPlayer('Di');
+
+	game.act(cy.id, 'ready');
+	game.act(di.id, 'ready');
+
+	const played = Object.fromEntries([ada, bo, cy, di].map(({ id }) => [id, handOf(game, id)[0]]));
+
+	for (const [id, card] of Object.entries(played)) game.act(id, 'play', { card });
+
+	game.act(ada.id, 'vote', { card: played[bo.id] });
+	game.act(bo.id, 'vote', { card: played[ada.id] });
+	game.act(cy.id, 'vote', { card: played[ada.id] });
+	game.act(di.id, 'vote', { card: played[bo.id] });
+
+	return { game, ada, bo, cy, di, played };
+};
+
+test('a tied vote goes to a tiebreak: a swap lands before the rewrite of it, and the tied cards are voted on again', () => {
+	const { game, ada, bo, cy, di, played } = tied();
+
+	expect(game.stage).toBe('tiebreak');
+	expect(game.toClient().tiebreak).toEqual({ players: [ada.id, bo.id], phase: 'choose', waiting: [ada.id, bo.id] });
+	// Nothing yet says who played which card, or who won
+	expect(game.toClient()).toMatchObject({ results: [], lastRoundScores: {}, lastRoundWinner: {}, scores: {} });
+	expect(game.viewFor(ada.id).duel).toEqual({
+		mine: played[ada.id],
+		opponent: bo.id,
+		theirs: played[bo.id],
+		move: null,
+	});
+	expect(game.viewFor(cy.id).duel).toBe(null);
+	expect(game.act(cy.id, 'tiebreak', { move: 'edit' }).error).toBe('This tiebreak is not yours');
+	expect(game.act(ada.id, 'tiebreak', { move: 'fold' }).error).toBe('Rewrite their card or swap yours');
+	expect(game.act(bo.id, 'tiebreak', { move: 'repick', card: 'not mine' }).error).toBe('That card is not in your hand');
+
+	// Ada will rewrite Bo's card; Bo swaps theirs. Neither move shows until both are made.
+	const swap = handOf(game, bo.id)[0];
+
+	expect(game.act(ada.id, 'tiebreak', { move: 'edit' })).toEqual({ ok: true });
+	expect(game.toClient().tiebreak.moves).toBeUndefined();
+	expect(game.act(ada.id, 'tiebreak', { move: 'edit' }).error).toBe('Your move is made');
+	expect(game.act(bo.id, 'tiebreak', { move: 'repick', card: swap })).toEqual({ ok: true });
+	expect(handOf(game, bo.id)).not.toContain(swap);
+	expect(handOf(game, bo.id)).toHaveLength(3);
+
+	expect(game.toClient().tiebreak).toMatchObject({
+		phase: 'edit',
+		waiting: [ada.id],
+		moves: { [ada.id]: 'edit', [bo.id]: 'repick' },
+	});
+	// The card Ada rewrites is the one Bo swapped to
+	expect(game.viewFor(ada.id).duel.theirs).toBe(swap);
+	expect(game.act(bo.id, 'tiebreak', { text: 'x' }).error).toBe('Your move is made');
+	expect(game.act(ada.id, 'tiebreak', { text: `${swap}!!!!` }).error).toBe('Change 3 characters at most');
+	expect(game.act(ada.id, 'tiebreak', { text: `${swap}<b>` }).error).toBe("Leave the card's markup as it is");
+	expect(game.act(ada.id, 'tiebreak', { text: `${swap}!!!` })).toEqual({ ok: true });
+
+	// Everyone votes again, on the two tied cards as they now stand
+	expect(game.stage).toBe('vote');
+	expect(game.viewFor(null).submissions.sort()).toEqual([played[ada.id], `${swap}!!!`].sort());
+	expect(game.viewFor(ada.id).submissions).toEqual([`${swap}!!!`]);
+	expect(game.act(cy.id, 'vote', { card: played[cy.id] }).error).toBe('That card was not played');
+	game.act(ada.id, 'vote', { card: `${swap}!!!` });
+	game.act(bo.id, 'vote', { card: played[ada.id] });
+	game.act(cy.id, 'vote', { card: played[ada.id] });
+	game.act(di.id, 'vote', { card: played[ada.id] });
+
+	expect(game.stage).toBe('end');
+	expect(game.lastRoundWinner).toEqual({ playerId: ada.id, card: played[ada.id], votes: 2 });
+	expect(game.scores[ada.id]).toEqual({ votes: 2, wins: 1 });
+	expect(game.scores[bo.id]).toEqual({ votes: 2, wins: 0 });
+	expect(game.toClient().results).toContainEqual({
+		playerId: bo.id,
+		card: `${swap}!!!`,
+		votes: 2,
+		original: swap,
+		editedBy: ada.id,
+		tiebreakVotes: 1,
+	});
+
+	// The next round starts with no tiebreak hanging over it
+	game.act(ada.id, 'ready');
+	expect(game.toClient().tiebreak).toBe(null);
+});
+
+test('a tiebreak with no rewrites goes straight to the vote, and a vote tied again shares the win', () => {
+	const { game, ada, bo, cy, di, played } = tied();
+	const adaSwap = handOf(game, ada.id)[0];
+	const boSwap = handOf(game, bo.id)[0];
+
+	game.act(ada.id, 'tiebreak', { move: 'repick', card: adaSwap });
+	game.act(bo.id, 'tiebreak', { move: 'repick', card: boSwap });
+	expect(game.stage).toBe('vote');
+	expect(game.viewFor(null).submissions.sort()).toEqual([adaSwap, boSwap].sort());
+
+	game.act(ada.id, 'vote', { card: boSwap });
+	game.act(bo.id, 'vote', { card: adaSwap });
+	game.act(cy.id, 'vote', { card: adaSwap });
+	game.act(di.id, 'vote', { card: boSwap });
+
+	expect(game.stage).toBe('end');
+	expect(game.lastRoundWinner.shared).toEqual([ada.id, bo.id]);
+	expect(game.scores[ada.id].wins).toBe(1);
+	expect(game.scores[bo.id].wins).toBe(1);
+	expect(played[cy.id]).toBeDefined();
+});
+
+test('two players can only tie, so they share the round without a tiebreak; a tied player leaving ends theirs', () => {
+	const { game, ada, bo } = started();
+	const adaCard = handOf(game, ada.id)[0];
+	const boCard = handOf(game, bo.id)[0];
+
+	game.act(ada.id, 'play', { card: adaCard });
+	game.act(bo.id, 'play', { card: boCard });
+	game.act(ada.id, 'vote', { card: boCard });
+	game.act(bo.id, 'vote', { card: adaCard });
+	expect(game.stage).toBe('end');
+	expect(game.toClient().tiebreak).toBe(null);
+	expect(game.lastRoundWinner.shared).toEqual([ada.id, bo.id]);
+
+	const four = tied();
+
+	four.game.removePlayer(four.bo.id);
+	expect(four.game.stage).toBe('end');
+	expect(four.game.lastRoundWinner).toMatchObject({ playerId: four.ada.id, votes: 2 });
+	expect(four.game.lastRoundWinner.shared).toBeUndefined();
+});

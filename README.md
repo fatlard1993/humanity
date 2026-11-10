@@ -24,6 +24,10 @@ My digital take on the; wonderful, terrible, hilarious, hideous game provided by
 
 `bun dev` restarts the server on save and rebuilds the client on change.
 
+## Ties
+
+A vote tied for the most goes to a tiebreak between the tied players. Each makes one move, unseen by the other until both are made: rewrite the opponent's card, changing up to three characters of it, or swap their own card for one from their hand. Swaps land first, so a rewrite is of the card its player ends up with. Then everyone votes again on the tied cards alone. Still tied, they share the round. With two players each can only vote for the other, so they share it without a tiebreak.
+
 ## Card packs
 
 The decision to use only single entry cards was purposeful. I have found that things simply run smoother with single entry cards, even in the physical game.

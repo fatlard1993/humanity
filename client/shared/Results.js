@@ -2,6 +2,7 @@ import { Component, randInt, styled } from '@vanilla-bean/components';
 
 import Card from './Card.js';
 import Scoreboard from './Scoreboard.js';
+import { listNames } from './Seats.js';
 
 const tossed = () => `translate(${randInt(-6, 6)}px, ${randInt(0, 10)}px) rotate(${randInt(-7, 7)}deg)`;
 const votes = count => `${count} ${count === 1 ? 'vote' : 'votes'}`;
@@ -108,9 +109,18 @@ export default class Results extends styled(
 ) {
 	build() {
 		const { game, playerId } = this.options;
-		const { playerId: winnerId, card, votes: winningVotes } = game.lastRoundWinner ?? {};
+		const { playerId: winnerId, card, votes: winningVotes, shared } = game.lastRoundWinner ?? {};
 		const nameOf = id => game.players.find(player => player.id === id)?.name ?? 'someone who left';
-		const winner = winnerId === playerId ? 'You win the round' : `${nameOf(winnerId)} wins the round`;
+		const called = id => (id === playerId ? 'You' : nameOf(id));
+		const solo = winnerId === playerId ? 'You win the round' : `${nameOf(winnerId)} wins the round`;
+		const winner = shared ? `${listNames(shared.map(called))} share the round` : solo;
+		// How it was won: outright, by the tiebreak's vote, or still level after it
+		const how =
+			(shared && game.tiebreak && 'still tied after the tiebreak') ||
+			(shared && `with ${votes(winningVotes)} each`) ||
+			(game.tiebreak && 'by the tiebreak') ||
+			`with ${votes(winningVotes)}`;
+		const rewritten = result => (result?.original ? ` · rewritten by ${called(result.editedBy)}` : '');
 
 		if (!card) {
 			new Component({ tag: 'h2', addClass: 'headline', textContent: 'Nobody won that one', appendTo: this });
@@ -118,7 +128,10 @@ export default class Results extends styled(
 			new Component(
 				{ appendTo: this },
 				new Component({ tag: 'h2', addClass: 'headline', textContent: winner }),
-				new Component({ addClass: 'tally', textContent: `with ${votes(winningVotes)}` }),
+				new Component({
+					addClass: 'tally',
+					textContent: `${how}${rewritten(game.results?.find(result => result.playerId === winnerId))}`,
+				}),
 			);
 
 			new Component(
@@ -140,7 +153,7 @@ export default class Results extends styled(
 					new Component({ addClass: 'text', innerHTML: result.card }),
 					new Component({
 						addClass: 'by',
-						textContent: `${result.playerId === playerId ? 'You' : nameOf(result.playerId)} · ${votes(result.votes)}`,
+						textContent: `${called(result.playerId)} · ${votes(result.votes)}${rewritten(result)}`,
 					}),
 				);
 			});

@@ -5,7 +5,13 @@ import { getGames, onMessage } from '@fatlard1993/web-game-framework/client';
 import RoomDialog from './shared/RoomDialog.js';
 import Screen, { Wordmark, go, quiet } from './shared/Screen.js';
 
-const STAGES = { wait: 'Getting ready', play: 'Playing cards', vote: 'Voting', end: 'Round over' };
+const STAGES = {
+	wait: 'Getting ready',
+	play: 'Playing cards',
+	vote: 'Voting',
+	tiebreak: 'Tiebreaker',
+	end: 'Round over',
+};
 
 const Table = styled(
 	Component,

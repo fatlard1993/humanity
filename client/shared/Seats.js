@@ -6,10 +6,20 @@ import { act } from '@fatlard1993/web-game-framework/client';
  * Where a player is in what the game is waiting for: done with it, still at it, or sitting this round out
  * @param {object} game - The game, as a page is shown it
  * @param {object} player - One of its players
- * @returns {{ text: string, done: boolean, out?: boolean }} What to say of them, and whether the game waits on them
+ * @returns {{ text: string, done: boolean, out?: boolean, aside?: boolean }} What to say of them, whether the game
+ * waits on them, and whether they're out of this round or have no part in what it's waiting for
  */
 export const seatStatus = (game, player) => {
-	if (game.stage === 'end') return { text: '', done: true };
+	if (game.stage === 'end') return { text: '', done: true, aside: true };
+	if (game.stage === 'tiebreak') {
+		const { players, waiting, phase } = game.tiebreak;
+
+		// Only the tied have anything to do
+		if (!players.includes(player.id)) return { text: '', done: true, aside: true };
+		if (!waiting.includes(player.id)) return { text: 'Move made', done: true };
+
+		return { text: phase === 'choose' ? 'Choosing a move' : 'Rewriting', done: false };
+	}
 	if (game.stage === 'wait')
 		return player.stage === 'play' ? { text: 'Ready', done: true } : { text: 'Not ready', done: false };
 	if (player.stage === 'wait') return { text: 'Next round', done: true, out: true };
@@ -109,12 +119,12 @@ export default class Seats extends styled(
 		const { game, playerId } = this.options;
 
 		game.players.forEach(player => {
-			const { text, done, out } = seatStatus(game, player);
+			const { text, done, out, aside } = seatStatus(game, player);
 			const wins = game.scores[player.id]?.wins;
 			const you = player.id === playerId;
 
 			new Seat(
-				{ appendTo: this, addClass: [done && !out && game.stage !== 'end' ? 'done' : '', out ? 'out' : ''] },
+				{ appendTo: this, addClass: [done && !out && !aside ? 'done' : '', out ? 'out' : ''] },
 				new Component(
 					{ addClass: 'who' },
 					new Component({ addClass: 'name', textContent: you ? `${player.name} (you)` : player.name }),

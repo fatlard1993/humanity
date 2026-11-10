@@ -145,7 +145,7 @@ export default class Watch extends Screen {
 
 	// Each view of the game the server sends, drawn again when what the screen shows has changed
 	show(view) {
-		const { name, stage, black, players, submissions, results, scores } = view;
+		const { name, stage, black, players, submissions, results, scores, tiebreak } = view;
 		const drawn = JSON.stringify([
 			name,
 			stage,
@@ -154,13 +154,19 @@ export default class Watch extends Screen {
 			submissions,
 			results,
 			scores,
+			tiebreak,
 		]);
 
 		if (drawn === this._drawn) return;
 		this._drawn = drawn;
 		this.game = view;
 
-		this.title(name, { wait: 'Getting ready', play: 'Playing cards', vote: 'Voting', end: 'Round over' }[stage]);
+		this.title(
+			name,
+			{ wait: 'Getting ready', play: 'Playing cards', vote: 'Voting', tiebreak: 'Tiebreaker', end: 'Round over' }[
+				stage
+			],
+		);
 		this.right(
 			quiet('Scores', () => new ScoreDialog({ game: this.game })),
 			quiet('Leave', () => go('#/hub')),
@@ -191,7 +197,7 @@ export default class Watch extends Screen {
 		// The question, and beside it the cards as they come in: face down, then turned over for the vote
 		const played = [];
 
-		if (stage === 'vote') played.push(...submissions.map(card => ({ innerHTML: card })));
+		if (stage === 'vote' || stage === 'tiebreak') played.push(...submissions.map(card => ({ innerHTML: card })));
 		if (stage === 'play')
 			played.push(...players.filter(({ selectedCard }) => selectedCard).map(() => ({ faceDown: true })));
 
@@ -209,12 +215,22 @@ export default class Watch extends Screen {
 
 	// What the room is being asked to do, and how far along it is
 	calls(view) {
-		const { stage, players } = view;
+		const { stage, players, tiebreak } = view;
 		const pending = waitingOn(view);
 		const inRound = players.filter(player => !seatStatus(view, player).out);
 		const done = inRound.length - pending.length;
 
 		if (stage === 'play') return ['Play a card', `${done} of ${inRound.length} in`];
+		if (stage === 'tiebreak') {
+			const tied = players.filter(({ id }) => tiebreak.players.includes(id)).map(({ name }) => name);
+			const doing = tiebreak.phase === 'choose' ? 'choosing a move' : 'rewriting a card';
+
+			return [
+				'Tiebreaker',
+				`${listNames(tied)} tied. ${listNames(pending)} ${pending.length === 1 ? 'is' : 'are'} ${doing}.`,
+			];
+		}
+		if (stage === 'vote' && tiebreak) return ['Tiebreak vote', `${done} of ${inRound.length} votes in`];
 		if (stage === 'vote') return ['Vote for your favorite', `${done} of ${inRound.length} votes in`];
 		if (players.length < 2) return ['Waiting for players', 'Scan the code to sit down. It takes two.'];
 
