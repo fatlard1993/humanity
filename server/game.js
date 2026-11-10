@@ -60,7 +60,7 @@ export default class Game extends BaseGame {
 	}
 
 	// What anyone is shown (the lobby, a watcher, every player): no one's hand, whether each player has played or voted but
-	// not which card, and the cards played this round but not who played them
+	// not which card, and the cards played this round but not who played them until the votes are in (results)
 	toClient() {
 		const { players, ...game } = super.toClient();
 
@@ -74,10 +74,20 @@ export default class Game extends BaseGame {
 			submissions: this.submissions.map(({ card }) => card),
 			lastRoundScores: this.lastRoundScores,
 			lastRoundWinner: this.lastRoundWinner,
+			results: this.results(),
 		};
 	}
 
-	// A player's page: their own hand, and the cards to vote for without their own
+	// Once a round is over, who played each card and the votes it took, most first
+	results() {
+		if (this.stage !== 'end') return [];
+
+		return this.submissions
+			.map(({ playerId, card }) => ({ playerId, card, votes: this.lastRoundScores[playerId]?.votes ?? 0 }))
+			.sort((a, b) => b.votes - a.votes);
+	}
+
+	// A player's page: their own hand, the card they have down this stage, and the cards to vote for without their own
 	viewFor(playerId) {
 		const view = this.toClient();
 
@@ -86,6 +96,7 @@ export default class Game extends BaseGame {
 		return {
 			...view,
 			hand: this.hands[playerId] ?? [],
+			selected: this.players.get(playerId)?.selectedCard || false,
 			submissions: this.submissions.filter(submission => submission.playerId !== playerId).map(({ card }) => card),
 		};
 	}

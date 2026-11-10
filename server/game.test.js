@@ -40,14 +40,27 @@ test('a round: everyone ready, plays a card, votes, and the winner scores', () =
 	expect(game.act(ada.id, 'play', { card: adaCard })).toEqual({ ok: true });
 	expect(handOf(game, ada.id)).not.toContain(adaCard);
 	expect(handOf(game, ada.id)).toHaveLength(3);
+	// Their own page keeps the card they have down in front of them; no one else's does
+	expect(game.viewFor(ada.id).selected).toBe(adaCard);
+	expect(game.viewFor(bo.id).selected).toBe(false);
 	expect(game.act(bo.id, 'play', { card: boCard })).toEqual({ ok: true });
 	expect(game.stage).toBe('vote');
+	// Who played which card stays unsaid until the votes are in
+	expect(game.toClient().results).toEqual([]);
 
 	expect(game.act(ada.id, 'vote', { card: boCard })).toEqual({ ok: true });
+	// The card they voted for is theirs to see too, and neither is in what everyone (or a watcher) is sent
+	expect(game.viewFor(ada.id).selected).toBe(boCard);
+	expect(game.viewFor(bo.id).selected).toBe(false);
+	expect(game.toClient()).not.toHaveProperty('selected');
+	expect(game.viewFor(null)).not.toHaveProperty('selected');
 	expect(game.act(bo.id, 'vote', { card: adaCard })).toEqual({ ok: true });
 	expect(game.stage).toBe('end');
 	expect(game.scores[ada.id]).toEqual({ votes: 1, wins: expect.any(Number) });
 	expect(game.scores[game.lastRoundWinner.playerId].wins).toBe(1);
+	expect(game.toClient().results).toHaveLength(2);
+	expect(game.toClient().results).toContainEqual({ playerId: ada.id, card: adaCard, votes: 1 });
+	expect(game.toClient().results).toContainEqual({ playerId: bo.id, card: boCard, votes: 1 });
 
 	// Play again: the next round's black card, and everyone waiting until they ready up
 	const black = game.black;
@@ -254,4 +267,7 @@ test('someone leaving mid-round lets it go on, or calls it off when one player i
 	game.removePlayer(bo.id);
 	expect(game.stage).toBe('wait');
 	expect(game.players.get(ada.id)).toMatchObject({ stage: 'wait', selectedCard: false });
+	// Nothing of the round called off is left to show: no cards played, no winner, no results
+	expect(game.toClient()).toMatchObject({ submissions: [], results: [], lastRoundWinner: {} });
+	expect(game.viewFor(ada.id).selected).toBe(false);
 });
