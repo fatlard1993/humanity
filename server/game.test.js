@@ -194,7 +194,7 @@ test('a save from before hands moved off the players comes back with them in han
 	expect(game.viewFor('ada').hand).toEqual(['One', 'Two']);
 });
 
-test('a room with no packs or a hand too small is refused; malformed actions are refused, not thrown', () => {
+test('a room with no packs, packs of one color or a hand too small is refused; malformed actions are refused, not thrown', () => {
 	const make = options => () =>
 		new Game({
 			server: { games: {}, publish() {} },
@@ -208,6 +208,14 @@ test('a room with no packs or a hand too small is refused; malformed actions are
 	expect(make({ packs: [] })).toThrow('Pick at least one card pack');
 	expect(make({ packs: 'base' })).toThrow('Pick at least one card pack');
 	expect(make({ packs: ['no such pack'] })).toThrow('Pick at least one card pack');
+	// A pack of white cards alone, with no black card to answer
+	cards.db['only whites'] = { data: { whites: ['A', 'B', 'C'] } };
+	cards.db['only blacks'] = { data: { blacks: ['_____?'] } };
+	expect(make({ packs: ['only whites'] })).toThrow('These packs need both black and white cards');
+	expect(make({ packs: ['only blacks'] })).toThrow('These packs need both black and white cards');
+	expect(make({ packs: ['only whites', 'only blacks'] })().black).toBe('_____?');
+	delete cards.db['only whites'];
+	delete cards.db['only blacks'];
 	expect(make({ handSize: 1 })).toThrow('The hand size is a whole number from 2 to 30');
 	expect(make({ handSize: 'lots' })).toThrow('The hand size is a whole number from 2 to 30');
 	expect(make({ handSize: '4' })().options.handSize).toBe(4);

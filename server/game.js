@@ -22,7 +22,8 @@ export default class Game extends BaseGame {
 	constructor(options) {
 		super(options);
 
-		// A new game's room: a hand of at least two, from packs there are (a save was checked when it was made)
+		// A new game's room: a hand of at least two, from packs there are with cards of both colors between them (a save
+		// was checked when it was made)
 		if (!options.saveState) {
 			const handSize = Number(this.options.handSize ?? 10);
 			const packs = Array.isArray(this.options.packs) ? this.options.packs.filter(name => cards.db[name]) : [];
@@ -30,6 +31,9 @@ export default class Game extends BaseGame {
 			if (!Number.isInteger(handSize) || handSize < 2 || handSize > 30)
 				throw new Error('The hand size is a whole number from 2 to 30');
 			if (packs.length === 0) throw new Error('Pick at least one card pack');
+			// Whites alone (or blacks alone) can't be played: there'd be no question, or nothing to answer it with
+			if (!['blacks', 'whites'].every(deck => packs.some(name => cards.db[name].data[deck]?.length > 0)))
+				throw new Error('These packs need both black and white cards');
 
 			this.options = { ...this.options, handSize, packs };
 		}
