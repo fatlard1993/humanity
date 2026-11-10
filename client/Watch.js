@@ -1,34 +1,140 @@
-import { Link, Button, randInt, Notify } from '@vanilla-bean/components';
+import { Component, Notify, randInt, styled } from '@vanilla-bean/components';
 
-import { enterGame, joinUrl } from '@fatlard1993/web-game-framework/client';
-import { View } from '@fatlard1993/web-game-framework/ui/layout';
-import QRCode from '@fatlard1993/web-game-framework/ui/QRCode';
-import Card, { Hand } from './shared/Card.js';
-import RoundWinner from './shared/RoundWinner.js';
-import PlayersDialog from './shared/PlayersDialog.js';
+import { enterGame } from '@fatlard1993/web-game-framework/client';
+import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
 
-export default class Watch extends View {
+import Card from './shared/Card.js';
+import Results from './shared/Results.js';
+import ScoreDialog from './shared/ScoreDialog.js';
+import Screen, { Wordmark, go, quiet } from './shared/Screen.js';
+import Seats, { listNames, seatStatus, waitingOn } from './shared/Seats.js';
+
+const tossed = () => `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`;
+
+// The table as the room sees it on a shared screen: the round in the middle, and down the side the way in and who's in
+const Room = styled(
+	Component,
+	({ media }) => `
+		flex: 1;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 300px;
+		min-height: 0;
+
+		& > .round {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 26px;
+			padding: 30px 20px 40px;
+			min-width: 0;
+			overflow: hidden auto;
+		}
+
+		& .headline {
+			margin: 0;
+			font-size: clamp(1.6rem, 3.4vw, 3rem);
+			font-weight: 800;
+			letter-spacing: -0.035em;
+			line-height: 1.05;
+			text-align: center;
+			text-wrap: balance;
+		}
+
+		& .sub {
+			margin-top: 8px;
+			color: var(--muted);
+			font-weight: 600;
+			text-align: center;
+		}
+
+		& .played {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 18px 22px;
+		}
+
+		& > .rail {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			padding: 24px 18px;
+			border-left: 1px solid var(--rule);
+			overflow: hidden auto;
+
+			& h3 {
+				margin: 0 0 -8px;
+				font-size: 0.72rem;
+				font-weight: 700;
+				letter-spacing: 0.09em;
+				text-transform: uppercase;
+				color: var(--muted);
+			}
+		}
+
+		/* A big screen across the room: everything larger */
+		@media (min-width: 1500px) {
+			grid-template-columns: minmax(0, 1fr) 380px;
+
+			& > .round {
+				zoom: 1.15;
+			}
+
+			& > .rail {
+				zoom: 1.2;
+			}
+		}
+
+		@media ${media.phone} {
+			display: block;
+			overflow: hidden auto;
+
+			& > .round {
+				overflow: visible;
+				padding: 22px 12px 28px;
+			}
+
+			& > .rail {
+				border-left: 0;
+				border-top: 1px solid var(--rule);
+				overflow: visible;
+			}
+
+			& .played {
+				zoom: 0.62;
+			}
+		}
+	`,
+);
+
+export default class Watch extends Screen {
 	build() {
 		super.build();
-		this._init();
-	}
 
-	async _init() {
 		const { gameId } = this.options;
 
-		// The join code a phone opens: this page's address, or the server's on the network when this page is localhost
-		joinUrl(gameId).then(src => {
-			this._toolbar.options.left = [
-				new QRCode({ src, style: { margin: '-12px 12px -24px -12px' }, qrCodeConfig: { width: 70 } }),
-				new Link({ textContent: 'Exit', href: '#/hub', variant: 'button' }),
-			];
-		});
+		this.left(new Wordmark());
+
+		this.room = new Room({ appendTo: this.body });
+		this.round = new Component({ addClass: 'round', appendTo: this.room });
+		this.rail = new Component({ addClass: 'rail', appendTo: this.room });
+
+		// The way in stays put while the round is drawn and drawn again
+		new Component({ tag: 'h3', textContent: 'Scan to play', appendTo: this.rail });
+		new JoinCard({ gameId, size: 200, appendTo: this.rail });
+		this.seats = new Component({ appendTo: this.rail });
+
+		this.enter();
+	}
+
+	async enter() {
+		const { gameId } = this.options;
 		const { leave } = await enterGame(gameId, {
 			watch: true,
 			onState: view => this.show(view),
 			gone: () => {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
-				window.location.href = '#/hub';
+				go('#/hub');
 			},
 		});
 
@@ -39,82 +145,79 @@ export default class Watch extends View {
 
 	// Each view of the game the server sends, drawn again when what the screen shows has changed
 	show(view) {
-		const { name, stage, black, players, submissions, lastRoundWinner, scores } = view;
+		const { name, stage, black, players, submissions, results, scores } = view;
 		const drawn = JSON.stringify([
 			name,
 			stage,
 			black,
 			players.map(({ id, name, stage, selectedCard }) => [id, name, stage, !!selectedCard]),
-			submissions.length,
-			lastRoundWinner,
+			submissions,
+			results,
 			scores,
 		]);
 
-		this.game = view;
-
 		if (drawn === this._drawn) return;
 		this._drawn = drawn;
+		this.game = view;
 
-		this._body.empty();
-		this._toolbar.options.right = [];
-		this._toolbar.options.heading = name;
-		this[`render_${stage === 'end' ? 'end' : 'play'}`]();
+		this.title(name, { wait: 'Getting ready', play: 'Playing cards', vote: 'Voting', end: 'Round over' }[stage]);
+		this.right(
+			quiet('Scores', () => new ScoreDialog({ game: this.game })),
+			quiet('Leave', () => go('#/hub')),
+		);
+
+		this.seats.empty();
+		new Component({ tag: 'h3', textContent: 'At the table', appendTo: this.seats, style: { marginBottom: '10px' } });
+		if (players.length === 0)
+			new Component({ textContent: 'Nobody yet.', appendTo: this.seats, style: { color: 'var(--muted)' } });
+		new Seats({ game: view, appendTo: this.seats, style: { gridTemplateColumns: '1fr' } });
+
+		this.round.empty();
+
+		if (stage === 'end') {
+			new Results({ game: view, appendTo: this.round, style: { padding: 0 } });
+
+			return;
+		}
+
+		const [headline, sub] = this.calls(view);
+
+		new Component(
+			{ appendTo: this.round },
+			new Component({ tag: 'h2', addClass: 'headline', textContent: headline }),
+			sub ? new Component({ addClass: 'sub', textContent: sub }) : '',
+		);
+
+		// The question, and beside it the cards as they come in: face down, then turned over for the vote
+		const played = [];
+
+		if (stage === 'vote') played.push(...submissions.map(card => ({ innerHTML: card })));
+		if (stage === 'play')
+			played.push(...players.filter(({ selectedCard }) => selectedCard).map(() => ({ faceDown: true })));
+
+		new Component({
+			addClass: 'played',
+			appendTo: this.round,
+			append: [
+				new Card({ type: 'black', style: { transform: tossed() }, innerHTML: black }),
+				...played.map(
+					card => new Card({ type: 'white', style: { transform: `rotate(${randInt(-4, 4)}deg)` }, ...card }),
+				),
+			],
+		});
 	}
 
-	render_play() {
-		new Card({
-			type: 'black',
-			style: {
-				margin: '0 auto',
-				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
-			},
-			innerHTML: this.game.black,
-			appendTo: this._body,
-		});
+	// What the room is being asked to do, and how far along it is
+	calls(view) {
+		const { stage, players } = view;
+		const pending = waitingOn(view);
+		const inRound = players.filter(player => !seatStatus(view, player).out);
+		const done = inRound.length - pending.length;
 
-		const submissions = new Hand({
-			appendTo: this._body,
-			append: (this.game.stage === 'vote'
-				? this.game.submissions
-				: this.game.players.filter(({ selectedCard }) => selectedCard)
-			).map(
-				(content, index) =>
-					new Card({
-						type: 'white',
-						style: {
-							marginTop: '-102px',
-							marginLeft: '-40px',
-							transform: `translate(40px, 102px) rotate(${(-5 + index) * randInt(1, 3)}deg)`,
-						},
-						toggleSelection: function () {
-							const isSelected = this.hasClass('selected');
-							this.elem.style.transform = isSelected
-								? `translate(40px, 102px) rotate(${(-5 + index) * randInt(1, 3)}deg)`
-								: 'rotate(' + randInt(-33, 33) + 'deg)';
-							this[isSelected ? 'removeClass' : 'addClass']('selected');
-						},
-						onPointerPress: function () {
-							const selectedCard = submissions.elem.querySelector('.selected');
+		if (stage === 'play') return ['Play a card', `${done} of ${inRound.length} in`];
+		if (stage === 'vote') return ['Vote for your favorite', `${done} of ${inRound.length} votes in`];
+		if (players.length < 2) return ['Waiting for players', 'Scan the code to sit down. It takes two.'];
 
-							if (selectedCard?._Component)
-								selectedCard._Component.options.toggleSelection.call(selectedCard._Component);
-							if (!selectedCard || selectedCard !== this.elem) this.options.toggleSelection.call(this);
-
-							submissions.options.selectedCard = submissions.elem.querySelector('.selected') ? this : undefined;
-						},
-					}),
-			),
-		});
-
-		this._toolbar.options.right = [
-			new Button({ onPointerPress: () => new PlayersDialog({ game: this.game }) }, 'Show Players'),
-		];
-	}
-
-	render_end() {
-		this._toolbar.options.heading = 'Round Over';
-		this._toolbar.options.right = [];
-
-		new RoundWinner({ game: this.game, appendTo: this._body });
+		return ['Ready up', pending.length > 0 ? `Waiting on ${listNames(pending)}` : ''];
 	}
 }

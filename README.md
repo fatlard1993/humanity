@@ -6,13 +6,17 @@ My digital take on the; wonderful, terrible, hilarious, hideous game provided by
 
 ## Screenshots
 
-![Creating a game: room name, hand size and the card packs to play with](./img/lobby_new_game.png)
+![The hub: each open room a black card with who's in it and what it's played with, beside the white card that starts a new one](./img/hub.png)
 
-![A player's hand under the black card, with one white card picked and raised, ready to Play](./img/player_enter_submission.png)
+![Creating a game: the room's name, the hand size and the card packs to play with, each with its size](./img/lobby_new_game.png)
+
+![A player's hand under the black card, with one white card picked and raised, ready to play](./img/player_enter_submission.png)
 
 ![The same hand on a phone, two cards across](./img/player_enter_submission_phone.png)
 
-![Round over: the winner, their votes and wins, and the winning card under the black card](./img/player_vote_results.png)
+![Round over: the winner and the winning card on the black card, the other cards with who played them and their votes, and the standings](./img/player_vote_results.png)
+
+![The watch screen for a shared display: the cards up for the vote, the code to scan to join, and each player's seat](./img/watch_vote.png)
 
 ## Start
 

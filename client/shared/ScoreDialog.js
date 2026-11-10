@@ -1,11 +1,12 @@
 import { Dialog } from '@vanilla-bean/components';
-import ScoreCards from './ScoreCards';
+
+import Scoreboard from './Scoreboard.js';
 
 export default class ScoreDialog extends Dialog {
 	constructor(options = {}) {
 		super({
-			size: 'standard',
-			header: options.game.name,
+			size: 'fit',
+			header: `${options.game.name}: the standings`,
 			buttons: ['Close'],
 			onButtonPress: ({ closeDialog }) => closeDialog(),
 			...options,
@@ -15,6 +16,6 @@ export default class ScoreDialog extends Dialog {
 	build() {
 		super.build();
 
-		new ScoreCards({ game: this.options.game, appendTo: this._body });
+		new Scoreboard({ game: this.options.game, playerId: this.options.playerId, appendTo: this.body });
 	}
 }

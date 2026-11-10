@@ -1,78 +1,110 @@
-import { Button, randInt, Notify, vibrate } from '@vanilla-bean/components';
+import { Button, Component, Notify, randInt, styled, vibrate } from '@vanilla-bean/components';
 
 import { act, enterGame } from '@fatlard1993/web-game-framework/client';
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
-import { View } from '@fatlard1993/web-game-framework/ui/layout';
-import Card, { Hand } from './shared/Card.js';
-import { ReadyOrNot } from './shared/WaitingPlayerList.js';
-import RoundWinner from './shared/RoundWinner.js';
+import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
 
-// A card is 252px across its padding; on a phone two fit side by side, sized from the hand's width (less 16px for their
-// tilt), with the overlap and padding in step. The resting translate takes half the overlap there so the pair sits
-// centered.
-const fittedHand = ({ media }) => `
-	padding: 0 42px;
-	box-sizing: border-box;
+import Card from './shared/Card.js';
+import PickHand from './shared/PickHand.js';
+import Results from './shared/Results.js';
+import RoomDialog from './shared/RoomDialog.js';
+import ScoreDialog from './shared/ScoreDialog.js';
+import Screen, { go, quiet } from './shared/Screen.js';
+import Seats, { listNames, seatStatus, waitingOn } from './shared/Seats.js';
 
-	@media ${media.phone} {
-		container-type: inline-size;
-		padding: 0 12px;
+const tossed = () => `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`;
 
-		--card-size: min(252px, calc((100cqi - 16px) / 1.84));
-		--card-pad: max(10px, calc(var(--card-size) * 18 / 252));
-		--overlap-x: calc(var(--card-size) * 40 / 252);
-		--overlap-y: calc(var(--card-size) * 102 / 252);
-		--shift-x: calc(var(--overlap-x) / 2);
+// Between turns: what's being waited for, over the seats
+const Lobby = styled(
+	Component,
+	({ media }) => `
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+		max-width: 760px;
+		margin: 0 auto;
+		padding: 30px 16px 36px;
+		box-sizing: border-box;
 
-		& > .type-white {
-			width: calc(var(--card-size) - 2 * var(--card-pad));
-			height: calc(var(--card-size) * 9 / 7 - 2 * var(--card-pad));
-			padding: var(--card-pad);
-			font-size: clamp(14px, calc(var(--card-size) * 16 / 252), 16px);
+		& .headline {
+			margin: 0;
+			font-size: clamp(1.6rem, 5vw, 2.4rem);
+			font-weight: 800;
+			letter-spacing: -0.035em;
+			line-height: 1.05;
+			text-align: center;
+			text-wrap: balance;
 		}
-	}
-`;
 
-const resting = 'translate(var(--shift-x, 40px), var(--overlap-y, 102px))';
+		& .sub {
+			margin-top: 8px;
+			color: var(--muted);
+			font-weight: 600;
+			text-align: center;
+		}
 
-export default class Play extends View {
-	constructor(options, ...children) {
-		super(
-			{
-				...options,
-				toolbar: {
-					heading: '',
-					left: [
-						new Button({
-							content: 'Exit',
-							onPointerPress: () => new ExitDialog({ gameId: this.options.gameId, playerId: this.playerId }),
-						}),
-					],
-				},
-			},
-			...children,
-		);
-	}
+		& .pair {
+			display: flex;
+			justify-content: center;
 
+			& > :last-child {
+				margin-left: -34px;
+				margin-top: 44px;
+			}
+		}
+
+		@media ${media.phone} {
+			& .pair {
+				zoom: 0.72;
+			}
+		}
+	`,
+);
+
+const Board = styled(
+	Component,
+	() => `
+		display: flex;
+		flex-direction: column;
+		padding: 18px 0 40px;
+	`,
+);
+
+export default class Play extends Screen {
 	build() {
 		super.build();
-		this._init();
+
+		this.left(
+			quiet('Leave', () => {
+				new ExitDialog({
+					gameId: this.options.gameId,
+					playerId: this.playerId,
+					header: 'Leave the table?',
+					label: 'Give up my seat, hand and score',
+					confirmLabel: 'Leave',
+				});
+			}),
+		);
+
+		this.enter();
 	}
 
-	async _init() {
+	async enter() {
 		const { gameId } = this.options;
 		const { playerId, leave } = await enterGame(gameId, {
 			onState: view => this.show(view),
 			onUpdate: message => {
 				if (message.update === 'poke' && message.targetPlayerId === this.playerId) {
 					vibrate([200, 100, 200]);
-					new Notify({ content: 'Hey! Ready up!', intent: 'success', timeout: 2500 });
+					new Notify({ content: 'Poke. The table is waiting on you.', intent: 'warning', timeout: 2500 });
 				}
 			},
-			notMember: () => (window.location.href = `#/join/${gameId}`),
+			notMember: () => go(`#/join/${gameId}`),
 			gone: () => {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
-				window.location.href = '#/hub';
+				go('#/hub');
 			},
 		});
 
@@ -82,224 +114,174 @@ export default class Play extends View {
 		if (!this.elem.isConnected) leave();
 	}
 
-	// Each view of the game the server sends: the screen is drawn again only when what it shows has changed, so a card
-	// picked and raised stays raised while others play
+	// Each view of the game the server sends. The bar says where the round is every time; the table is laid again only
+	// when what it shows has changed, so a card picked and raised stays raised while others play.
 	show(view) {
 		const player = view.players.find(({ id }) => id === this.playerId);
 
 		if (!player) {
-			window.location.href = `#/join/${this.options.gameId}`;
+			go(`#/join/${this.options.gameId}`);
+
 			return;
 		}
 
 		this.game = view;
 		this.player = player;
-		this.stage = player.stage !== view.stage ? 'wait' : player.stage;
+		// A card to pick while the round waits on this player; otherwise the table, or the round's end
+		const theirTurn = view.stage !== 'wait' && player.stage === view.stage;
+
+		this.mode = (view.stage === 'end' && 'end') || (theirTurn && 'pick') || 'wait';
+
+		this.title(view.name, this.progress());
+		this.right(
+			Object.keys(view.scores).length > 0 &&
+				quiet('', () => new ScoreDialog({ game: this.game, playerId: this.playerId }), {
+					icon: 'trophy',
+					attributes: { 'aria-label': 'The standings', title: 'The standings' },
+				}),
+			quiet('', () => new RoomDialog({ game: this.game, remove: false }), {
+				icon: 'qrcode',
+				attributes: { 'aria-label': 'Invite someone', title: 'Invite someone' },
+			}),
+		);
 
 		const drawn = JSON.stringify(this.drawnFrom());
 
 		if (drawn === this._drawn) return;
 		this._drawn = drawn;
 
-		this._body.empty();
-		this._toolbar.options.right = [];
-		this[`render_${this.stage}`]();
+		this.body.empty();
+		this.actions();
+		this[`render_${this.mode}`]();
 	}
 
-	// What the current screen shows, to tell whether a new view changes it
+	// Where the round is, for the bar
+	progress() {
+		const { stage, players } = this.game;
+
+		if (stage === 'end') return 'Round over';
+		if (stage === 'wait') return 'Getting ready';
+
+		const inRound = players.filter(player => !seatStatus(this.game, player).out);
+		const done = inRound.filter(player => seatStatus(this.game, player).done).length;
+
+		return `${stage === 'play' ? 'Cards in' : 'Votes in'}: ${done} of ${inRound.length}`;
+	}
+
+	// What the table shows, to tell whether a new view changes it
 	drawnFrom() {
-		const { name, black, players, submissions, lastRoundWinner, scores } = this.game;
+		const { black, players, submissions, selected, results, scores, hand } = this.game;
+		const seats = players.map(({ id, name, stage }) => [id, name, stage]);
 
-		if (this.stage === 'wait') return [this.stage, name, players.map(({ id, name, stage }) => [id, name, stage])];
-		if (this.stage === 'play') return [this.stage, name, black, this.game.hand];
-		if (this.stage === 'vote') return [this.stage, name, black, submissions];
+		if (this.mode === 'pick')
+			return [this.mode, this.game.stage, black, this.game.stage === 'play' ? hand : submissions];
+		if (this.mode === 'end') return [this.mode, black, results, scores, seats];
 
-		return [this.stage, name, black, lastRoundWinner, scores, players.map(({ id, name }) => [id, name])];
+		return [this.mode, this.game.stage, black, selected, seats, scores];
 	}
 
+	// Nothing of this player's to do but wait: before a round (ready up), after playing or voting, or sitting one out
 	render_wait() {
-		this._toolbar.options.heading = `${this.game.name} - Waiting`;
-		this._toolbar.options.right = [];
+		const { game, player, playerId } = this;
+		const lobby = new Lobby({ appendTo: this.body });
+		const pending = waitingOn(game).filter(name => name !== player.name || game.stage !== 'wait');
+		const waiting = pending.length > 0 ? `Waiting on ${listNames(pending)}` : '';
+		const headline = (text, sub) =>
+			new Component(
+				{ appendTo: lobby },
+				new Component({ tag: 'h2', addClass: 'headline', textContent: text }),
+				sub ? new Component({ addClass: 'sub', textContent: sub }) : '',
+			);
 
-		try {
-			new ReadyOrNot({
-				appendTo: this._body,
-				game: this.game,
-				playerId: this.playerId,
-				styles: ({ space }) => `
-					margin: ${space.md} 0 ${space.md} ${space.md};
-					padding-right: ${space.md};
-				`,
-			});
-		} catch (error) {
-			console.error('Error creating ReadyOrNot:', error);
-			new Notify({ intent: 'danger', content: 'Error rendering waiting screen: ' + error.message });
+		if (game.stage === 'wait') {
+			const alone = game.players.length < 2;
+			const ready = player.stage === 'play';
+
+			if (alone) headline('It takes two to be terrible', 'Get someone to scan this, or send them the link.');
+			else if (ready) headline("You're ready", waiting);
+			else headline('Ready when you are', 'The round starts once everyone is ready.');
+
+			if (alone) new JoinCard({ gameId: game.id, size: 200, appendTo: lobby });
+
+			new Seats({ game, playerId, appendTo: lobby });
+
+			if (!ready)
+				this.actions(new Button({ content: "I'm ready", addClass: 'go', onPointerPress: () => act('ready') }));
+			else if (!alone) this.actions(waiting);
+
+			return;
 		}
+
+		// Sitting this round out: they sat down after it began
+		if (player.stage === 'wait') {
+			headline('A round is under way', "You're dealt in for the next one.");
+			new Seats({ game, playerId, appendTo: lobby });
+
+			if (game.stage === 'play')
+				this.actions(new Button({ content: 'Deal me in now', addClass: 'go', onPointerPress: () => act('ready') }));
+
+			return;
+		}
+
+		headline(game.stage === 'play' ? 'Your card is in' : 'Your vote is in', waiting);
+
+		new Component(
+			{ addClass: 'pair', appendTo: lobby },
+			new Card({ type: 'black', style: { transform: tossed() }, innerHTML: game.black }),
+			game.selected ? new Card({ type: 'white', style: { transform: tossed() }, innerHTML: game.selected }) : '',
+		);
+
+		new Seats({ game, playerId, appendTo: lobby });
 	}
 
-	render_play() {
-		this._toolbar.options.heading = `${this.game.name} - Play Your Card`;
+	// A card to pick: one from the hand to play, or one of what was played to vote for
+	render_pick() {
+		const { game } = this;
+		const playing = game.stage === 'play';
+		const board = new Board({ appendTo: this.body });
+		let picked;
+
+		const commit = new Button({
+			content: playing ? 'Play this card' : 'Vote for this card',
+			addClass: 'go',
+			disabled: true,
+			onPointerPress: async () => {
+				if (!picked) return;
+
+				commit.elem.disabled = true;
+
+				const done = await act(playing ? 'play' : 'vote', { card: picked });
+
+				// Refused (or no answer): the pick is still up, to try again
+				if (!done.ok && commit.elem.isConnected) commit.elem.disabled = !picked;
+			},
+		});
 
 		new Card({
 			type: 'black',
-			style: {
-				margin: '0 auto',
-				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
+			style: { margin: '0 auto', transform: tossed() },
+			innerHTML: game.black,
+			appendTo: board,
+		});
+
+		new PickHand({
+			appendTo: board,
+			cards: playing ? game.hand : game.submissions,
+			onPick: card => {
+				picked = card;
+				commit.elem.disabled = !card;
 			},
-			innerHTML: this.game.black,
-			appendTo: this._body,
 		});
 
-		const hand = new Hand({
-			styles: fittedHand,
-			appendTo: this._body,
-			append: this.game.hand.map(
-				(content, index) =>
-					new Card({
-						type: 'white',
-						style: {
-							marginTop: 'calc(-1 * var(--overlap-y, 102px))',
-							marginLeft: 'calc(-1 * var(--overlap-x, 40px))',
-							transform: `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`,
-						},
-						innerHTML: content,
-						toggleSelection: function () {
-							const isSelected = this.hasClass('selected');
-							this.elem.style.transform = isSelected
-								? `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`
-								: 'rotate(' + randInt(-33, 33) + 'deg)';
-							this[isSelected ? 'removeClass' : 'addClass']('selected');
-						},
-						onPointerPress: function () {
-							const isAlreadySelected = this.elem.classList.contains('selected');
-
-							// Deselect all cards first
-							hand.elem.querySelectorAll('.selected').forEach(elem => {
-								elem.classList.remove('selected');
-								elem.style.transform = `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`;
-							});
-
-							// If this card was already selected, leave it deselected
-							if (isAlreadySelected) {
-								hand.options.selectedCard = undefined;
-								return;
-							}
-
-							// Select this card - move it up and toward center
-							this.elem.classList.add('selected');
-
-							// Calculate how far to move toward center (30% of the way)
-							const cardRect = this.elem.getBoundingClientRect();
-							const handRect = hand.elem.getBoundingClientRect();
-							const cardCenter = cardRect.left + cardRect.width / 2;
-							const handCenter = handRect.left + handRect.width / 2;
-							const offsetToCenter = (handCenter - cardCenter) * 0.3;
-
-							this.elem.style.transition = 'transform 0.3s ease-out';
-							this.elem.style.transform = `translate(${offsetToCenter}px, -120px) rotate(${randInt(-5, 5)}deg) scale(1.1)`;
-
-							hand.options.selectedCard = this;
-						},
-					}),
-			),
-		});
-
-		const playButton = new Button({
-			content: 'Play',
-			disabled: hand.options.subscriber('selectedCard', _ => !_),
-			onPointerPress: () => act('play', { card: hand.options.selectedCard.options.innerHTML }),
-		});
-
-		this._toolbar.options.right = [playButton];
-	}
-
-	render_vote() {
-		this._toolbar.options.heading = `${this.game.name} - Place Your Vote`;
-
-		new Card({
-			type: 'black',
-			style: {
-				margin: '0 auto',
-				transform: `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`,
-			},
-			innerHTML: this.game.black,
-			appendTo: this._body,
-		});
-
-		const submissions = new Hand({
-			styles: fittedHand,
-			appendTo: this._body,
-			// Everyone's card but this player's own (the server leaves it out)
-			append: this.game.submissions.map(
-				(content, index) =>
-					new Card({
-						type: 'white',
-						style: {
-							marginTop: 'calc(-1 * var(--overlap-y, 102px))',
-							marginLeft: 'calc(-1 * var(--overlap-x, 40px))',
-							transform: `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`,
-						},
-						innerHTML: content,
-						toggleSelection: function () {
-							const isSelected = this.hasClass('selected');
-							this.elem.style.transform = isSelected
-								? `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`
-								: 'rotate(' + randInt(-33, 33) + 'deg)';
-							this[isSelected ? 'removeClass' : 'addClass']('selected');
-						},
-						onPointerPress: function () {
-							const isAlreadySelected = this.elem.classList.contains('selected');
-
-							// Deselect all cards first
-							submissions.elem.querySelectorAll('.selected').forEach(elem => {
-								elem.classList.remove('selected');
-								elem.style.transform = `${resting} rotate(${(-5 + index) * randInt(1, 3)}deg)`;
-							});
-
-							// If this card was already selected, leave it deselected
-							if (isAlreadySelected) {
-								submissions.options.selectedCard = undefined;
-								return;
-							}
-
-							// Select this card - move it up and toward center
-							this.addClass('selected');
-
-							// Calculate how far to move toward center (30% of the way)
-							const cardRect = this.elem.getBoundingClientRect();
-							const submissionsRect = submissions.elem.getBoundingClientRect();
-							const cardCenter = cardRect.left + cardRect.width / 2;
-							const submissionsCenter = submissionsRect.left + submissionsRect.width / 2;
-							const offsetToCenter = (submissionsCenter - cardCenter) * 0.3;
-
-							this.elem.style.transition = 'transform 0.3s ease-out';
-							this.elem.style.transform = `translate(${offsetToCenter}px, -120px) rotate(${randInt(-5, 5)}deg) scale(1.1)`;
-
-							submissions.options.selectedCard = this;
-						},
-					}),
-			),
-		});
-
-		const voteButton = new Button({
-			content: 'Vote',
-			disabled: submissions.options.subscriber('selectedCard', _ => !_),
-			onPointerPress: () => act('vote', { card: submissions.options.selectedCard.options.innerHTML }),
-		});
-
-		this._toolbar.options.right = [voteButton];
+		this.actions(
+			commit,
+			playing ? 'Pick the card that answers it best' : 'Pick your favorite. Your own card is not here.',
+		);
 	}
 
 	render_end() {
-		this._toolbar.options.heading = `${this.game.name} - Round Over`;
+		new Results({ game: this.game, playerId: this.playerId, appendTo: this.body });
 
-		const playAgainButton = new Button({
-			content: 'Play Again',
-			onPointerPress: () => act('ready'),
-		});
-
-		this._toolbar.options.right = [playAgainButton];
-
-		new RoundWinner({ game: this.game, appendTo: this._body });
+		this.actions(new Button({ content: 'Next round', addClass: 'go', onPointerPress: () => act('ready') }));
 	}
 }

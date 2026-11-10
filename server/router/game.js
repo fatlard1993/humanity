@@ -7,7 +7,14 @@ const _game = async request => {
 	let match;
 
 	match = requestMatch('GET', '/packs', request);
-	if (match) return Response.json(Object.keys(cards.db));
+	if (match)
+		return Response.json(
+			Object.entries(cards.db).map(([name, { data }]) => ({
+				name,
+				blacks: data.blacks?.length ?? 0,
+				whites: data.whites?.length ?? 0,
+			})),
+		);
 
 	match = requestMatch('GET', '/packs/random-name', request);
 	if (match) {

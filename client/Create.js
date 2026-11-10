@@ -1,148 +1,249 @@
-import { Component, List, Button, Input, Label, styled, theme, Notify, failureReason } from '@vanilla-bean/components';
-import { Create as BaseCreate } from '@fatlard1993/web-game-framework/ui/GameRoom';
+import { Button, Component, Input, Notify, failureReason, styled } from '@vanilla-bean/components';
+
+import { createGame } from '@fatlard1993/web-game-framework/client';
 
 import { getPacks, getRandomName } from './api';
+import Screen, { go, quiet } from './shared/Screen.js';
+import Sheet from './shared/Sheet.js';
 
-const CheckList = styled(
-	List,
-	({ colors, space, radius }) => `
-		padding: 0;
+const LAST_PACKS = 'humanity.packs';
+const LAST_HAND = 'humanity.handSize';
+const MIN_HAND = 2;
+const MAX_HAND = 30;
 
-		& li {
-			margin: ${space.sm};
-			padding: ${space.sm};
-			border: 2px solid ${colors.border};
-			border-radius: ${radius.md};
-			list-style: none;
+const Packs = styled(
+	Component,
+	() => `
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+
+		& .pack {
 			display: flex;
-			align-items: center;
-			gap: ${space.sm};
+			align-items: baseline;
+			gap: 8px;
+			padding: 9px 13px;
+			border: 0;
+			border-radius: 9px;
+			background: transparent;
+			color: var(--paper);
+			box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+			font: inherit;
+			font-weight: 700;
+			letter-spacing: -0.01em;
+			cursor: pointer;
+			transition: background-color 0.12s, color 0.12s;
+
+			& small {
+				font-size: 0.75rem;
+				font-variant-numeric: tabular-nums;
+				opacity: 0.6;
+			}
+
+			&:hover {
+				background: rgb(243 240 231 / 0.1);
+			}
+
+			/* In the deck, a pack is a white card */
+			&[aria-pressed='true'] {
+				background: var(--paper);
+				color: var(--ink);
+				box-shadow: 0 2px 0 rgb(0 0 0 / 0.55);
+			}
 		}
 	`,
 );
 
-export default class Create extends BaseCreate {
-	constructor(options, ...children) {
-		super(
-			{
-				...options,
-				toolbar: { heading: 'Create', backText: 'Cancel', createText: 'Create' },
-			},
-			...children,
-		);
-	}
+const Stepper = styled(
+	Component,
+	() => `
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
 
-	create() {
-		if (this.form.options.data.packs.size === 0) {
-			new Notify({ intent: 'danger', content: 'Must select at least 1 pack' });
-			return;
+		& .value {
+			min-width: 2.4ch;
+			text-align: center;
+			font-size: 1.5rem;
+			font-weight: 800;
+			font-variant-numeric: tabular-nums;
 		}
 
-		return super.create();
+		& .unit {
+			margin-left: 6px;
+			color: var(--muted);
+			font-weight: 600;
+		}
+	`,
+);
+
+const remembered = (key, fallback) => {
+	try {
+		return JSON.parse(localStorage.getItem(key)) ?? fallback;
+	} catch {
+		return fallback;
+	}
+};
+
+export default class Create extends Screen {
+	build() {
+		super.build();
+
+		this.title('New game', 'Build the deck');
+		this.left(quiet('Back', () => go('#/hub')));
+		this.load();
 	}
 
-	createBody() {
-		return { ...this.form.options.data, packs: [...this.form.options.data.packs] };
-	}
-
-	async _init() {
+	async load() {
 		const packs = await getPacks();
 
-		if (packs.response.status !== 200) {
+		if (packs.response?.status !== 200) {
 			new Notify({ intent: 'danger', content: failureReason(packs) });
+
 			return;
 		}
 
-		const formData = {
-			name: '',
-			handSize: 10,
-			packs: new Set(),
+		this.packs = packs.body;
+		// The packs played with last time, or the base pack; a pack since removed is forgotten
+		this.picked = new Set(remembered(LAST_PACKS, ['base']).filter(name => this.packs.some(pack => pack.name === name)));
+		this.handSize = Math.min(MAX_HAND, Math.max(MIN_HAND, Number(remembered(LAST_HAND, 10)) || 10));
+
+		this.name = new Input({
+			placeholder: 'What the room is called',
+			attributes: { id: 'room-name', maxlength: 60, enterkeyhint: 'done' },
+		});
+		this.name.elem.addEventListener('input', () => this.refresh());
+		this.randomName();
+
+		this.handValue = new Component({ addClass: 'value', attributes: { 'aria-live': 'polite' } });
+		this.fewer = quiet('', () => this.setHand(this.handSize - 1), {
+			icon: 'minus',
+			attributes: { 'aria-label': 'A smaller hand' },
+		});
+		this.more = quiet('', () => this.setHand(this.handSize + 1), {
+			icon: 'plus',
+			attributes: { 'aria-label': 'A bigger hand' },
+		});
+
+		this.chips = this.packs.map(({ name, blacks, whites }) => {
+			const chip = document.createElement('button');
+			const count = document.createElement('small');
+
+			chip.type = 'button';
+			chip.className = 'pack';
+			chip.textContent = name;
+			count.textContent = (blacks + whites).toLocaleString();
+			chip.append(count);
+			chip.title = `${blacks.toLocaleString()} black, ${whites.toLocaleString()} white`;
+			chip.addEventListener('click', () => {
+				this.picked[this.picked.has(name) ? 'delete' : 'add'](name);
+				this.refresh();
+			});
+
+			return { name, chip };
+		});
+
+		const all = pick => {
+			this.picked = new Set(pick ? this.packs.map(({ name }) => name) : []);
+			this.refresh();
 		};
 
-		this.options.formData = formData;
-		this.options.formInputs = [
-			{
-				key: 'name',
-				label: {
-					label: 'Room Name',
-					variant: 'inline',
-					append: new Button({
-						icon: 'dice',
-						tooltip: 'A random name',
-						styles: ({ space }) => `
-							margin: 0 ${space.sm};
-							vertical-align: middle;
-						`,
-						onPointerPress: async () => {
-							const result = await getRandomName();
-							if (result.status !== 'success') return;
-							this.form.options.data.name = result.body;
-							this.form.inputElements.name.options.value = result.body;
-						},
-					}),
-				},
-				validate: value => (value ? null : 'Required'),
-			},
-			{
-				key: 'handSize',
-				type: 'number',
-				validate: value => (value >= 2 ? null : 'Must be 2 or more'),
-			},
-		];
-
-		super._init();
-
-		const packNames = packs.body;
-		const checkboxes = [];
-
-		new Label({
-			label: 'Packs (select at least one)',
-			appendTo: this._body,
-			style: { margin: `${theme.space.md} 0 ${theme.space.sm} ${theme.space.md}` },
-			append: [
+		new Sheet(
+			{ appendTo: this.body, style: { maxWidth: '720px', alignItems: 'stretch' } },
+			new Component(
+				{ addClass: 'field' },
+				new Component({ tag: 'label', textContent: 'Room name', attributes: { for: 'room-name' } }),
 				new Component(
-					{
-						styles: ({ space }) => `
-							display: flex;
-							gap: ${space.sm};
-							margin-bottom: ${space.sm};
-						`,
-					},
-					new Button({
-						content: 'All',
-						onPointerPress: () => {
-							packNames.forEach(name => this.form.options.data.packs.add(name));
-							checkboxes.forEach(cb => {
-								cb.options.value = true;
-							});
-						},
-					}),
-					new Button({
-						content: 'None',
-						onPointerPress: () => {
-							this.form.options.data.packs.clear();
-							checkboxes.forEach(cb => {
-								cb.options.value = false;
-							});
-						},
+					{ addClass: 'row' },
+					this.name,
+					quiet('', () => this.randomName(), {
+						icon: 'dice',
+						attributes: { 'aria-label': 'A random name', title: 'A random name' },
 					}),
 				),
-				new CheckList({
-					items: packNames.map(name => {
-						const checkbox = new Input({
-							type: 'checkbox',
-							name,
-							onChange: event => {
-								event.stopPropagation();
+			),
+			new Component(
+				{ addClass: 'field' },
+				new Component({ addClass: 'label', textContent: 'Hand' }),
+				new Stepper(
+					{},
+					this.fewer,
+					this.handValue,
+					this.more,
+					new Component({ addClass: 'unit', textContent: 'cards each' }),
+				),
+			),
+			new Component(
+				{ addClass: 'field' },
+				new Component(
+					{ addClass: 'row', style: { marginBottom: '10px' } },
+					new Component({ addClass: 'label', textContent: 'Packs', style: { flex: 1, margin: 0 } }),
+					quiet('All', () => all(true), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
+					quiet('None', () => all(false), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
+				),
+				new Packs({ append: this.chips.map(({ chip }) => chip) }),
+			),
+		);
 
-								this.form.options.data.packs[event.value ? 'add' : 'delete'](name);
-							},
-						});
-						checkboxes.push(checkbox);
-						return [checkbox, new Component({ tag: 'label', for: name }, name)];
-					}),
-				}),
-			],
+		this.deal = new Button({ content: 'Deal the cards', addClass: 'go', onPointerPress: () => this.create() });
+		this.note = new Component({ addClass: 'note' });
+		this.actions(this.deal, this.note);
+
+		this.refresh();
+	}
+
+	setHand(size) {
+		this.handSize = Math.min(MAX_HAND, Math.max(MIN_HAND, size));
+		this.refresh();
+	}
+
+	async randomName() {
+		const result = await getRandomName();
+
+		if (result.status !== 'success' || !this.name?.elem.isConnected) return;
+
+		this.name.elem.value = result.body;
+		this.refresh();
+	}
+
+	// What stands in the way of dealing, if anything; else what the deck comes to
+	refresh() {
+		const picked = this.packs.filter(({ name }) => this.picked.has(name));
+		const blacks = picked.reduce((sum, pack) => sum + pack.blacks, 0);
+		const whites = picked.reduce((sum, pack) => sum + pack.whites, 0);
+		const missing =
+			(!this.name.elem.value.trim() && 'Name the room') ||
+			(picked.length === 0 && 'Pick at least one pack') ||
+			((blacks === 0 || whites === 0) && 'These packs need both black and white cards') ||
+			'';
+
+		this.chips.forEach(({ name, chip }) => chip.setAttribute('aria-pressed', String(this.picked.has(name))));
+		this.handValue.elem.textContent = this.handSize;
+		this.fewer.elem.disabled = this.handSize <= MIN_HAND;
+		this.more.elem.disabled = this.handSize >= MAX_HAND;
+		this.deal.elem.disabled = !!missing;
+		this.note.elem.textContent =
+			missing ||
+			`${picked.length} ${picked.length === 1 ? 'pack' : 'packs'}: ${blacks.toLocaleString()} black, ${whites.toLocaleString()} white`;
+	}
+
+	async create() {
+		if (this.deal.elem.disabled) return;
+
+		const packs = [...this.picked];
+		const created = await createGame({
+			body: { name: this.name.elem.value.trim(), handSize: this.handSize, packs },
 		});
+
+		if (created.status !== 'success') {
+			new Notify({ intent: 'danger', content: failureReason(created) });
+
+			return;
+		}
+
+		localStorage.setItem(LAST_PACKS, JSON.stringify(packs));
+		localStorage.setItem(LAST_HAND, JSON.stringify(this.handSize));
+
+		go(`#/join/${created.body.id}`);
 	}
 }

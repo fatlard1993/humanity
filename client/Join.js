@@ -1,53 +1,116 @@
-import { Component, Button, styled } from '@vanilla-bean/components';
-import { Join as BaseJoin } from '@fatlard1993/web-game-framework/ui/GameRoom';
+import { Button, Component, Input, Notify, failureReason } from '@vanilla-bean/components';
 
-const Heading = styled(
-	Component,
-	({ space }) => `
-		font-size: 1.5em;
-		text-align: center;
-		margin: 0 0 ${space.md};
-	`,
-	{ tag: 'h2' },
-);
+import { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
-export default class Join extends BaseJoin {
-	constructor(options, ...children) {
-		super(
-			{
-				formData: { name: localStorage.getItem('lastName') || '' },
-				formInputs: [{ key: 'name', label: 'Player Name', validate: value => (value ? null : 'Required') }],
-				...options,
-				toolbar: { heading: 'Join', backText: 'Cancel', joinText: 'Play' },
-			},
-			...children,
-		);
-	}
+import { getRandomName } from './api';
+import Card from './shared/Card.js';
+import Screen, { go, quiet } from './shared/Screen.js';
+import Sheet from './shared/Sheet.js';
 
+export default class Join extends Screen {
 	build() {
 		super.build();
 
-		this._toolbar.options.right = [
-			new Button({
-				content: 'Watch',
-				onPointerPress: () => {
-					if (this.form.hasErrors()) return;
-
-					localStorage.setItem('lastName', this.form.options.data.name);
-
-					window.location.href = `#/watch/${this.options.gameId}`;
-				},
-			}),
-			...this._toolbar.options.right,
-		];
+		this.title('Join');
+		this.left(quiet('Back', () => go('#/hub')));
+		this.load();
 	}
 
-	async _init() {
-		await super._init();
+	async load() {
+		const { gameId } = this.options;
+		const game = await getGame(gameId, { invalidateAfter: 0 });
 
-		if (!this.game || !this.form) return;
+		if (game.response?.status !== 200) {
+			new Notify({
+				intent: 'danger',
+				content: game.response?.status === 404 ? 'That game is gone' : failureReason(game),
+			});
+			localStorage.removeItem(gameId);
+			go('#/hub');
 
-		const heading = new Heading({ content: this.game.name });
-		this._body.elem.prepend(heading.elem);
+			return;
+		}
+
+		// Already at the table: back to their seat
+		if (game.body.players.some(({ id }) => id === localStorage.getItem(gameId))) {
+			go(`#/play/${gameId}`);
+
+			return;
+		}
+
+		const { name, players } = game.body;
+
+		this.title(name, 'Take a seat');
+
+		this.name = new Input({
+			value: localStorage.getItem('lastName') || '',
+			placeholder: 'What they call you',
+			attributes: { id: 'player-name', maxlength: 40, enterkeyhint: 'go' },
+		});
+		this.name.elem.addEventListener('keydown', event => {
+			if (event.key === 'Enter') this.join();
+		});
+
+		new Sheet(
+			{ appendTo: this.body },
+			new Card({ type: 'black', style: { transform: 'rotate(-2deg)' }, textContent: name }),
+			new Component({
+				addClass: 'at-table',
+				textContent:
+					players.length === 0
+						? 'Nobody at the table yet. Be the first.'
+						: `At the table: ${players.map(player => player.name).join(', ')}`,
+			}),
+			new Component(
+				{ addClass: 'field' },
+				new Component({ tag: 'label', textContent: 'Your name', attributes: { for: 'player-name' } }),
+				new Component(
+					{ addClass: 'row' },
+					this.name,
+					quiet('', () => this.randomName(), {
+						icon: 'dice',
+						attributes: { 'aria-label': 'A random name', title: 'A random name' },
+					}),
+				),
+			),
+		);
+
+		this.actions(
+			new Button({ content: 'Take a seat', addClass: 'go', onPointerPress: () => this.join() }),
+			quiet('Just watch', () => go(`#/watch/${gameId}`)),
+		);
+
+		if (!this.name.elem.value) this.name.elem.focus();
+	}
+
+	async randomName() {
+		const result = await getRandomName();
+
+		if (result.status === 'success') this.name.elem.value = result.body;
+	}
+
+	async join() {
+		const { gameId } = this.options;
+		const name = this.name.elem.value.trim();
+
+		if (!name) {
+			new Notify({ intent: 'warning', content: 'You need a name to sit down', timeout: 2500 });
+			this.name.elem.focus();
+
+			return;
+		}
+
+		const joined = await joinGame(gameId, { body: { name, playerId: localStorage.getItem(gameId) } });
+
+		if (joined.status !== 'success') {
+			new Notify({ intent: 'danger', content: failureReason(joined) });
+
+			return;
+		}
+
+		localStorage.setItem(gameId, joined.body.id);
+		localStorage.setItem('lastName', joined.body.name);
+
+		go(`#/play/${gameId}`);
 	}
 }

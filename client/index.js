@@ -1,3 +1,5 @@
+import './theme.js';
+
 import { Page, requestWakeLock } from '@vanilla-bean/components';
 
 import router from './router';
@@ -8,11 +10,4 @@ import '@vanilla-bean/components/app/reloadOnBuild';
 // The screen stays awake while the game is open
 requestWakeLock();
 
-new Page({
-	styles: ({ colors }) => `
-		color: ${colors.lightest(colors.gray)};
-		background-color: ${colors.darker(colors.gray)};
-	`,
-	appendTo: document.body,
-	append: router,
-});
+new Page({ appendTo: document.body, append: router });
