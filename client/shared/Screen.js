@@ -1,4 +1,4 @@
-import { Button, Component, Link, View, styled } from '@vanilla-bean/components';
+import { Button, Component, Content, Link, Toolbar, View, styled } from '@vanilla-bean/components';
 
 import { href, paths } from '../paths.js';
 
@@ -63,46 +63,24 @@ export class Wordmark extends styled(
 	}
 }
 
+// The screen's own bar: the way back or home first, then where you are and what's happening there, then the ways out
 const Bar = styled(
-	Component,
+	Toolbar,
 	({ media }) => `
-		flex-shrink: 0;
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		align-items: center;
-		gap: 12px;
-		min-height: 60px;
-		box-sizing: border-box;
-		padding: calc(10px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 10px
-			calc(16px + env(safe-area-inset-left, 0px));
-		border-bottom: 1px solid var(--rule);
-
+		/* The ways back and out keep their size; the heading and the stage give way */
 		& > .side {
 			display: flex;
 			align-items: center;
 			gap: 8px;
-			min-width: 0;
+			flex-shrink: 0;
 		}
 
 		& > .right {
-			justify-content: flex-end;
+			margin-left: auto;
 		}
 
-		& > .titles {
+		& > .stage {
 			min-width: 0;
-			text-align: center;
-		}
-
-		& .title {
-			font-size: 1.05rem;
-			font-weight: 800;
-			letter-spacing: -0.02em;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-
-		& .stage {
 			font-size: 0.72rem;
 			font-weight: 700;
 			letter-spacing: 0.09em;
@@ -113,29 +91,24 @@ const Bar = styled(
 			text-overflow: ellipsis;
 		}
 
-		& .title:empty, & .stage:empty {
+		& > .stage:empty {
 			display: none;
 		}
 
 		@media ${media.phone} {
-			grid-template-columns: auto minmax(0, 1fr) auto;
-			padding-left: calc(12px + env(safe-area-inset-left, 0px));
-			padding-right: calc(12px + env(safe-area-inset-right, 0px));
-
 			/* Beside a room's name there's room for the cards alone */
-			&:has(.title:not(:empty)) .word {
+			&:has(> .heading) .word {
 				display: none;
 			}
 		}
 	`,
+	{ variant: 'bar', wrap: false },
 );
 
 const Body = styled(
-	Component,
+	Content,
 	() => `
-		flex: 1;
-		min-height: 0;
-		overflow: hidden auto;
+		overflow-x: hidden;
 		display: flex;
 		flex-direction: column;
 		position: relative;
@@ -186,10 +159,8 @@ const Dock = styled(
 export default class Screen extends View {
 	build() {
 		this.bar = new Bar({ appendTo: this });
-		this._left = new Component({ addClass: ['side', 'left'], appendTo: this.bar });
-		this._titles = new Component({ addClass: 'titles', appendTo: this.bar });
-		this._title = new Component({ addClass: 'title', appendTo: this._titles, attributes: { role: 'heading' } });
-		this._stage = new Component({ addClass: 'stage', appendTo: this._titles });
+		this._left = new Component({ addClass: ['side', 'start'], appendTo: this.bar });
+		this._stage = new Component({ addClass: 'stage', appendTo: this.bar });
 		this._right = new Component({ addClass: ['side', 'right'], appendTo: this.bar });
 
 		this.body = new Body({ appendTo: this });
@@ -198,8 +169,7 @@ export default class Screen extends View {
 
 	// The room (or the screen's name) and, under it, what is happening
 	title(title = '', stage = '') {
-		this._title.elem.textContent = title;
-		this._title.elem.title = title;
+		this.bar.options.heading = title;
 		this._stage.elem.textContent = stage;
 		document.title = title ? `${title} - Humanity` : 'Humanity';
 	}

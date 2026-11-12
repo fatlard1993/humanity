@@ -13,7 +13,7 @@ export default class Join extends Screen {
 		super.build();
 
 		this.title('Join');
-		this.left(goTo('Back', href(paths.hub), { addClass: 'quiet' }));
+		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
 

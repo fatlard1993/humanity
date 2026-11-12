@@ -1,4 +1,4 @@
-import { Component, Notify, randInt, styled } from '@vanilla-bean/components';
+import { Component, Content, Notify, randInt, styled } from '@vanilla-bean/components';
 
 import { enterGame } from '@fatlard1993/web-game-framework/client';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
@@ -28,7 +28,6 @@ const Room = styled(
 			gap: 26px;
 			padding: 30px 20px 40px;
 			min-width: 0;
-			overflow: hidden auto;
 		}
 
 		& .headline {
@@ -61,7 +60,6 @@ const Room = styled(
 			gap: 20px;
 			padding: 24px 18px;
 			border-left: 1px solid var(--rule);
-			overflow: hidden auto;
 
 			& h3 {
 				margin: 0 0 -8px;
@@ -87,8 +85,9 @@ const Room = styled(
 		}
 
 		@media ${media.phone} {
+			/* One column, scrolled as a whole by the screen */
 			display: block;
-			overflow: hidden auto;
+			flex: none;
 
 			& > .round {
 				overflow: visible;
@@ -117,8 +116,8 @@ export default class Watch extends Screen {
 		this.left(new Wordmark());
 
 		this.room = new Room({ appendTo: this.body });
-		this.round = new Component({ addClass: 'round', appendTo: this.room });
-		this.rail = new Component({ addClass: 'rail', appendTo: this.room });
+		this.round = new Content({ addClass: 'round', appendTo: this.room });
+		this.rail = new Content({ addClass: 'rail', appendTo: this.room });
 
 		// The way in stays put while the round is drawn and drawn again
 		new Component({ tag: 'h3', textContent: 'Scan to play', appendTo: this.rail });

@@ -1,6 +1,26 @@
-import { Wordmark, goTo } from './Screen.js';
+import { Content, Toolbar } from '@vanilla-bean/components';
+
+import Screen, { Wordmark, goTo } from './Screen.js';
 
 describe('Screen', () => {
+	test("is a bar headed by the screen's title, over a Content that scrolls", () => {
+		const screen = new Screen({ appendTo: container });
+
+		screen.title('The room', 'Voting');
+
+		expect(screen.bar).toBeInstanceOf(Toolbar);
+		expect(screen.bar.elem.classList.contains('variant-bar')).toBe(true);
+		expect(screen.bar.elem.querySelector('[role="heading"]')).toHaveTextContent('The room');
+		expect(screen.bar.elem).toHaveTextContent('Voting');
+		expect(screen.body).toBeInstanceOf(Content);
+
+		screen.title();
+
+		expect(screen.bar.elem.querySelector('[role="heading"]')).toBeNull();
+
+		screen.destroy();
+	});
+
 	test('the wordmark is a link to the hub', () => {
 		const wordmark = new Wordmark({ appendTo: container });
 

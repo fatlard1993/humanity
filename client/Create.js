@@ -91,7 +91,7 @@ export default class Create extends Screen {
 		super.build();
 
 		this.title('New game', 'Build the deck');
-		this.left(goTo('Back', href(paths.hub), { addClass: 'quiet' }));
+		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
 
