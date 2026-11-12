@@ -1,4 +1,4 @@
-import { Component, styled } from '@vanilla-bean/components';
+import { Table, styled } from '@vanilla-bean/components';
 
 /**
  * The standings: everyone at the table by rounds won, then by votes taken
@@ -7,11 +7,16 @@ import { Component, styled } from '@vanilla-bean/components';
  * @param {string} [options.playerId] - Whose page this is, to mark their row
  */
 export default class Scoreboard extends styled(
-	Component,
+	Table,
 	() => `
 		width: 100%;
 		border-collapse: collapse;
 		font-variant-numeric: tabular-nums;
+
+		/* On the table, not on the Table's own surface */
+		& thead, & tbody {
+			background: none;
+		}
 
 		& th {
 			padding: 0 10px 8px;
@@ -40,19 +45,36 @@ export default class Scoreboard extends styled(
 			color: var(--muted);
 		}
 
-		& tr.you td:nth-child(2) {
+		& td.you {
 			color: var(--mark);
 		}
 
-		& tr.gone td:nth-child(2) {
+		& td.gone {
 			color: var(--muted);
 			font-style: italic;
 		}
 	`,
-	{ tag: 'table' },
 ) {
-	build() {
-		const { game, playerId } = this.options;
+	constructor({ game, playerId, ...options }) {
+		super({ ...options, columns: Scoreboard.columns(playerId), data: Scoreboard.rows(game) });
+	}
+
+	static columns(playerId) {
+		return [
+			{ key: 'rank', content: '' },
+			{
+				key: 'name',
+				content: 'Player',
+				dataColumn: ({ rowData }) => ({
+					addClass: (rowData.id === playerId && 'you') || (rowData.gone && 'gone') || undefined,
+				}),
+			},
+			{ key: 'wins', content: 'Won' },
+			{ key: 'votes', content: 'Votes' },
+		];
+	}
+
+	static rows(game) {
 		const rows = [
 			...game.players.map(({ id, name }) => ({ id, name })),
 			// Someone who scored and has since left keeps their line
@@ -63,25 +85,6 @@ export default class Scoreboard extends styled(
 			.map(row => ({ ...row, wins: game.scores[row.id]?.wins ?? 0, votes: game.scores[row.id]?.votes ?? 0 }))
 			.sort((a, b) => b.wins - a.wins || b.votes - a.votes);
 
-		const row = (tag, cells, className) => {
-			const tr = document.createElement('tr');
-
-			if (className) tr.className = className;
-			cells.forEach(text => {
-				const cell = document.createElement(tag);
-
-				cell.textContent = text;
-				tr.append(cell);
-			});
-
-			return tr;
-		};
-
-		this.elem.append(
-			row('th', ['', 'Player', 'Won', 'Votes']),
-			...rows.map(({ id, name, wins, votes, gone }, index) =>
-				row('td', [index + 1, name, wins, votes], (id === playerId && 'you') || (gone && 'gone')),
-			),
-		);
+		return rows.map((row, index) => ({ ...row, rank: index + 1 }));
 	}
 }
