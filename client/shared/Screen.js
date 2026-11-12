@@ -1,4 +1,14 @@
-import { Button, Component, Content, Link, Toolbar, View, styled } from '@vanilla-bean/components';
+import {
+	Button,
+	Component,
+	Content,
+	EmptyState,
+	Link,
+	Toolbar,
+	View,
+	failureReason,
+	styled,
+} from '@vanilla-bean/components';
 
 import { href, paths } from '../paths.js';
 
@@ -165,6 +175,31 @@ export default class Screen extends View {
 
 		this.body = new Body({ appendTo: this });
 		this.dock = new Dock({ appendTo: this });
+	}
+
+	// The table cleared for what's on its way
+	loading() {
+		this.body.empty();
+		this.body.append(new EmptyState({ loading: true }));
+	}
+
+	// The table cleared to say what couldn't be had, and why, with the way to try again
+	failed(title, result, retry) {
+		this.body.empty();
+		this.body.append(
+			new EmptyState({
+				icon: 'triangle-exclamation',
+				title,
+				message: failureReason(result),
+				action: {
+					textContent: 'Try again',
+					onPointerPress: () => {
+						this.loading();
+						retry();
+					},
+				},
+			}),
+		);
 	}
 
 	// The room (or the screen's name) and, under it, what is happening

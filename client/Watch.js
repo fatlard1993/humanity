@@ -1,4 +1,4 @@
-import { Component, Content, Notify, randInt, styled } from '@vanilla-bean/components';
+import { Component, Content, EmptyState, Notify, randInt, styled } from '@vanilla-bean/components';
 
 import { enterGame } from '@fatlard1993/web-game-framework/client';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
@@ -123,6 +123,8 @@ export default class Watch extends Screen {
 		new Component({ tag: 'h3', textContent: 'Scan to play', appendTo: this.rail });
 		new JoinCard({ gameId, size: 200, appendTo: this.rail });
 		this.seats = new Component({ appendTo: this.rail });
+		// Until the game's first view comes
+		new EmptyState({ loading: true, appendTo: this.round });
 
 		this.enter();
 	}

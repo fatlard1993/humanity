@@ -91,6 +91,7 @@ export default class Create extends Screen {
 		super.build();
 
 		this.title('New game', 'Build the deck');
+		this.loading();
 		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', variant: 'flat', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
@@ -98,11 +99,16 @@ export default class Create extends Screen {
 	async load() {
 		const packs = await getPacks();
 
+		if (!this.elem.isConnected) return;
 		if (packs.response?.status !== 200) {
-			new Notify({ intent: 'danger', content: failureReason(packs) });
+			// A failure is cached as an answer would be; Try again asks again
+			packs.invalidateCache?.();
+			this.failed("Couldn't load the packs", packs, () => this.load());
 
 			return;
 		}
+
+		this.body.empty();
 
 		this.packs = packs.body;
 		// The packs played with last time, or the base pack; a pack since removed is forgotten

@@ -50,4 +50,26 @@ describe('Screen', () => {
 
 		button.destroy();
 	});
+
+	test('a failed load says what failed and why, and tries again when asked', async () => {
+		const screen = new Screen({ appendTo: container });
+		let tries = 0;
+
+		screen.failed(
+			"Couldn't load the games",
+			{ status: 'error', body: { message: 'The server is down' } },
+			() => tries++,
+		);
+
+		expect(screen.body.elem).toHaveTextContent("Couldn't load the games");
+
+		const again = [...screen.body.elem.querySelectorAll('button')].find(button => button.textContent === 'Try again');
+
+		again.click();
+
+		expect(tries).toBe(1);
+		expect(screen.body.elem).not.toHaveTextContent("Couldn't load the games");
+
+		screen.destroy();
+	});
 });

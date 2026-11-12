@@ -162,6 +162,8 @@ export default class Play extends Screen {
 			}),
 		);
 
+		// Until the game's first view comes
+		this.loading();
 		this.enter();
 	}
 

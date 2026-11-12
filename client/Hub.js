@@ -1,4 +1,4 @@
-import { Card, Component, Notify, failureReason, styled } from '@vanilla-bean/components';
+import { Card, Component, styled } from '@vanilla-bean/components';
 
 import { getGames, onMessage } from '@fatlard1993/web-game-framework/client';
 
@@ -175,6 +175,7 @@ export default class Hub extends Screen {
 			}),
 		);
 
+		this.loading();
 		this.load();
 	}
 
@@ -184,7 +185,7 @@ export default class Hub extends Screen {
 
 		if (!this.elem.isConnected) return;
 		if (games.response?.status !== 200) {
-			new Notify({ intent: 'danger', content: failureReason(games) });
+			this.failed("Couldn't load the games", games, () => this.load());
 
 			return;
 		}
