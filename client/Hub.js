@@ -232,7 +232,7 @@ export default class Hub extends Screen {
 				seated
 					? goTo('Rejoin', href(paths.play, { gameId: id }), { addClass: 'go' })
 					: goTo('Join', href(paths.join, { gameId: id })),
-				goTo('Watch', href(paths.watch, { gameId: id }), { addClass: 'quiet' }),
+				goTo('Watch', href(paths.watch, { gameId: id }), { variant: 'flat', addClass: 'quiet' }),
 				quiet('', () => new RoomDialog({ game }), {
 					icon: 'ellipsis',
 					attributes: { 'aria-label': `About ${name}: share or delete it` },

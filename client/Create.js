@@ -91,7 +91,7 @@ export default class Create extends Screen {
 		super.build();
 
 		this.title('New game', 'Build the deck');
-		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', addClass: ['quiet', 'start'] }));
+		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', variant: 'flat', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
 
@@ -179,8 +179,8 @@ export default class Create extends Screen {
 				new Component(
 					{ addClass: 'row', style: { marginBottom: '10px' } },
 					new Component({ addClass: 'label', textContent: 'Packs', style: { flex: 1, margin: 0 } }),
-					quiet('All', () => all(true), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
-					quiet('None', () => all(false), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
+					quiet('All', () => all(true), { size: 'small' }),
+					quiet('None', () => all(false), { size: 'small' }),
 				),
 				new Packs({ append: this.chips }),
 			),

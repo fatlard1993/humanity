@@ -52,7 +52,10 @@ appendStyles(
 
 	/* A button (or a link drawn as one) is a slip of paper; a quiet one is only its outline; the one that matters most
 	   is highlighted */
-	.vbc-button:not(.variant-flat, .variant-chip), a.variant-button:not(.variant-flat, .variant-chip) {
+	.vbc-button:not(.variant-flat, .variant-chip),
+	a.variant-button:not(.variant-flat, .variant-chip),
+	.vbc-button.quiet,
+	a.variant-button.quiet {
 		padding: 9px 16px;
 		border-radius: 9px;
 		background-color: var(--paper);
@@ -112,6 +115,11 @@ appendStyles(
 			box-shadow: inset 0 0 0 1.5px var(--rule);
 			translate: none;
 			cursor: default;
+		}
+
+		&.size-small {
+			padding: 5px 12px;
+			font-size: 0.85rem;
 		}
 
 		&:empty, &.icon {

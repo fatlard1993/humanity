@@ -195,8 +195,15 @@ export default class Screen extends View {
 	}
 }
 
+// A secondary or icon-only Button: flat, drawn as an outline
 export const quiet = (content, onPointerPress, options = {}) =>
-	new Button({ content, onPointerPress, ...options, addClass: ['quiet', ...(options.addClass ?? [])] });
+	new Button({
+		content,
+		onPointerPress,
+		...options,
+		variant: 'flat',
+		addClass: ['quiet', ...(options.addClass ?? [])],
+	});
 
 // A way to another screen: a Link, drawn as a button
 export const goTo = (textContent, address, options = {}) =>

@@ -91,11 +91,6 @@ const Seat = styled(
 			font-variant-numeric: tabular-nums;
 			opacity: 0.8;
 		}
-
-		& .vbc-button {
-			padding: 6px 12px;
-			font-size: 0.85rem;
-		}
 	`,
 );
 
@@ -136,6 +131,8 @@ export default class Seats extends styled(
 				playerId && !you && !done
 					? new Button({
 							content: 'Poke',
+							variant: 'flat',
+							size: 'small',
 							addClass: 'quiet',
 							onPointerPress: async event => {
 								const poked = await act('poke', { targetPlayerId: player.id });

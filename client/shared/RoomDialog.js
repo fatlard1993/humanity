@@ -48,7 +48,7 @@ export default class RoomDialog extends Dialog {
 			header: game.name,
 			buttons: [
 				...(remove ? [{ textContent: 'Delete room', intent: 'danger' }] : []),
-				{ textContent: 'Copy link', addClass: 'quiet' },
+				{ textContent: 'Copy link', variant: 'flat', addClass: 'quiet' },
 				'Close',
 			],
 			onButtonPress: async ({ button, event, closeDialog }) => {

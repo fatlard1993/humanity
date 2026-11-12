@@ -13,7 +13,7 @@ export default class Join extends Screen {
 		super.build();
 
 		this.title('Join');
-		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', addClass: ['quiet', 'start'] }));
+		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', variant: 'flat', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
 
@@ -78,7 +78,7 @@ export default class Join extends Screen {
 
 		this.actions(
 			new Button({ content: 'Take a seat', addClass: 'go', onPointerPress: () => this.join() }),
-			goTo('Just watch', href(paths.watch, { gameId }), { addClass: 'quiet' }),
+			goTo('Just watch', href(paths.watch, { gameId }), { variant: 'flat', addClass: 'quiet' }),
 		);
 
 		if (!this.name.options.value) this.name.elem.focus();

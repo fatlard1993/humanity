@@ -169,7 +169,7 @@ export default class Watch extends Screen {
 		);
 		this.right(
 			quiet('Scores', () => new ScoreDialog({ game: this.game })),
-			goTo('Leave', href(paths.hub), { addClass: 'quiet' }),
+			goTo('Leave', href(paths.hub), { variant: 'flat', addClass: 'quiet' }),
 		);
 
 		this.seats.empty();

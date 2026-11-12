@@ -1,6 +1,6 @@
 import { Content, Toolbar } from '@vanilla-bean/components';
 
-import Screen, { Wordmark, goTo } from './Screen.js';
+import Screen, { Wordmark, goTo, quiet } from './Screen.js';
 
 describe('Screen', () => {
 	test("is a bar headed by the screen's title, over a Content that scrolls", () => {
@@ -40,5 +40,14 @@ describe('Screen', () => {
 		expect(link.elem).toHaveTextContent('Watch');
 
 		link.destroy();
+	});
+
+	test('a quiet button is flat', () => {
+		const button = quiet('', () => {}, { icon: 'dice', attributes: { 'aria-label': 'Pick a random name' } });
+
+		expect(button.elem.classList.contains('variant-flat')).toBe(true);
+		expect(button.elem.classList.contains('quiet')).toBe(true);
+
+		button.destroy();
 	});
 });
