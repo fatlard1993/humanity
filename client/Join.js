@@ -47,6 +47,7 @@ export default class Join extends Screen {
 			value: localStorage.getItem('lastName') || '',
 			placeholder: 'What they call you',
 			attributes: { id: 'player-name', maxlength: 40, enterkeyhint: 'go' },
+			validate: value => (value.trim() ? undefined : 'You need a name to sit down'),
 		});
 		this.name.elem.addEventListener('keydown', event => {
 			if (event.key === 'Enter') this.join();
@@ -93,14 +94,13 @@ export default class Join extends Screen {
 
 	async join() {
 		const { gameId } = this.options;
-		const name = this.name.options.value.trim();
-
-		if (!name) {
-			new Notify({ intent: 'warning', content: 'You need a name to sit down', timeout: 2500 });
+		if (this.name.validate()) {
 			this.name.elem.focus();
 
 			return;
 		}
+
+		const name = this.name.options.value.trim();
 
 		const joined = await joinGame(gameId, { body: { name, playerId: localStorage.getItem(gameId) } });
 
