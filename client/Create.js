@@ -3,8 +3,8 @@ import { Button, Component, Input, Notify, failureReason, styled } from '@vanill
 import { createGame } from '@fatlard1993/web-game-framework/client';
 
 import { getPacks, getRandomName } from './api';
-import { go, paths } from './paths.js';
-import Screen, { quiet } from './shared/Screen.js';
+import { go, href, paths } from './paths.js';
+import Screen, { goTo, quiet } from './shared/Screen.js';
 import Sheet from './shared/Sheet.js';
 
 const LAST_PACKS = 'humanity.packs';
@@ -91,7 +91,7 @@ export default class Create extends Screen {
 		super.build();
 
 		this.title('New game', 'Build the deck');
-		this.left(quiet('Back', () => go(paths.hub)));
+		this.left(goTo('Back', href(paths.hub), { addClass: 'quiet' }));
 		this.load();
 	}
 

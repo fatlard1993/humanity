@@ -50,8 +50,9 @@ appendStyles(
 		color: inherit;
 	}
 
-	/* A button is a slip of paper; a quiet one is only its outline; the one that matters most is highlighted */
-	.vbc-button:not(.variant-flat, .variant-chip) {
+	/* A button (or a link drawn as one) is a slip of paper; a quiet one is only its outline; the one that matters most
+	   is highlighted */
+	.vbc-button:not(.variant-flat, .variant-chip), a.variant-button:not(.variant-flat, .variant-chip) {
 		padding: 9px 16px;
 		border-radius: 9px;
 		background-color: var(--paper);
@@ -72,6 +73,10 @@ appendStyles(
 			filter: none;
 			translate: 0 1px;
 			box-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+		}
+
+		&:visited {
+			color: var(--ink);
 		}
 
 		&.quiet {

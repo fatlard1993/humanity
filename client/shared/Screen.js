@@ -1,12 +1,12 @@
-import { Button, Component, View, styled } from '@vanilla-bean/components';
+import { Button, Component, Link, View, styled } from '@vanilla-bean/components';
 
-import { go, paths } from '../paths.js';
+import { href, paths } from '../paths.js';
 
 /**
- * The game's name beside its two cards; pressed, it goes to the hub
+ * The game's name beside its two cards: a link to the hub
  */
 export class Wordmark extends styled(
-	Component,
+	Link,
 	() => `
 		display: inline-flex;
 		align-items: center;
@@ -14,8 +14,12 @@ export class Wordmark extends styled(
 		font-size: 1.35rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		cursor: pointer;
+		text-decoration: none;
 		user-select: none;
+
+		&, &:visited {
+			color: inherit;
+		}
 
 		& .cards {
 			position: relative;
@@ -47,15 +51,15 @@ export class Wordmark extends styled(
 			}
 		}
 	`,
+	{ href: href(paths.hub), tooltip: false, attributes: { 'aria-label': 'Humanity: back to the games' } },
 ) {
 	build() {
-		this.elem.setAttribute('aria-label', 'Humanity: back to the games');
+		super.build?.();
+
 		this.append(
 			new Component({ addClass: 'cards' }),
 			new Component({ tag: 'span', addClass: 'word', textContent: 'Humanity' }),
 		);
-		this.pressable(true);
-		this.onPointerPress(() => go(paths.hub));
 	}
 }
 
@@ -156,7 +160,7 @@ const Dock = styled(
 			display: none;
 		}
 
-		& > .vbc-button:not(.icon) {
+		& > :is(.vbc-button, a.variant-button):not(.icon) {
 			min-width: min(240px, 100%);
 			padding: 13px 22px;
 			font-size: 1.05rem;
@@ -223,3 +227,7 @@ export default class Screen extends View {
 
 export const quiet = (content, onPointerPress, options = {}) =>
 	new Button({ content, onPointerPress, ...options, addClass: ['quiet', ...(options.addClass ?? [])] });
+
+// A way to another screen: a Link, drawn as a button
+export const goTo = (textContent, address, options = {}) =>
+	new Link({ textContent, href: address, variant: 'button', tooltip: false, ...options });
