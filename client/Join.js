@@ -22,11 +22,14 @@ export default class Join extends Screen {
 		const game = await getGame(gameId, { invalidateAfter: 0 });
 
 		if (game.response?.status !== 200) {
+			const gone = game.response?.status === 404;
+
 			new Notify({
 				intent: 'danger',
-				content: game.response?.status === 404 ? 'That game is gone' : `Couldn't open the game: ${failureReason(game)}`,
+				content: gone ? 'That game is gone' : `Couldn't open the game: ${failureReason(game)}`,
 			});
-			localStorage.removeItem(gameId);
+			// Only the game being gone ends the seat; a load that failed leaves it to rejoin later
+			if (gone) localStorage.removeItem(gameId);
 			go(paths.hub);
 
 			return;
