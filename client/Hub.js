@@ -1,9 +1,9 @@
-import { Component, Notify, failureReason, styled } from '@vanilla-bean/components';
+import { Card, Component, Notify, failureReason, styled } from '@vanilla-bean/components';
 
 import { getGames, onMessage } from '@fatlard1993/web-game-framework/client';
 
 import RoomDialog from './shared/RoomDialog.js';
-import { go, href, paths } from './paths.js';
+import { href, paths } from './paths.js';
 import Screen, { Wordmark, goTo, quiet } from './shared/Screen.js';
 
 const STAGES = {
@@ -60,7 +60,7 @@ const Table = styled(
 
 // A room is a black card, its name where the question would be; starting one is the white card played on it
 const Tile = styled(
-	Component,
+	Card,
 	({ media }) => `
 		position: relative;
 		display: flex;
@@ -128,6 +128,12 @@ const Tile = styled(
 			outline: none;
 			cursor: pointer;
 			user-select: none;
+
+			/* Not lit as a Card is: the lift alone is too little to find it by keyboard */
+			&:focus-visible {
+				outline: 3px solid var(--mark);
+				outline-offset: 4px;
+			}
 
 			& .hint {
 				margin-top: auto;
@@ -199,13 +205,12 @@ export default class Hub extends Screen {
 
 		rooms.forEach(game => this.room(game, grid));
 
-		const start = new Tile(
-			{ addClass: 'new', appendTo: grid, attributes: { role: 'button' }, onPointerPress: () => go(paths.create) },
+		// A link, drawn as the white card it is rather than lit as the Card's hover would
+		new Tile(
+			{ tag: 'a', href: href(paths.create), interactive: false, addClass: 'new', appendTo: grid },
 			new Component({ tag: 'h2', addClass: 'name', textContent: 'Start a new game.' }),
 			new Component({ addClass: 'hint', textContent: 'Pick the packs, name the room, deal.' }),
 		);
-
-		start.pressable(true);
 
 		this.body.empty();
 		this.body.append(table);
