@@ -202,7 +202,7 @@ export default class Create extends Screen {
 
 		if (result.status !== 'success' || !this.name?.elem.isConnected) return;
 
-		this.name.elem.value = result.body;
+		this.name.options.value = result.body;
 		this.refresh();
 	}
 
@@ -212,27 +212,27 @@ export default class Create extends Screen {
 		const blacks = picked.reduce((sum, pack) => sum + pack.blacks, 0);
 		const whites = picked.reduce((sum, pack) => sum + pack.whites, 0);
 		const missing =
-			(!this.name.elem.value.trim() && 'Name the room') ||
+			(!this.name.options.value.trim() && 'Name the room') ||
 			(picked.length === 0 && 'Pick at least one pack') ||
 			((blacks === 0 || whites === 0) && 'These packs need both black and white cards') ||
 			'';
 
 		this.chips.forEach(({ name, chip }) => chip.setAttribute('aria-pressed', String(this.picked.has(name))));
 		this.handValue.elem.textContent = this.handSize;
-		this.fewer.elem.disabled = this.handSize <= MIN_HAND;
-		this.more.elem.disabled = this.handSize >= MAX_HAND;
-		this.deal.elem.disabled = !!missing;
+		this.fewer.options.disabled = this.handSize <= MIN_HAND;
+		this.more.options.disabled = this.handSize >= MAX_HAND;
+		this.deal.options.disabled = !!missing;
 		this.note.elem.textContent =
 			missing ||
 			`${picked.length} ${picked.length === 1 ? 'pack' : 'packs'}: ${blacks.toLocaleString()} black, ${whites.toLocaleString()} white`;
 	}
 
 	async create() {
-		if (this.deal.elem.disabled) return;
+		if (this.deal.options.disabled) return;
 
 		const packs = [...this.picked];
 		const created = await createGame({
-			body: { name: this.name.elem.value.trim(), handSize: this.handSize, packs },
+			body: { name: this.name.options.value.trim(), handSize: this.handSize, packs },
 		});
 
 		if (created.status !== 'success') {

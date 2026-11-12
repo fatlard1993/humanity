@@ -1,4 +1,4 @@
-import { Button, Component, Notify, randInt, styled, vibrate } from '@vanilla-bean/components';
+import { Button, Component, Input, Notify, randInt, styled, vibrate } from '@vanilla-bean/components';
 
 import { act, enterGame } from '@fatlard1993/web-game-framework/client';
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
@@ -359,12 +359,12 @@ export default class Play extends Screen {
 			onPointerPress: async () => {
 				if (!picked) return;
 
-				commit.elem.disabled = true;
+				commit.options.disabled = true;
 
 				const done = await act(playing ? 'play' : 'vote', { card: picked });
 
 				// Refused (or no answer): the pick is still up, to try again
-				if (!done.ok && commit.elem.isConnected) commit.elem.disabled = !picked;
+				if (!done.ok && commit.elem.isConnected) commit.options.disabled = !picked;
 			},
 		});
 
@@ -380,7 +380,7 @@ export default class Play extends Screen {
 			cards: playing ? game.hand : game.submissions,
 			onPick: card => {
 				picked = card;
-				commit.elem.disabled = !card;
+				commit.options.disabled = !card;
 			},
 		});
 
@@ -417,12 +417,12 @@ export default class Play extends Screen {
 				onPointerPress: async () => {
 					if (!picked) return;
 
-					swap.elem.disabled = true;
+					swap.options.disabled = true;
 					this.swapping = false;
 
 					const done = await act('tiebreak', { move: 'repick', card: picked });
 
-					if (!done.ok && swap.elem.isConnected) swap.elem.disabled = false;
+					if (!done.ok && swap.elem.isConnected) swap.options.disabled = false;
 				},
 			});
 
@@ -432,7 +432,7 @@ export default class Play extends Screen {
 				cards: hand,
 				onPick: card => {
 					picked = card;
-					swap.elem.disabled = !card;
+					swap.options.disabled = !card;
 				},
 			});
 
@@ -489,32 +489,34 @@ export default class Play extends Screen {
 	rewrite(opponent) {
 		const { duel, tiebreak, black } = this.game;
 		const lobby = new Lobby({ appendTo: this.body });
-		const field = document.createElement('textarea');
+		const field = new Input({
+			tag: 'textarea',
+			value: duel.theirs,
+			height: '288px',
+			attributes: { 'aria-label': `${opponent}'s card`, spellcheck: 'false' },
+		});
 		const note = new Component({ addClass: 'note' });
 		const lock = new Button({
 			content: 'Lock it in',
 			addClass: 'go',
 			onPointerPress: async () => {
-				lock.elem.disabled = true;
+				lock.options.disabled = true;
 
-				const done = await act('tiebreak', { text: field.value });
+				const done = await act('tiebreak', { text: field.options.value });
 
 				if (!done.ok && lock.elem.isConnected) check();
 			},
 		});
 		const check = () => {
-			const problem = editProblem(duel.theirs, field.value);
-			const used = changes(duel.theirs, field.value);
+			const problem = editProblem(duel.theirs, field.options.value);
+			const used = changes(duel.theirs, field.options.value);
 
-			lock.elem.disabled = !!problem;
+			lock.options.disabled = !!problem;
 			note.elem.textContent = used > MAX_CHANGES || !problem ? `${used} of ${MAX_CHANGES} changes used` : `${problem}.`;
 			note.elem.style.color = problem ? 'var(--mark)' : '';
 		};
 
-		field.value = duel.theirs;
-		field.setAttribute('aria-label', `${opponent}'s card`);
-		field.spellcheck = false;
-		field.addEventListener('input', check);
+		field.elem.addEventListener('input', check);
 
 		new Component(
 			{ appendTo: lobby },
@@ -535,7 +537,7 @@ export default class Play extends Screen {
 
 		this.actions(lock, note);
 		check();
-		field.focus();
+		field.elem.focus();
 	}
 
 	render_end() {

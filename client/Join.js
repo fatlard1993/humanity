@@ -80,18 +80,18 @@ export default class Join extends Screen {
 			quiet('Just watch', () => go(`#/watch/${gameId}`)),
 		);
 
-		if (!this.name.elem.value) this.name.elem.focus();
+		if (!this.name.options.value) this.name.elem.focus();
 	}
 
 	async randomName() {
 		const result = await getRandomName();
 
-		if (result.status === 'success') this.name.elem.value = result.body;
+		if (result.status === 'success') this.name.options.value = result.body;
 	}
 
 	async join() {
 		const { gameId } = this.options;
-		const name = this.name.elem.value.trim();
+		const name = this.name.options.value.trim();
 
 		if (!name) {
 			new Notify({ intent: 'warning', content: 'You need a name to sit down', timeout: 2500 });
