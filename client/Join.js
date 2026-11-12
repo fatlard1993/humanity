@@ -24,7 +24,7 @@ export default class Join extends Screen {
 		if (game.response?.status !== 200) {
 			new Notify({
 				intent: 'danger',
-				content: game.response?.status === 404 ? 'That game is gone' : failureReason(game),
+				content: game.response?.status === 404 ? 'That game is gone' : `Couldn't open the game: ${failureReason(game)}`,
 			});
 			localStorage.removeItem(gameId);
 			go(paths.hub);
@@ -88,6 +88,7 @@ export default class Join extends Screen {
 		const result = await getRandomName();
 
 		if (result.status === 'success') this.name.options.value = result.body;
+		else new Notify({ intent: 'danger', content: `Couldn't pick a random name: ${failureReason(result)}` });
 	}
 
 	async join() {
@@ -104,7 +105,7 @@ export default class Join extends Screen {
 		const joined = await joinGame(gameId, { body: { name, playerId: localStorage.getItem(gameId) } });
 
 		if (joined.status !== 'success') {
-			new Notify({ intent: 'danger', content: failureReason(joined) });
+			new Notify({ intent: 'danger', content: `Couldn't take a seat: ${failureReason(joined)}` });
 
 			return;
 		}

@@ -174,7 +174,7 @@ export default class Play extends Screen {
 			onUpdate: message => {
 				if (message.update === 'poke' && message.targetPlayerId === this.playerId) {
 					vibrate([200, 100, 200]);
-					new Notify({ content: 'Poke. The table is waiting on you.', intent: 'warning', timeout: 2500 });
+					new Notify({ content: 'Poke. The table is waiting on you.', intent: 'info', timeout: 2500 });
 				}
 			},
 			notMember: () => go(paths.join, { gameId }),

@@ -163,7 +163,7 @@ export default class Create extends Screen {
 				new Component(
 					{ addClass: 'row' },
 					this.name,
-					quiet('', () => this.randomName(), {
+					quiet('', () => this.randomName({ asked: true }), {
 						icon: 'dice',
 						attributes: { 'aria-label': 'A random name', title: 'A random name' },
 					}),
@@ -204,10 +204,16 @@ export default class Create extends Screen {
 		this.refresh();
 	}
 
-	async randomName() {
+	// A name for the room: one to start with, or another when the dice are pressed (and said when it can't be had)
+	async randomName({ asked = false } = {}) {
 		const result = await getRandomName();
 
-		if (result.status !== 'success' || !this.name?.elem.isConnected) return;
+		if (!this.name?.elem.isConnected) return;
+		if (result.status !== 'success') {
+			if (asked) new Notify({ intent: 'danger', content: `Couldn't pick a random name: ${failureReason(result)}` });
+
+			return;
+		}
 
 		this.name.options.value = result.body;
 		this.refresh();
@@ -243,7 +249,7 @@ export default class Create extends Screen {
 		});
 
 		if (created.status !== 'success') {
-			new Notify({ intent: 'danger', content: failureReason(created) });
+			new Notify({ intent: 'danger', content: `Couldn't create the game: ${failureReason(created)}` });
 
 			return;
 		}
