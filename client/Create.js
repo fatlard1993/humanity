@@ -125,11 +125,11 @@ export default class Create extends Screen {
 		this.handValue = new Component({ addClass: 'value', attributes: { 'aria-live': 'polite' } });
 		this.fewer = quiet('', () => this.setHand(this.handSize - 1), {
 			icon: 'minus',
-			attributes: { 'aria-label': 'A smaller hand' },
+			attributes: { 'aria-label': 'Make the hand smaller' },
 		});
 		this.more = quiet('', () => this.setHand(this.handSize + 1), {
 			icon: 'plus',
-			attributes: { 'aria-label': 'A bigger hand' },
+			attributes: { 'aria-label': 'Make the hand bigger' },
 		});
 
 		this.chips = this.packs.map(
@@ -165,7 +165,7 @@ export default class Create extends Screen {
 					this.name,
 					quiet('', () => this.randomName({ asked: true }), {
 						icon: 'dice',
-						attributes: { 'aria-label': 'A random name', title: 'A random name' },
+						attributes: { 'aria-label': 'Pick a random name', title: 'Pick a random name' },
 					}),
 				),
 			),
@@ -185,8 +185,8 @@ export default class Create extends Screen {
 				new Component(
 					{ addClass: 'row', style: { marginBottom: '10px' } },
 					new Component({ addClass: 'label', textContent: 'Packs', style: { flex: 1, margin: 0 } }),
-					quiet('All', () => all(true), { size: 'small' }),
-					quiet('None', () => all(false), { size: 'small' }),
+					quiet('Pick all', () => all(true), { size: 'small' }),
+					quiet('Pick none', () => all(false), { size: 'small' }),
 				),
 				new Packs({ append: this.chips }),
 			),

@@ -166,7 +166,7 @@ export default class Hub extends Screen {
 
 		this.title();
 		this.left(new Wordmark());
-		this.right(goTo('New game', href(paths.create)));
+		this.right(goTo('Start a game', href(paths.create)));
 
 		this.addCleanup(
 			'games',

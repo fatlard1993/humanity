@@ -71,7 +71,7 @@ export default class Join extends Screen {
 					this.name,
 					quiet('', () => this.randomName(), {
 						icon: 'dice',
-						attributes: { 'aria-label': 'A random name', title: 'A random name' },
+						attributes: { 'aria-label': 'Pick a random name', title: 'Pick a random name' },
 					}),
 				),
 			),
