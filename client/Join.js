@@ -4,7 +4,8 @@ import { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
 import { getRandomName } from './api';
 import Card from './shared/Card.js';
-import Screen, { go, quiet } from './shared/Screen.js';
+import { go, paths } from './paths.js';
+import Screen, { quiet } from './shared/Screen.js';
 import Sheet from './shared/Sheet.js';
 
 export default class Join extends Screen {
@@ -12,7 +13,7 @@ export default class Join extends Screen {
 		super.build();
 
 		this.title('Join');
-		this.left(quiet('Back', () => go('#/hub')));
+		this.left(quiet('Back', () => go(paths.hub)));
 		this.load();
 	}
 
@@ -26,14 +27,14 @@ export default class Join extends Screen {
 				content: game.response?.status === 404 ? 'That game is gone' : failureReason(game),
 			});
 			localStorage.removeItem(gameId);
-			go('#/hub');
+			go(paths.hub);
 
 			return;
 		}
 
 		// Already at the table: back to their seat
 		if (game.body.players.some(({ id }) => id === localStorage.getItem(gameId))) {
-			go(`#/play/${gameId}`);
+			go(paths.play, { gameId });
 
 			return;
 		}
@@ -77,7 +78,7 @@ export default class Join extends Screen {
 
 		this.actions(
 			new Button({ content: 'Take a seat', addClass: 'go', onPointerPress: () => this.join() }),
-			quiet('Just watch', () => go(`#/watch/${gameId}`)),
+			quiet('Just watch', () => go(paths.watch, { gameId })),
 		);
 
 		if (!this.name.options.value) this.name.elem.focus();
@@ -111,6 +112,6 @@ export default class Join extends Screen {
 		localStorage.setItem(gameId, joined.body.id);
 		localStorage.setItem('lastName', joined.body.name);
 
-		go(`#/play/${gameId}`);
+		go(paths.play, { gameId });
 	}
 }

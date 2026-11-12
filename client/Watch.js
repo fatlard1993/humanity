@@ -6,7 +6,8 @@ import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
 import Card from './shared/Card.js';
 import Results from './shared/Results.js';
 import ScoreDialog from './shared/ScoreDialog.js';
-import Screen, { Wordmark, go, quiet } from './shared/Screen.js';
+import { go, paths } from './paths.js';
+import Screen, { Wordmark, quiet } from './shared/Screen.js';
 import Seats, { listNames, seatStatus, waitingOn } from './shared/Seats.js';
 
 const tossed = () => `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`;
@@ -134,7 +135,7 @@ export default class Watch extends Screen {
 			onState: view => this.show(view),
 			gone: () => {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
-				go('#/hub');
+				go(paths.hub);
 			},
 		});
 
@@ -169,7 +170,7 @@ export default class Watch extends Screen {
 		);
 		this.right(
 			quiet('Scores', () => new ScoreDialog({ game: this.game })),
-			quiet('Leave', () => go('#/hub')),
+			quiet('Leave', () => go(paths.hub)),
 		);
 
 		this.seats.empty();

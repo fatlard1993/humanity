@@ -1,8 +1,6 @@
 import { Button, Component, View, styled } from '@vanilla-bean/components';
 
-export const go = hash => {
-	window.location.hash = hash;
-};
+import { go, paths } from '../paths.js';
 
 /**
  * The game's name beside its two cards; pressed, it goes to the hub
@@ -57,7 +55,7 @@ export class Wordmark extends styled(
 			new Component({ tag: 'span', addClass: 'word', textContent: 'Humanity' }),
 		);
 		this.pressable(true);
-		this.onPointerPress(() => go('#/hub'));
+		this.onPointerPress(() => go(paths.hub));
 	}
 }
 

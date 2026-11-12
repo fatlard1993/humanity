@@ -10,7 +10,8 @@ import PickHand from './shared/PickHand.js';
 import Results from './shared/Results.js';
 import RoomDialog from './shared/RoomDialog.js';
 import ScoreDialog from './shared/ScoreDialog.js';
-import Screen, { go, quiet } from './shared/Screen.js';
+import { go, paths } from './paths.js';
+import Screen, { quiet } from './shared/Screen.js';
 import Seats, { listNames, seatStatus, waitingOn } from './shared/Seats.js';
 
 const tossed = () => `translate(${randInt(-9, 9)}px, ${randInt(0, 13)}px) rotate(${randInt(-9, 9)}deg)`;
@@ -174,10 +175,10 @@ export default class Play extends Screen {
 					new Notify({ content: 'Poke. The table is waiting on you.', intent: 'warning', timeout: 2500 });
 				}
 			},
-			notMember: () => go(`#/join/${gameId}`),
+			notMember: () => go(paths.join, { gameId }),
 			gone: () => {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
-				go('#/hub');
+				go(paths.hub);
 			},
 		});
 
@@ -193,7 +194,7 @@ export default class Play extends Screen {
 		const player = view.players.find(({ id }) => id === this.playerId);
 
 		if (!player) {
-			go(`#/join/${this.options.gameId}`);
+			go(paths.join, { gameId: this.options.gameId });
 
 			return;
 		}

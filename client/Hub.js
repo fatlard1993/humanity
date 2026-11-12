@@ -3,7 +3,8 @@ import { Button, Component, Notify, failureReason, styled } from '@vanilla-bean/
 import { getGames, onMessage } from '@fatlard1993/web-game-framework/client';
 
 import RoomDialog from './shared/RoomDialog.js';
-import Screen, { Wordmark, go, quiet } from './shared/Screen.js';
+import { go, paths } from './paths.js';
+import Screen, { Wordmark, quiet } from './shared/Screen.js';
 
 const STAGES = {
 	wait: 'Getting ready',
@@ -159,7 +160,7 @@ export default class Hub extends Screen {
 
 		this.title();
 		this.left(new Wordmark());
-		this.right(new Button({ content: 'New game', onPointerPress: () => go('#/create') }));
+		this.right(new Button({ content: 'New game', onPointerPress: () => go(paths.create) }));
 
 		this.addCleanup(
 			'games',
@@ -199,7 +200,7 @@ export default class Hub extends Screen {
 		rooms.forEach(game => this.room(game, grid));
 
 		const start = new Tile(
-			{ addClass: 'new', appendTo: grid, attributes: { role: 'button' }, onPointerPress: () => go('#/create') },
+			{ addClass: 'new', appendTo: grid, attributes: { role: 'button' }, onPointerPress: () => go(paths.create) },
 			new Component({ tag: 'h2', addClass: 'name', textContent: 'Start a new game.' }),
 			new Component({ addClass: 'hint', textContent: 'Pick the packs, name the room, deal.' }),
 		);
@@ -229,9 +230,9 @@ export default class Hub extends Screen {
 			new Component(
 				{ addClass: 'actions' },
 				seated
-					? new Button({ content: 'Rejoin', addClass: 'go', onPointerPress: () => go(`#/play/${id}`) })
-					: new Button({ content: 'Join', onPointerPress: () => go(`#/join/${id}`) }),
-				quiet('Watch', () => go(`#/watch/${id}`)),
+					? new Button({ content: 'Rejoin', addClass: 'go', onPointerPress: () => go(paths.play, { gameId: id }) })
+					: new Button({ content: 'Join', onPointerPress: () => go(paths.join, { gameId: id }) }),
+				quiet('Watch', () => go(paths.watch, { gameId: id })),
 				quiet('', () => new RoomDialog({ game }), {
 					icon: 'ellipsis',
 					attributes: { 'aria-label': `About ${name}: share or delete it` },
