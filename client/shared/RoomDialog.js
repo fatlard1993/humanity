@@ -1,4 +1,4 @@
-import { Component, Dialog, Notify, copyToClipboard, styled } from '@vanilla-bean/components';
+import { Component, Dialog, Notify, SectionLabel, copyToClipboard, styled } from '@vanilla-bean/components';
 
 import { deleteGame, joinUrl } from '@fatlard1993/web-game-framework/client';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
@@ -11,14 +11,6 @@ const Details = styled(
 		gap: 22px;
 		align-items: start;
 
-		& h3 {
-			margin: 0 0 4px;
-			font-size: 0.7rem;
-			font-weight: 700;
-			letter-spacing: 0.09em;
-			text-transform: uppercase;
-			color: var(--muted);
-		}
 
 		& p {
 			margin: 0 0 16px;
@@ -88,7 +80,7 @@ export default class RoomDialog extends Dialog {
 		const { game } = this.options;
 		const { packs = [], handSize } = game.options ?? {};
 		const detail = (label, text) => [
-			new Component({ tag: 'h3', textContent: label }),
+			new SectionLabel({ textContent: label }),
 			new Component({ tag: 'p', textContent: text }),
 		];
 

@@ -1,4 +1,4 @@
-import { Component, Content, EmptyState, Notify, randInt, styled } from '@vanilla-bean/components';
+import { Component, Content, EmptyState, Notify, SectionLabel, randInt, styled } from '@vanilla-bean/components';
 
 import { enterGame } from '@fatlard1993/web-game-framework/client';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
@@ -61,14 +61,6 @@ const Room = styled(
 			padding: 24px 18px;
 			border-left: 1px solid var(--rule);
 
-			& h3 {
-				margin: 0 0 -8px;
-				font-size: 0.72rem;
-				font-weight: 700;
-				letter-spacing: 0.09em;
-				text-transform: uppercase;
-				color: var(--muted);
-			}
 		}
 
 		/* A big screen across the room: everything larger */
@@ -120,7 +112,7 @@ export default class Watch extends Screen {
 		this.rail = new Content({ addClass: 'rail', appendTo: this.room });
 
 		// The way in stays put while the round is drawn and drawn again
-		new Component({ tag: 'h3', textContent: 'Scan to play', appendTo: this.rail });
+		new SectionLabel({ textContent: 'Scan to play', appendTo: this.rail });
 		new JoinCard({ gameId, size: 200, appendTo: this.rail });
 		this.seats = new Component({ appendTo: this.rail });
 		// Until the game's first view comes
@@ -175,7 +167,7 @@ export default class Watch extends Screen {
 		);
 
 		this.seats.empty();
-		new Component({ tag: 'h3', textContent: 'At the table', appendTo: this.seats, style: { marginBottom: '10px' } });
+		new SectionLabel({ textContent: 'At the table', appendTo: this.seats });
 		if (players.length === 0)
 			new Component({ textContent: 'Nobody yet.', appendTo: this.seats, style: { color: 'var(--muted)' } });
 		new Seats({ game: view, appendTo: this.seats, style: { gridTemplateColumns: '1fr' } });

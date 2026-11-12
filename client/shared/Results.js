@@ -1,4 +1,4 @@
-import { Component, randInt, styled } from '@vanilla-bean/components';
+import { Component, SectionLabel, randInt, styled } from '@vanilla-bean/components';
 
 import Card from './Card.js';
 import Scoreboard from './Scoreboard.js';
@@ -62,14 +62,6 @@ export default class Results extends styled(
 			width: 100%;
 		}
 
-		& h3 {
-			margin: 0 0 10px;
-			font-size: 0.72rem;
-			font-weight: 700;
-			letter-spacing: 0.09em;
-			text-transform: uppercase;
-			color: var(--muted);
-		}
 
 		& .played {
 			display: flex;
@@ -146,7 +138,7 @@ export default class Results extends styled(
 		if (rest.length > 0) {
 			const section = new Component({ tag: 'section', appendTo: this });
 
-			new Component({ tag: 'h3', textContent: 'Also played', appendTo: section });
+			new SectionLabel({ textContent: 'Also played', appendTo: section });
 			rest.forEach(result => {
 				new Component(
 					{ addClass: 'played', appendTo: section },
@@ -161,7 +153,7 @@ export default class Results extends styled(
 
 		const standings = new Component({ tag: 'section', appendTo: this });
 
-		new Component({ tag: 'h3', textContent: 'Standings', appendTo: standings });
+		new SectionLabel({ textContent: 'Standings', appendTo: standings });
 		new Scoreboard({ game, playerId, appendTo: standings });
 	}
 }
