@@ -18,7 +18,7 @@ const Packs = styled(
 		flex-wrap: wrap;
 		gap: 8px;
 
-		& .pack {
+		& .vbc-button.pack {
 			display: flex;
 			align-items: baseline;
 			gap: 8px;
@@ -125,23 +125,23 @@ export default class Create extends Screen {
 			attributes: { 'aria-label': 'A bigger hand' },
 		});
 
-		this.chips = this.packs.map(({ name, blacks, whites }) => {
-			const chip = document.createElement('button');
-			const count = document.createElement('small');
-
-			chip.type = 'button';
-			chip.className = 'pack';
-			chip.textContent = name;
-			count.textContent = (blacks + whites).toLocaleString();
-			chip.append(count);
-			chip.title = `${blacks.toLocaleString()} black, ${whites.toLocaleString()} white`;
-			chip.addEventListener('click', () => {
-				this.picked[this.picked.has(name) ? 'delete' : 'add'](name);
-				this.refresh();
-			});
-
-			return { name, chip };
-		});
+		this.chips = this.packs.map(
+			({ name, blacks, whites }) =>
+				new Button(
+					{
+						variant: 'chip',
+						addClass: 'pack',
+						pressed: this.picked.has(name),
+						attributes: { title: `${blacks.toLocaleString()} black, ${whites.toLocaleString()} white` },
+						onPointerPress: () => {
+							this.picked[this.picked.has(name) ? 'delete' : 'add'](name);
+							this.refresh();
+						},
+					},
+					name,
+					new Component({ tag: 'small', textContent: (blacks + whites).toLocaleString() }),
+				),
+		);
 
 		const all = pick => {
 			this.picked = new Set(pick ? this.packs.map(({ name }) => name) : []);
@@ -181,7 +181,7 @@ export default class Create extends Screen {
 					quiet('All', () => all(true), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
 					quiet('None', () => all(false), { style: { padding: '5px 12px', fontSize: '0.85rem' } }),
 				),
-				new Packs({ append: this.chips.map(({ chip }) => chip) }),
+				new Packs({ append: this.chips }),
 			),
 		);
 
@@ -217,7 +217,7 @@ export default class Create extends Screen {
 			((blacks === 0 || whites === 0) && 'These packs need both black and white cards') ||
 			'';
 
-		this.chips.forEach(({ name, chip }) => chip.setAttribute('aria-pressed', String(this.picked.has(name))));
+		this.packs.forEach(({ name }, index) => (this.chips[index].options.pressed = this.picked.has(name)));
 		this.handValue.elem.textContent = this.handSize;
 		this.fewer.options.disabled = this.handSize <= MIN_HAND;
 		this.more.options.disabled = this.handSize >= MAX_HAND;
