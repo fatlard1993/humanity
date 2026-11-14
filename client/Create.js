@@ -171,9 +171,10 @@ export default class Create extends Screen {
 			),
 			new Component(
 				{ addClass: 'field' },
-				new Component({ addClass: 'label', textContent: 'Hand' }),
+				// A caption over a group of buttons; a <label> would press the first of them when it is clicked
+				new Component({ addClass: 'label', textContent: 'Hand', attributes: { id: 'hand-label' } }),
 				new Stepper(
-					{},
+					{ attributes: { role: 'group', 'aria-labelledby': 'hand-label' } },
 					this.fewer,
 					this.handValue,
 					this.more,
@@ -184,11 +185,16 @@ export default class Create extends Screen {
 				{ addClass: 'field' },
 				new Component(
 					{ addClass: 'row', style: { marginBottom: '10px' } },
-					new Component({ addClass: 'label', textContent: 'Packs', style: { flex: 1, margin: 0 } }),
+					new Component({
+						addClass: 'label',
+						textContent: 'Packs',
+						style: { flex: 1, margin: 0 },
+						attributes: { id: 'packs-label' },
+					}),
 					quiet('Pick all', () => all(true), { size: 'small' }),
 					quiet('Pick none', () => all(false), { size: 'small' }),
 				),
-				new Packs({ append: this.chips }),
+				new Packs({ append: this.chips, attributes: { role: 'group', 'aria-labelledby': 'packs-label' } }),
 			),
 		);
 
