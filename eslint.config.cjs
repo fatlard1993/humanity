@@ -6,4 +6,5 @@ module.exports = [
 			'no-console': ['warn', { allow: ['error', 'warn'] }],
 		},
 	},
+	...require('@vanilla-bean/components/eslint.usage.config.cjs'),
 ];
