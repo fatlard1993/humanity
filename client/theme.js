@@ -3,31 +3,38 @@ import { appendStyles, theme } from '@vanilla-bean/components';
 // The game is its two cards: ink, paper, heavy type, and one highlighter for whatever is picked. Imported first, so
 // the library's components are drawn from these.
 
-export const ink = '#131211';
-export const paper = '#f3f0e7';
-export const table = '#1d1c1a';
-export const mark = '#ffd84a';
+const ink = '#131211';
+const paper = '#f3f0e7';
+const table = '#1d1c1a';
+const mark = '#ffd84a';
 
-const color = value => theme.colors.alpha(value, 1);
+const { colors } = theme;
+const color = value => colors.alpha(value, 1);
 
-// A warm neutral: its lightest is paper, its darkest ink
-theme.colors.gray = color('hsl(45, 7%, 47%)');
-theme.colors.surface = color('#1a1918');
-theme.colors.accent = color('#a8a498');
-theme.colors.selected = color(mark);
-theme.colors.danger = color('#c8372d');
+// The palette goes onto the library's color roles once, here, so every library part (a loading spinner, a toast, a
+// focus ring, a dialog's edge) is drawn in it rather than in the library's blue and teal; the variables below read
+// it back. A warm neutral underneath: its lightest, the library's text, is near paper
+colors.gray = color('hsl(45, 7%, 47%)');
+colors.surface = color(ink);
+colors.raised = colors.alpha(paper, 0.05);
+colors.border = colors.alpha(paper, 0.14);
+colors.muted = colors.alpha(paper, 0.62);
+colors.accent = color(mark);
+colors.info = color(mark);
+colors.selected = color(mark);
+colors.danger = color('#c8372d');
 
 appendStyles(
 	`
 	:root {
-		--ink: ${ink};
+		--ink: ${colors.surface};
 		--paper: ${paper};
 		--table: ${table};
 		--table-deep: #100f0e;
-		--mark: ${mark};
-		--rule: rgb(243 240 231 / 0.14);
-		--rule-strong: rgb(243 240 231 / 0.34);
-		--muted: rgb(243 240 231 / 0.62);
+		--mark: ${colors.accent};
+		--rule: ${colors.border};
+		--rule-strong: ${colors.alpha(paper, 0.34)};
+		--muted: ${colors.muted};
 		--face: 'Helvetica Neue', Helvetica, 'Nimbus Sans', 'Liberation Sans', Arial, sans-serif;
 		--card-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 12px 24px -10px rgb(0 0 0 / 0.75);
 	}
