@@ -1,4 +1,4 @@
-import { Button, Component, Notify, SectionLabel, styled } from '@vanilla-bean/components';
+import { Button, Component, Notify, styled } from '@vanilla-bean/components';
 
 import { act } from '@fatlard1993/web-game-framework/client';
 
@@ -74,10 +74,12 @@ const Seat = styled(
 			overflow-wrap: anywhere;
 		}
 
-		/* On a seat turned white, the ink's muted, not the table's */
-		&.done .status {
-			color: inherit;
-			opacity: 0.62;
+		& .status {
+			font-size: 0.7rem;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			opacity: 0.68;
 		}
 
 		& .status:empty {
@@ -121,7 +123,7 @@ export default class Seats extends styled(
 				new Component(
 					{ addClass: 'who' },
 					new Component({ addClass: 'name', textContent: you ? `${player.name} (you)` : player.name }),
-					new SectionLabel({ addClass: 'status', inRow: true, textContent: text }),
+					new Component({ addClass: 'status', textContent: text }),
 				),
 				wins
 					? new Component({ addClass: 'wins', textContent: `${wins} won`, attributes: { title: 'Rounds won' } })

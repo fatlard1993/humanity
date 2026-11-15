@@ -37,8 +37,12 @@ export default class Results extends styled(
 			overflow-wrap: anywhere;
 		}
 
-		/* How the round was won, in the highlighter under who won it */
 		& .tally {
+			margin-top: 8px;
+			font-size: 0.78rem;
+			font-weight: 700;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
 			text-align: center;
 			color: var(--mark);
 		}
@@ -116,7 +120,7 @@ export default class Results extends styled(
 			new Component(
 				{ appendTo: this },
 				new Component({ tag: 'h2', addClass: 'headline', textContent: winner }),
-				new SectionLabel({
+				new Component({
 					addClass: 'tally',
 					textContent: `${how}${rewritten(game.results?.find(result => result.playerId === winnerId))}`,
 				}),
