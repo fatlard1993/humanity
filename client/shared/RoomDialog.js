@@ -1,4 +1,12 @@
-import { Component, Dialog, Notify, SectionLabel, copyToClipboard, styled } from '@vanilla-bean/components';
+import {
+	Component,
+	Dialog,
+	Notify,
+	SectionLabel,
+	copyToClipboard,
+	failureReason,
+	styled,
+} from '@vanilla-bean/components';
 
 import { deleteGame, joinUrl } from '@fatlard1993/web-game-framework/client';
 import JoinCard from '@fatlard1993/web-game-framework/ui/JoinCard';
@@ -65,7 +73,13 @@ export default class RoomDialog extends Dialog {
 
 					if (!sure) return;
 
-					await deleteGame(game.id);
+					const result = await deleteGame(game.id);
+
+					// Refused, the room is still there: the dialog stays, and says why
+					if (result?.status === 'error') {
+						new Notify({ intent: 'danger', content: `Couldn't delete ${game.name}: ${failureReason(result)}` });
+						return;
+					}
 				}
 
 				closeDialog();
