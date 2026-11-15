@@ -29,6 +29,7 @@ describe('Create', () => {
 		const hand = await screen.findByRole('group', { name: 'Hand' });
 		const packs = screen.getByRole('group', { name: 'Packs' });
 
+		expect(screen.getByRole('textbox', { name: 'Room name' })).toBeTruthy();
 		expect(within(hand).getAllByRole('button')).toHaveLength(2);
 		expect(within(packs).getByRole('button', { name: /base/ })).toBeTruthy();
 	});

@@ -1,4 +1,4 @@
-import { Button, Component, Input, Notify, failureReason } from '@vanilla-bean/components';
+import { Button, Component, Input, Label, Notify, failureReason } from '@vanilla-bean/components';
 
 import { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
@@ -69,9 +69,8 @@ export default class Join extends Screen {
 						? 'Nobody at the table yet. Be the first.'
 						: `At the table: ${players.map(player => player.name).join(', ')}`,
 			}),
-			new Component(
-				{ addClass: 'field' },
-				new Component({ tag: 'label', textContent: 'Your name', attributes: { for: 'player-name' } }),
+			new Label(
+				{ label: 'Your name', for: this.name },
 				new Component(
 					{ addClass: 'row' },
 					this.name,

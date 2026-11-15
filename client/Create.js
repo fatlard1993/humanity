@@ -1,4 +1,4 @@
-import { Button, Component, Input, Notify, failureReason, styled } from '@vanilla-bean/components';
+import { Button, Component, Input, Label, Notify, failureReason, styled } from '@vanilla-bean/components';
 
 import { createGame } from '@fatlard1993/web-game-framework/client';
 
@@ -155,11 +155,19 @@ export default class Create extends Screen {
 			this.refresh();
 		};
 
+		const stepper = new Stepper(
+			{ attributes: { role: 'group' } },
+			this.fewer,
+			this.handValue,
+			this.more,
+			new Component({ addClass: 'unit', textContent: 'cards each' }),
+		);
+		const packGroup = new Packs({ append: this.chips, attributes: { role: 'group' } });
+
 		new Sheet(
 			{ appendTo: this.body, style: { maxWidth: '720px', alignItems: 'stretch' } },
-			new Component(
-				{ addClass: 'field' },
-				new Component({ tag: 'label', textContent: 'Room name', attributes: { for: 'room-name' } }),
+			new Label(
+				{ label: 'Room name', for: this.name },
 				new Component(
 					{ addClass: 'row' },
 					this.name,
@@ -169,32 +177,16 @@ export default class Create extends Screen {
 					}),
 				),
 			),
-			new Component(
-				{ addClass: 'field' },
-				// A caption over a group of buttons; a <label> would press the first of them when it is clicked
-				new Component({ addClass: 'label', textContent: 'Hand', attributes: { id: 'hand-label' } }),
-				new Stepper(
-					{ attributes: { role: 'group', 'aria-labelledby': 'hand-label' } },
-					this.fewer,
-					this.handValue,
-					this.more,
-					new Component({ addClass: 'unit', textContent: 'cards each' }),
-				),
-			),
-			new Component(
-				{ addClass: 'field' },
+			// A group of buttons is named by its Label's text rather than pressed by it, as a lone field is
+			new Label({ label: 'Hand', for: stepper }, stepper),
+			new Label(
+				{ label: 'Packs', for: packGroup },
 				new Component(
-					{ addClass: 'row', style: { marginBottom: '10px' } },
-					new Component({
-						addClass: 'label',
-						textContent: 'Packs',
-						style: { flex: 1, margin: 0 },
-						attributes: { id: 'packs-label' },
-					}),
+					{ addClass: 'row' },
 					quiet('Pick all', () => all(true), { size: 'small' }),
 					quiet('Pick none', () => all(false), { size: 'small' }),
 				),
-				new Packs({ append: this.chips, attributes: { role: 'group', 'aria-labelledby': 'packs-label' } }),
+				packGroup,
 			),
 		);
 
