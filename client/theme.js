@@ -57,6 +57,11 @@ appendStyles(
 		color: inherit;
 	}
 
+	/* A section label (a heading that isn't a heading element) is set bold, as the game's own small caps always were */
+	html:root [role='heading']:not(h1, h2, h3, h4, h5, h6) {
+		font-weight: 700;
+	}
+
 	/* A button (or a link drawn as one) is a slip of paper; a quiet one is only its outline; the one that matters most
 	   is highlighted */
 	.vbc-button:not(.variant-flat, .variant-chip),
