@@ -13,6 +13,7 @@ export default class Join extends Screen {
 		super.build();
 
 		this.title('Join');
+		this.loading();
 		this.left(goTo('Back', href(paths.hub), { icon: 'arrow-left', variant: 'flat', addClass: ['quiet', 'start'] }));
 		this.load();
 	}
@@ -21,16 +22,17 @@ export default class Join extends Screen {
 		const { gameId } = this.options;
 		const game = await getGame(gameId, { invalidateAfter: 0 });
 
-		if (game.response?.status !== 200) {
-			const gone = game.response?.status === 404;
-
-			new Notify({
-				intent: 'danger',
-				content: gone ? 'That game is gone' : `Couldn't open the game: ${failureReason(game)}`,
-			});
-			// Only the game being gone ends the seat; a load that failed leaves it to rejoin later
-			if (gone) localStorage.removeItem(gameId);
+		// Only the game being gone ends the seat, and goes back to the hub
+		if (game.response?.status === 404) {
+			new Notify({ intent: 'danger', content: 'That game is gone' });
+			localStorage.removeItem(gameId);
 			go(paths.hub);
+
+			return;
+		}
+		// A load that failed leaves the seat to rejoin later, and says why here with Try again
+		if (game.response?.status !== 200) {
+			this.failed("Couldn't open the game", game, () => this.load());
 
 			return;
 		}
@@ -44,6 +46,7 @@ export default class Join extends Screen {
 
 		const { name, players } = game.body;
 
+		this.body.empty();
 		this.title(name, 'Take a seat');
 
 		this.name = new Input({

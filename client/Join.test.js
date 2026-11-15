@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/dom';
+import { getByRole, waitFor } from '@testing-library/dom';
 
 // Join loads the game socket; this one never connects
 class QuietSocket extends EventTarget {
@@ -35,12 +35,15 @@ describe('Join, when the game fails to load', () => {
 		localStorage.clear();
 	});
 
-	test('keeps the saved seat when the server fails', async () => {
+	test('keeps the saved seat when the server fails, and says why with Try again', async () => {
 		localStorage.setItem('g500', 'p1');
 		answer(500, { error: 'The database is locked' });
 		made = new Join({ appendTo: container, gameId: 'g500' });
 
-		await waitFor(() => expect(window.location.hash).toBe('#/hub'));
+		await waitFor(() => expect(made.body.elem).toHaveTextContent("Couldn't open the game"));
+		expect(made.body.elem).toHaveTextContent('The database is locked');
+		expect(getByRole(made.body.elem, 'button', { name: 'Try again' })).toBeTruthy();
+		expect(window.location.hash).toBe('#/join/g1');
 		expect(localStorage.getItem('g500')).toBe('p1');
 	});
 
