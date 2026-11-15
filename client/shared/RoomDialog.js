@@ -51,10 +51,10 @@ export default class RoomDialog extends Dialog {
 				{ textContent: 'Copy link', variant: 'flat', addClass: 'quiet' },
 				'Close',
 			],
-			onButtonPress: async ({ button, event, closeDialog }) => {
+			onButtonPress: async ({ button, closeDialog }) => {
 				if (button?.textContent === 'Copy link') {
 					copyToClipboard(await joinUrl(game.id));
-					new Notify({ x: event.clientX, y: event.clientY, content: 'Link copied', intent: 'success', timeout: 1300 });
+					new Notify({ content: 'Link copied', intent: 'success', timeout: 1300 });
 
 					return;
 				}
