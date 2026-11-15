@@ -1,4 +1,4 @@
-import { Card, Component, styled } from '@vanilla-bean/components';
+import { Card, Component, SectionLabel, styled } from '@vanilla-bean/components';
 
 import { getGames, onMessage } from '@fatlard1993/web-game-framework/client';
 
@@ -32,16 +32,8 @@ const Table = styled(
 			text-wrap: balance;
 		}
 
-		& .count {
-			margin: 0 0 28px;
-			font-size: 0.78rem;
-			font-weight: 700;
-			letter-spacing: 0.09em;
-			text-transform: uppercase;
-			color: var(--muted);
-		}
-
 		& .rooms {
+			margin-top: 22px;
 			display: grid;
 			grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
 			gap: 22px;
@@ -93,12 +85,8 @@ const Tile = styled(
 			overflow-wrap: anywhere;
 		}
 
+		/* The stage in the highlighter: what's going on there is what you'd pick a room by */
 		& .stage {
-			margin-top: 12px;
-			font-size: 0.7rem;
-			font-weight: 700;
-			letter-spacing: 0.09em;
-			text-transform: uppercase;
 			color: var(--mark);
 		}
 
@@ -194,8 +182,8 @@ export default class Hub extends Screen {
 		const table = new Table(
 			{},
 			new Component({ tag: 'h1', textContent: 'A card game for terrible people.' }),
-			new Component({
-				addClass: 'count',
+			new SectionLabel({
+				level: 2,
 				textContent:
 					rooms.length === 0
 						? 'Nobody is being terrible right now'
@@ -224,7 +212,7 @@ export default class Hub extends Screen {
 		new Tile(
 			{ appendTo: grid },
 			new Component({ tag: 'h2', addClass: 'name', textContent: name }),
-			new Component({ addClass: 'stage', textContent: STAGES[stage] ?? '' }),
+			new SectionLabel({ addClass: 'stage', textContent: STAGES[stage] ?? '' }),
 			new Component({
 				addClass: 'who',
 				textContent: summary(

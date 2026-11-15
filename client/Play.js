@@ -1,4 +1,4 @@
-import { Button, Component, Input, Notify, randInt, styled, vibrate } from '@vanilla-bean/components';
+import { Button, Component, Input, Notify, SectionLabel, randInt, styled, vibrate } from '@vanilla-bean/components';
 
 import { act, enterGame } from '@fatlard1993/web-game-framework/client';
 import { ExitDialog } from '@fatlard1993/web-game-framework/ui/GameRoom';
@@ -71,13 +71,7 @@ const Lobby = styled(
 			}
 
 			& figcaption {
-				margin-bottom: 10px;
-				font-size: 0.72rem;
-				font-weight: 700;
-				letter-spacing: 0.09em;
-				text-transform: uppercase;
 				text-align: center;
-				color: var(--muted);
 				overflow-wrap: anywhere;
 			}
 
@@ -456,7 +450,7 @@ export default class Play extends Screen {
 		const figure = (caption, card, type = 'white') =>
 			new Component(
 				{ tag: 'figure' },
-				new Component({ tag: 'figcaption', textContent: caption }),
+				new SectionLabel({ tag: 'figcaption', textContent: caption }),
 				new Card({ type, innerHTML: card }),
 			);
 

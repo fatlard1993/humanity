@@ -10,13 +10,14 @@ describe('Screen', () => {
 
 		expect(screen.bar).toBeInstanceOf(Toolbar);
 		expect(screen.bar.elem.classList.contains('variant-bar')).toBe(true);
-		expect(screen.bar.elem.querySelector('[role="heading"]')).toHaveTextContent('The room');
+		expect(screen.bar.elem.querySelector(':scope > .heading')).toHaveTextContent('The room');
 		expect(screen.bar.elem).toHaveTextContent('Voting');
 		expect(screen.body).toBeInstanceOf(Content);
 
 		screen.title();
 
-		expect(screen.bar.elem.querySelector('[role="heading"]')).toBeNull();
+		expect(screen.bar.elem.querySelector(':scope > .heading')).toBeNull();
+		expect(screen.bar.elem.querySelector('.stage')).toBeEmptyDOMElement();
 
 		screen.destroy();
 	});

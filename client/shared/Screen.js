@@ -4,6 +4,7 @@ import {
 	Content,
 	EmptyState,
 	Link,
+	SectionLabel,
 	Toolbar,
 	View,
 	failureReason,
@@ -91,11 +92,6 @@ const Bar = styled(
 
 		& > .stage {
 			min-width: 0;
-			font-size: 0.72rem;
-			font-weight: 700;
-			letter-spacing: 0.09em;
-			text-transform: uppercase;
-			color: var(--muted);
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -170,7 +166,7 @@ export default class Screen extends View {
 	build() {
 		this.bar = new Bar({ appendTo: this });
 		this._left = new Component({ addClass: ['side', 'start'], appendTo: this.bar });
-		this._stage = new Component({ addClass: 'stage', appendTo: this.bar });
+		this._stage = new SectionLabel({ addClass: 'stage', inRow: true, appendTo: this.bar });
 		this._right = new Component({ addClass: ['side', 'right'], appendTo: this.bar });
 
 		this.body = new Body({ appendTo: this });
