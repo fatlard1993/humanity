@@ -14,6 +14,20 @@ const Sheet = styled(
 		padding: 30px 18px 40px;
 		box-sizing: border-box;
 
+		& .field {
+			width: 100%;
+		}
+
+		& label, & .label {
+			display: block;
+			margin-bottom: 7px;
+			font-size: 0.72rem;
+			font-weight: 700;
+			letter-spacing: 0.09em;
+			text-transform: uppercase;
+			color: var(--muted);
+		}
+
 		& .row {
 			display: flex;
 			flex-wrap: wrap;
