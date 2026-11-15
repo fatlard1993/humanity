@@ -130,6 +130,8 @@ export default class Watch extends Screen {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
 				go(paths.hub);
 			},
+			// The round says it, and the way in stays beside it
+			failed: (reason, result) => this.failed("Couldn't open the game", result, () => this.enter(), this.round),
 		});
 
 		this.addCleanup('game', leave);

@@ -182,6 +182,7 @@ export default class Play extends Screen {
 				new Notify({ intent: 'danger', content: 'That game is gone' });
 				go(paths.hub);
 			},
+			failed: (reason, result) => this.failed("Couldn't open the game", result, () => this.enter()),
 		});
 
 		this.playerId = playerId;

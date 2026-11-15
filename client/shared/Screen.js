@@ -177,16 +177,16 @@ export default class Screen extends View {
 		this.dock = new Dock({ appendTo: this });
 	}
 
-	// The table cleared for what's on its way
-	loading() {
-		this.body.empty();
-		this.body.append(new EmptyState({ loading: true }));
+	// The table (or the part of it given) cleared for what's on its way
+	loading(into = this.body) {
+		into.empty();
+		into.append(new EmptyState({ loading: true }));
 	}
 
-	// The table cleared to say what couldn't be had, and why, with the way to try again
-	failed(title, result, retry) {
-		this.body.empty();
-		this.body.append(
+	// The table (or the part of it given) cleared to say what couldn't be had, and why, with the way to try again
+	failed(title, result, retry, into = this.body) {
+		into.empty();
+		into.append(
 			new EmptyState({
 				icon: 'triangle-exclamation',
 				title,
@@ -194,7 +194,7 @@ export default class Screen extends View {
 				action: {
 					textContent: 'Try again',
 					onPointerPress: () => {
-						this.loading();
+						this.loading(into);
 						retry();
 					},
 				},
