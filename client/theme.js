@@ -90,7 +90,9 @@ appendStyles(
 			box-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
 		}
 
-		&:visited {
+		/* The library gives a visited link drawn as a button its white text, by a rule as specific as this one and later;
+		   the :not() outweighs it, so a filled one keeps its ink (a quiet one, flat, keeps its paper) */
+		&:visited:not(.variant-flat, .disabled) {
 			color: var(--ink);
 		}
 
