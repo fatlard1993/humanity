@@ -5,7 +5,10 @@ import { appendStyles, theme } from '@vanilla-bean/components';
 
 const ink = '#131211';
 const paper = '#f3f0e7';
+// The table the cards are dealt on: lit from above, dark at its edge
 const table = '#1d1c1a';
+const tableLit = '#302d29';
+const tableEdge = '#100f0e';
 const mark = '#ffd84a';
 const face = "'Helvetica Neue', Helvetica, 'Nimbus Sans', 'Liberation Sans', Arial, sans-serif";
 
@@ -14,7 +17,8 @@ const color = value => colors.alpha(value, 1);
 
 // The palette goes onto the library's color roles once, here, so every library part (a loading spinner, a toast, a
 // focus ring, a dialog's edge) is drawn in it rather than in the library's blue and teal; the variables below read
-// it back. A warm neutral underneath: its lightest, the library's text, is near paper
+// it back, beside the few no role is for (the paper, a stronger rule, a card's shadow). A warm neutral underneath:
+// its lightest, the library's text, is near paper
 colors.gray = color('hsl(45, 7%, 47%)');
 colors.surface = color(ink);
 colors.raised = colors.alpha(paper, 0.05);
@@ -35,13 +39,13 @@ appendStyles(
 	:root {
 		--ink: ${colors.surface};
 		--paper: ${paper};
-		--table: ${table};
-		--table-deep: #100f0e;
 		--mark: ${colors.accent};
 		--rule: ${colors.border};
 		--rule-strong: ${colors.alpha(paper, 0.34)};
 		--muted: ${colors.muted};
-		--card-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 12px 24px -10px rgb(0 0 0 / 0.75);
+		--card-shadow:
+			0 1px 2px ${colors.alpha(colors.vantablack, 0.5)},
+			0 12px 24px -10px ${colors.alpha(colors.vantablack, 0.75)};
 	}
 
 	html:root {
@@ -52,8 +56,8 @@ appendStyles(
 	html:root body {
 		color: var(--paper);
 		background:
-			radial-gradient(120% 80% at 50% -10%, #302d29 0%, var(--table) 46%, var(--table-deep) 100%) fixed,
-			var(--table-deep);
+			radial-gradient(120% 80% at 50% -10%, ${tableLit} 0%, ${table} 46%, ${tableEdge} 100%) fixed,
+			${tableEdge};
 	}
 
 	/* A heading is the color of what it's printed on */
