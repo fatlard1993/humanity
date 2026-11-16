@@ -7,8 +7,9 @@ const ink = '#131211';
 const paper = '#f3f0e7';
 const table = '#1d1c1a';
 const mark = '#ffd84a';
+const face = "'Helvetica Neue', Helvetica, 'Nimbus Sans', 'Liberation Sans', Arial, sans-serif";
 
-const { colors } = theme;
+const { colors, fonts } = theme;
 const color = value => colors.alpha(value, 1);
 
 // The palette goes onto the library's color roles once, here, so every library part (a loading spinner, a toast, a
@@ -26,6 +27,9 @@ colors.danger = color('#c8372d');
 // A button is a slip of paper
 colors.action = color(paper);
 
+// The heavy sans the cards are printed in is the page's
+fonts.family.body = face;
+
 appendStyles(
 	`
 	:root {
@@ -37,12 +41,10 @@ appendStyles(
 		--rule: ${colors.border};
 		--rule-strong: ${colors.alpha(paper, 0.34)};
 		--muted: ${colors.muted};
-		--face: 'Helvetica Neue', Helvetica, 'Nimbus Sans', 'Liberation Sans', Arial, sans-serif;
 		--card-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 12px 24px -10px rgb(0 0 0 / 0.75);
 	}
 
 	html:root {
-		font-family: var(--face);
 		font-weight: 500;
 		line-height: 1.35;
 	}
@@ -73,7 +75,7 @@ appendStyles(
 		padding: 9px 16px;
 		border-radius: 9px;
 		color: var(--ink);
-		font-family: var(--face);
+		font-family: ${fonts.family.body};
 		font-weight: 700;
 		letter-spacing: -0.01em;
 		box-shadow: 0 2px 0 ${colors.alpha(colors.vantablack, 0.55)};
@@ -147,7 +149,7 @@ appendStyles(
 	.vbc-input:not([type='checkbox']) {
 		padding: 10px 12px;
 		border-radius: 9px;
-		font-family: var(--face);
+		font-family: ${fonts.family.body};
 		font-size: 1rem;
 		font-weight: 700;
 	}

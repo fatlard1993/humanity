@@ -20,5 +20,8 @@ module.exports = {
 		'wildcard',
 		'zelda',
 		'cqi',
+		'helvetica',
+		'neue',
+		'arial',
 	],
 };

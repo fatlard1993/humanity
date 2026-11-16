@@ -32,7 +32,7 @@ export default class Card extends Component {
 				padding: 18px;
 				border-radius: 14px;
 				box-shadow: var(--card-shadow);
-				font-family: var(--face);
+				font-family: ${theme.fonts.family.body};
 				font-size: 1.15rem;
 				font-weight: 700;
 				line-height: 1.22;
