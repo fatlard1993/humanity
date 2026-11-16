@@ -23,5 +23,6 @@ module.exports = {
 		'helvetica',
 		'neue',
 		'arial',
+		'subgrid',
 	],
 };
