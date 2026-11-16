@@ -110,18 +110,11 @@ const Tile = styled(
 			}
 		}
 
+		/* Lit as a Card is, on hover and keyboard focus: its tint darkens the paper under its ink */
 		&.new {
 			background: var(--paper);
 			color: var(--ink);
-			outline: none;
-			cursor: pointer;
 			user-select: none;
-
-			/* Not lit as a Card is: the lift alone is too little to find it by keyboard */
-			&:focus-visible {
-				outline: 3px solid var(--mark);
-				outline-offset: 4px;
-			}
 
 			& .hint {
 				margin-top: auto;
@@ -196,7 +189,7 @@ export default class Hub extends Screen {
 
 		// A link, drawn as the white card it is rather than lit as the Card's hover would
 		new Tile(
-			{ tag: 'a', href: href(paths.create), interactive: false, addClass: 'new', appendTo: grid },
+			{ tag: 'a', href: href(paths.create), addClass: 'new', appendTo: grid },
 			new Component({ tag: 'h2', addClass: 'name', textContent: 'Start a new game.' }),
 			new Component({ addClass: 'hint', textContent: 'Pick the packs, name the room, deal.' }),
 		);
