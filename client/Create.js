@@ -1,4 +1,12 @@
-import { Button, Component, Notify, failureReason, styled } from '@vanilla-bean/components';
+import {
+	Button,
+	Component,
+	Notify,
+	failureReason,
+	runValidators,
+	showFieldError,
+	styled,
+} from '@vanilla-bean/components';
 
 import { createGame } from '@fatlard1993/web-game-framework/client';
 
@@ -122,6 +130,15 @@ class PackPicker extends styled(
 
 	picked() {
 		return [...(this.options.value ?? [])];
+	}
+
+	// Checks its own picks and shows what's wrong under itself, as the form's other fields do; true when something is
+	validate() {
+		const messages = runValidators(this.options.validate, this.options.value);
+
+		showFieldError({ owner: this, messages });
+
+		return messages.length > 0;
 	}
 
 	// A pick made here is announced; a value set from outside is only shown
@@ -260,11 +277,8 @@ export default class Create extends Screen {
 					InputComponent: PackPicker,
 					packs: this.packs,
 					validate: picked => this.problemWith(picked),
-					// Checked as the picks change, as the name is as it's typed
-					onChange: () => {
-						this.form.hasErrors();
-						this.refresh();
-					},
+					// The picker checks itself as the picks change; the deck's sum follows them
+					onChange: () => this.refresh(),
 				},
 			],
 		});

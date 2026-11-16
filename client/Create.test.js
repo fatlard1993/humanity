@@ -74,6 +74,19 @@ describe('Create', () => {
 		expect(created).toHaveLength(0);
 	});
 
+	test('a pick checks the packs alone, not a name still to be typed', async () => {
+		made = new Create({ appendTo: container });
+		const packs = await screen.findByRole('group', { name: 'Packs' });
+		const name = screen.getByRole('textbox', { name: 'Room name' });
+
+		await waitFor(() => expect(name).toHaveValue('The Room'));
+		fireEvent.input(name, { target: { value: '' } });
+		press('Pick none');
+
+		await waitFor(() => expect(packs).toHaveAccessibleDescription('Pick at least one pack'));
+		expect(name).not.toHaveAttribute('aria-invalid');
+	});
+
 	test('a create the server refuses says why beside Deal, with what was picked sent', async () => {
 		made = new Create({ appendTo: container });
 		await screen.findByRole('group', { name: 'Hand' });
