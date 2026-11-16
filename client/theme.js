@@ -23,6 +23,8 @@ colors.accent = color(mark);
 colors.info = color(mark);
 colors.selected = color(mark);
 colors.danger = color('#c8372d');
+// A button is a slip of paper
+colors.action = color(paper);
 
 appendStyles(
 	`
@@ -70,24 +72,23 @@ appendStyles(
 	a.variant-button.quiet {
 		padding: 9px 16px;
 		border-radius: 9px;
-		background-color: var(--paper);
 		color: var(--ink);
 		font-family: var(--face);
 		font-weight: 700;
 		letter-spacing: -0.01em;
-		box-shadow: 0 2px 0 rgb(0 0 0 / 0.55);
+		box-shadow: 0 2px 0 ${colors.alpha(colors.vantablack, 0.55)};
 		transition: translate 0.12s, background-color 0.12s, color 0.12s, box-shadow 0.12s;
 
 		&:hover, &:focus-visible {
 			filter: none;
-			background-color: #fff;
+			background-color: ${colors.superWhite};
 			translate: 0 -1px;
 		}
 
 		&:active {
 			filter: none;
 			translate: 0 1px;
-			box-shadow: 0 1px 0 rgb(0 0 0 / 0.55);
+			box-shadow: 0 1px 0 ${colors.alpha(colors.vantablack, 0.55)};
 		}
 
 		/* The library gives a visited link drawn as a button its white text, by a rule as specific as this one and later;
@@ -102,7 +103,7 @@ appendStyles(
 			box-shadow: inset 0 0 0 1.5px var(--rule-strong);
 
 			&:hover, &:focus-visible {
-				background-color: rgb(243 240 231 / 0.1);
+				background-color: ${colors.alpha(paper, 0.1)};
 			}
 		}
 
@@ -110,22 +111,22 @@ appendStyles(
 			background-color: var(--mark);
 
 			&:hover, &:focus-visible {
-				background-color: #ffe27a;
+				background-color: ${colors.accent.lighten(9.4)};
 			}
 		}
 
 		&.intent-danger {
-			background-color: #c8372d;
+			background-color: ${colors.danger};
 			color: var(--paper);
 
 			&:hover, &:focus-visible {
-				background-color: #dc463b;
+				background-color: ${colors.danger.saturate(6.4).lighten(6.7)};
 			}
 		}
 
 		&:is(:disabled, .disabled), &:is(:disabled, .disabled):hover {
 			background-color: transparent;
-			color: rgb(243 240 231 / 0.38);
+			color: ${colors.alpha(paper, 0.38)};
 			box-shadow: inset 0 0 0 1.5px var(--rule);
 			translate: none;
 			cursor: default;
