@@ -1,4 +1,4 @@
-import { Button, Component, Input, Notify, failureReason } from '@vanilla-bean/components';
+import { Button, Component, Notify, failureReason } from '@vanilla-bean/components';
 
 import { getGame, joinGame } from '@fatlard1993/web-game-framework/client';
 
@@ -6,7 +6,7 @@ import { getRandomName } from './api';
 import Card from './shared/Card.js';
 import { go, href, paths } from './paths.js';
 import Screen, { goTo, quiet } from './shared/Screen.js';
-import Sheet from './shared/Sheet.js';
+import Sheet, { Failure, Fields } from './shared/Sheet.js';
 
 export default class Join extends Screen {
 	build() {
@@ -44,24 +44,40 @@ export default class Join extends Screen {
 			return;
 		}
 
-		const { name, players } = game.body;
+		const { name: gameName, players } = game.body;
 
 		this.body.empty();
-		this.title(name, 'Take a seat');
+		this.title(gameName, 'Take a seat');
 
-		this.name = new Input({
-			value: localStorage.getItem('lastName') || '',
-			placeholder: 'What they call you',
-			attributes: { id: 'player-name', maxlength: 40, enterkeyhint: 'go' },
-			validate: value => (value.trim() ? undefined : 'You need a name to sit down'),
+		this.form = new Fields({
+			data: { name: localStorage.getItem('lastName') || '' },
+			inputs: [
+				{
+					key: 'name',
+					label: { label: 'Your name', addClass: 'beside' },
+					placeholder: 'What they call you',
+					attributes: { maxlength: 40, enterkeyhint: 'go' },
+					validate: value => (value.trim() ? undefined : 'You need a name to sit down'),
+				},
+			],
 		});
-		this.name.elem.addEventListener('keydown', event => {
+
+		const name = this.form.inputElements.name;
+
+		name.elem.addEventListener('keydown', event => {
 			if (event.key === 'Enter') this.join();
 		});
+		// The dice beside the name, after it
+		name.elem.after(
+			quiet('', () => this.randomName(), {
+				icon: 'dice',
+				attributes: { 'aria-label': 'Pick a random name', title: 'Pick a random name' },
+			}).elem,
+		);
 
 		new Sheet(
 			{ appendTo: this.body },
-			new Card({ type: 'black', style: { transform: 'rotate(-2deg)' }, textContent: name }),
+			new Card({ type: 'black', style: { transform: 'rotate(-2deg)' }, textContent: gameName }),
 			new Component({
 				addClass: 'at-table',
 				textContent:
@@ -69,49 +85,43 @@ export default class Join extends Screen {
 						? 'Nobody at the table yet. Be the first.'
 						: `At the table: ${players.map(player => player.name).join(', ')}`,
 			}),
-			new Component(
-				{ addClass: 'field' },
-				new Component({ tag: 'label', textContent: 'Your name', attributes: { for: 'player-name' } }),
-				new Component(
-					{ addClass: 'row' },
-					this.name,
-					quiet('', () => this.randomName(), {
-						icon: 'dice',
-						attributes: { 'aria-label': 'Pick a random name', title: 'Pick a random name' },
-					}),
-				),
-			),
+			this.form,
 		);
 
+		this.failure = new Failure();
 		this.actions(
+			this.failure,
 			new Button({ content: 'Take a seat', addClass: 'go', onPointerPress: () => this.join() }),
 			goTo('Just watch', href(paths.watch, { gameId }), { variant: 'flat', addClass: 'quiet' }),
 		);
 
-		if (!this.name.options.value) this.name.elem.focus();
+		if (!name.options.value) name.elem.focus();
 	}
 
 	async randomName() {
 		const result = await getRandomName();
 
-		if (result.status === 'success') this.name.options.value = result.body;
+		if (result.status === 'success') this.form.options.data.name = result.body;
 		else new Notify({ intent: 'danger', content: `Couldn't pick a random name: ${failureReason(result)}` });
 	}
 
 	async join() {
 		const { gameId } = this.options;
-		if (this.name.validate()) {
-			this.name.elem.focus();
+
+		if (this.form.hasErrors()) {
+			this.form.inputElements.name.elem.focus();
 
 			return;
 		}
 
-		const name = this.name.options.value.trim();
+		this.failure.elem.textContent = '';
 
+		const name = this.form.options.data.name.trim();
 		const joined = await joinGame(gameId, { body: { name, playerId: localStorage.getItem(gameId) } });
 
+		if (!this.elem.isConnected) return;
 		if (joined.status !== 'success') {
-			new Notify({ intent: 'danger', content: `Couldn't take a seat: ${failureReason(joined)}` });
+			this.failure.elem.textContent = `Couldn't take a seat: ${failureReason(joined)}`;
 
 			return;
 		}
